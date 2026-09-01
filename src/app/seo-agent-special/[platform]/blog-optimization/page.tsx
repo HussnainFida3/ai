@@ -8,7 +8,7 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { usePlatformParam } from "@/lib/agent-data";
+import { usePlatformParam, useSeoAudit, improveSeoPost } from "@/lib/agent-data";
 
 const ASSETS = {
   logo: "data:image/png;base64,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",
@@ -62,13 +62,8 @@ function Icon({ name, size = 18, stroke = "currentColor", fill = "none" }: {
   }
 }
 
-const posts = [
-  { title:"How to Find the Perfect Life Partner", slug:"/blog/find-perfect-life-partner", score:92, status:"Optimized", impressions:"12.5K", clicks:"1.2K", updated:"2 days ago", image:ASSETS.thumb1 },
-  { title:"Top 10 Tips for a Successful Marriage", slug:"/blog/tips-successful-marriage", score:76, status:"Needs Work", impressions:"8.3K", clicks:"870", updated:"5 days ago", image:ASSETS.thumb2 },
-  { title:"ShaadiLife Success Stories", slug:"/blog/shaadilife-success-stories", score:88, status:"Optimized", impressions:"15.2K", clicks:"1.5K", updated:"1 week ago", image:ASSETS.thumb3 },
-  { title:"Best Rishta Websites in Pakistan", slug:"/blog/best-rishta-websites-pakistan", score:65, status:"Needs Work", impressions:"6.1K", clicks:"540", updated:"1 week ago", image:ASSETS.thumb4 },
-  { title:"Nikkah Ceremony: A Complete Guide", slug:"/blog/nikkah-ceremony-guide", score:81, status:"Optimized", impressions:"9.7K", clicks:"920", updated:"2 weeks ago", image:ASSETS.thumb5 },
-];
+/** Decorative thumbnails only — cycled across whatever real posts the backend returns. No per-post claim is made from the image itself. */
+const THUMBS = [ASSETS.thumb1, ASSETS.thumb2, ASSETS.thumb3, ASSETS.thumb4, ASSETS.thumb5];
 
 const nav = [
   ["Overview", "dashboard", "overview"],
@@ -78,35 +73,11 @@ const nav = [
   ["Blog Optimization", "edit", "blog-optimization"],
 ] as const;
 
-const chartData = [
-  [3,3,4,3,5,4,5,4,4,5,3,4,4,8,7,4,4,5,4,6,5,6,4,7,4,8,5],
-  [2,2,3,4,3,4,3,4,3,4,3,5,3,7,5,3,4,3,5,4,6,4,5,8,4,6,4],
-  [5,4,3,4,3,4,3,4,4,5,8,5,6,5,6,6,7,6,7,6,8,7,10,9,11,10,9],
-  [2,3,4,3,6,3,4,3,4,3,4,8,4,3,5,4,4,5,4,4,5,7,4,8,5,7,6],
-  [2,2,2,3,3,3,4,3,5,4,4,7,4,4,5,4,5,4,5,5,4,6,4,5,9,5,7],
-];
-
-function Sparkline({ values, rising=false }: { values:number[]; rising?:boolean }) {
-  const w=194, h=40, p=2;
-  const min=Math.min(...values), max=Math.max(...values);
-  const points=values.map((v,i)=>{
-    const x=p+(i*(w-p*2))/(values.length-1);
-    const y=h-p-((v-min)/Math.max(1,max-min))*(h-p*2);
-    return `${x},${y}`;
-  }).join(" ");
-  return (
-    <svg className="spark" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
-      <defs><linearGradient id="sparkFade" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#6b35ff" stopOpacity=".14"/><stop offset="1" stopColor="#6b35ff" stopOpacity="0"/></linearGradient></defs>
-      <polyline points={`2,${h-2} ${points} ${w-2},${h-2}`} fill="url(#sparkFade)" stroke="none"/>
-      <polyline points={points} fill="none" stroke="#6735ff" strokeWidth="1.6" vectorEffect="non-scaling-stroke"/>
-    </svg>
-  );
-}
-
-function Score({ value }: { value:number }) {
+function Score({ value, maxScore }: { value:number; maxScore:number }) {
   const circumference=2*Math.PI*20;
-  const offset=circumference-(value/100)*circumference;
-  const cls=value>=80 ? "good" : "warn";
+  const frac=Math.max(0, Math.min(1, value/maxScore));
+  const offset=circumference-frac*circumference;
+  const cls=frac>=0.8 ? "good" : "warn";
   return <div className={`score ${cls}`}>
     <svg viewBox="0 0 48 48">
       <circle cx="24" cy="24" r="20" className="score-track"/>
@@ -116,31 +87,59 @@ function Score({ value }: { value:number }) {
   </div>
 }
 
-function MetricCard({ title, value, suffix, change, index }: {title:string;value:string;suffix?:string;change:string;index:number}) {
+function MetricCard({ title, value, suffix, sub }: {title:string;value:string;suffix?:string;sub:string}) {
   return <div className="metric-card">
     <div className="metric-title">{title}</div>
-    <div className="metric-main"><span>{value}</span>{suffix && <small>{suffix}</small>}<em><Icon name="arrowUp" size={12}/>{change}</em></div>
-    <div className="metric-sub">vs Apr 22 - May 21, 2025</div>
-    <Sparkline values={chartData[index]} rising={index===2}/>
+    <div className="metric-main"><span>{value}</span>{suffix && <small>{suffix}</small>}</div>
+    <div className="metric-sub">{sub}</div>
   </div>
 }
 
 export default function BlogOptimizationPage({ params }: { params: Promise<{ platform: string }> }) {
   const platform = usePlatformParam(params);
   const pathname = usePathname();
+  const audit = useSeoAudit(platform);
   const [tab, setTab] = useState("All Posts");
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All Categories");
   const [page, setPage] = useState(1);
   const [menu, setMenu] = useState<number|null>(null);
   const [toast, setToast] = useState("");
-
-  const filtered = useMemo(() => posts.filter(p =>
-    (tab==="All Posts" || (tab==="Needs Optimization" && p.status==="Needs Work") || (tab==="High Potential" && p.score>=80)) &&
-    (!query || p.title.toLowerCase().includes(query.toLowerCase()) || p.slug.toLowerCase().includes(query.toLowerCase()))
-  ), [tab,query]);
+  const [scoreOverrides, setScoreOverrides] = useState<Record<string, number>>({});
+  const [fixingId, setFixingId] = useState<string | null>(null);
+  const PAGE_SIZE = 8;
 
   const notify=(text:string)=>{ setToast(text); window.setTimeout(()=>setToast(""),2400); };
+
+  const posts = useMemo(() => audit.posts.map((p, i) => {
+    const score = scoreOverrides[p.id] !== undefined ? scoreOverrides[p.id] : p.score;
+    const status: "Optimized" | "Needs Work" = score >= audit.maxScore - 1 ? "Optimized" : "Needs Work";
+    return { ...p, score, status, topIssue: p.reasons[0] ?? null, image: THUMBS[i % THUMBS.length] };
+  }), [audit.posts, audit.maxScore, scoreOverrides]);
+
+  const filtered = useMemo(() => posts.filter(p =>
+    (tab==="All Posts" || (tab==="Needs Optimization" && p.status==="Needs Work") || (tab==="Optimized" && p.status==="Optimized")) &&
+    (!query || p.title.toLowerCase().includes(query.toLowerCase()) || (p.slug ?? "").toLowerCase().includes(query.toLowerCase()))
+  ), [posts, tab, query]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paged = filtered.slice((safePage-1)*PAGE_SIZE, safePage*PAGE_SIZE);
+  const needsWorkCount = posts.filter(p => p.status === "Needs Work").length;
+  const optimizedCount = posts.filter(p => p.status === "Optimized").length;
+
+  async function applyFix(row: typeof posts[number]) {
+    setFixingId(row.id);
+    try {
+      const newScore = await improveSeoPost(platform, row.id);
+      setScoreOverrides(prev => ({ ...prev, [row.id]: newScore }));
+      notify(`Applied AI fix to "${row.title}" — new score ${newScore}/${audit.maxScore}`);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Could not apply the AI fix.");
+    } finally {
+      setFixingId(null);
+    }
+  }
 
   return <div className="app" onClick={()=>menu!==null && setMenu(null)}>
     <aside className="sidebar">
@@ -183,18 +182,25 @@ export default function BlogOptimizationPage({ params }: { params: Promise<{ pla
         <button className="export" onClick={()=>notify("Report export started")}><Icon name="download" size={15}/>Export Report</button>
       </div>
 
+      {audit.error && (
+        <div style={{ padding:"12px 16px", border:"1px solid #ffd7da", background:"#fff5f6", borderRadius:10, marginBottom:13, color:"#b3212c", fontSize:12 }}>
+          {audit.error}
+          <div style={{ marginTop:6, fontSize:11, color:"#8a3a41" }}>
+            Connect on the <Link href="/connect" style={{ color:"#6330eb", fontWeight:650 }}>Connect</Link> page, and make sure the backend is running.
+          </div>
+        </div>
+      )}
+
       <section className="metrics">
-        <MetricCard title="Total Blog Posts" value="48" change="12.5%" index={0}/>
-        <MetricCard title="Optimized Posts" value="32" change="20.8%" index={1}/>
-        <MetricCard title="Avg. SEO Score" value="78" suffix="/100" change="15.2%" index={2}/>
-        <MetricCard title="Organic Traffic" value="12.4K" change="18.3%" index={3}/>
-        <MetricCard title="Impressions" value="85.7K" change="22.6%" index={4}/>
+        <MetricCard title="Total Blog Posts" value={audit.loading ? "…" : String(posts.length)} sub={audit.checkedScopeLabel ? `Real count — ${audit.checkedScopeLabel}` : "Real, live count"}/>
+        <MetricCard title="Optimized Posts" value={audit.loading ? "…" : String(optimizedCount)} sub={`Scoring at or above ${(audit.maxScore-1).toFixed(1)}`}/>
+        <MetricCard title="Avg. SEO Score" value={audit.loading ? "…" : String(audit.averageScore ?? "—")} suffix={`/${audit.maxScore}`} sub="Real, live average across checked posts"/>
       </section>
 
       <section className="table-panel">
         <div className="filters">
           <div className="tabs">
-            {["All Posts","Needs Optimization","High Potential"].map(t=><button key={t} className={tab===t?"selected":""} onClick={()=>{setTab(t);setPage(1)}}>{t}</button>)}
+            {["All Posts","Needs Optimization","Optimized"].map(t=><button key={t} className={tab===t?"selected":""} onClick={()=>{setTab(t);setPage(1)}}>{t}</button>)}
           </div>
           <div className="filter-right">
             <label className="searchbox"><Icon name="search" size={17}/><input value={query} onChange={e=>{setQuery(e.target.value);setPage(1)}} placeholder="Search blog posts..."/></label>
@@ -205,38 +211,51 @@ export default function BlogOptimizationPage({ params }: { params: Promise<{ pla
 
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Blog Post</th><th>SEO Score</th><th>Status</th><th>Impressions</th><th>Clicks</th><th>Last Updated</th><th>Action</th></tr></thead>
+            <thead><tr><th>Blog Post</th><th>SEO Score</th><th>Status</th><th>Top Issue</th><th>Action</th></tr></thead>
             <tbody>
-              {filtered.map((p,i)=><tr key={p.title}>
-                <td className="post-cell"><img src={p.image}/><div><strong>{p.title}</strong><span>{p.slug}</span></div></td>
-                <td><Score value={p.score}/></td>
+              {audit.loading ? (
+                <tr><td colSpan={5} className="empty">Loading live posts…</td></tr>
+              ) : paged.map((p,i)=><tr key={p.id}>
+                <td className="post-cell"><img src={p.image}/><div><strong>{p.title}</strong><span>{p.slug ?? "—"}</span></div></td>
+                <td><Score value={p.score} maxScore={audit.maxScore}/></td>
                 <td><span className={`status ${p.status==="Optimized"?"ok":"needs"}`}>{p.status}</span></td>
-                <td>{p.impressions}</td><td>{p.clicks}</td><td className="muted">{p.updated}</td>
-                <td className="action-cell"><button className="details" onClick={()=>notify(`Opening ${p.title}`)}>View Details</button><button className="dots" onClick={e=>{e.stopPropagation();setMenu(menu===i?null:i)}}><Icon name="dots" size={17}/></button>
-                  {menu===i && <div className="row-menu"><button onClick={()=>notify("Optimize post")}>Optimize</button><button onClick={()=>notify("Post copied")}>Copy URL</button></div>}
+                <td className="muted">{p.topIssue ?? (audit.topIssue ? `Common: ${audit.topIssue.label}` : "—")}</td>
+                <td className="action-cell">
+                  {p.canFix ? (
+                    <button className="details" disabled={fixingId===p.id} onClick={()=>applyFix(p)}>{fixingId===p.id ? "Applying…" : "Apply AI Fix"}</button>
+                  ) : (
+                    <span className="muted" style={{fontSize:10}}>No auto-fix</span>
+                  )}
+                  <button className="dots" onClick={e=>{e.stopPropagation();setMenu(menu===i?null:i)}}><Icon name="dots" size={17}/></button>
+                  {menu===i && <div className="row-menu"><button onClick={()=>notify(`Opening ${p.title}`)}>View Details</button><button onClick={()=>notify("Post link copied")}>Copy URL</button></div>}
                 </td>
               </tr>)}
-              {filtered.length===0 && <tr><td colSpan={7} className="empty">No blog posts found.</td></tr>}
+              {!audit.loading && filtered.length===0 && <tr><td colSpan={5} className="empty">No blog posts found.</td></tr>}
             </tbody>
           </table>
         </div>
 
         <div className="pagination">
-          <span>Showing 1 to {filtered.length} of 48 posts</span>
+          <span>Showing {filtered.length===0 ? 0 : (safePage-1)*PAGE_SIZE+1} to {Math.min(safePage*PAGE_SIZE, filtered.length)} of {filtered.length} posts</span>
           <div className="pages">
-            <button onClick={()=>setPage(Math.max(1,page-1))}><Icon name="chevronLeft" size={16}/></button>
-            {[1,2,3].map(n=><button key={n} className={page===n?"current":""} onClick={()=>setPage(n)}>{n}</button>)}
-            <span>...</span><button onClick={()=>setPage(10)} className={page===10?"current":""}>10</button>
-            <button onClick={()=>setPage(Math.min(10,page+1))}><Icon name="chevronRight" size={16}/></button>
+            <button onClick={()=>setPage(Math.max(1,safePage-1))}><Icon name="chevronLeft" size={16}/></button>
+            {Array.from({length: totalPages}, (_, idx) => idx+1).map(n=><button key={n} className={safePage===n?"current":""} onClick={()=>setPage(n)}>{n}</button>)}
+            <button onClick={()=>setPage(Math.min(totalPages,safePage+1))}><Icon name="chevronRight" size={16}/></button>
           </div>
         </div>
       </section>
 
       <section className="suggestions">
         <div className="suggest-intro"><img src={ASSETS.robotBottom}/><div><strong>AI Suggestions for Your Blog</strong><span>Get AI-powered recommendations to improve your blog<br/>content and rankings.</span></div></div>
-        <button className="suggest-card" onClick={()=>notify("Showing low SEO score posts")}><span className="suggest-icon red"><Icon name="target" size={20}/></span><div><b>Optimize <i>12</i> posts</b><small>Low SEO score</small></div></button>
-        <button className="suggest-card" onClick={()=>notify("Internal link opportunities: 8")}><span className="suggest-icon blue"><Icon name="link" size={20}/></span><div><b>Add internal links</b><small>8 opportunities</small></div></button>
-        <button className="suggest-card" onClick={()=>notify("Meta data opportunities: 15")}><span className="suggest-icon green"><Icon name="meta" size={20}/></span><div><b>Improve meta data</b><small>15 posts</small></div></button>
+        {needsWorkCount > 0 && (
+          <button className="suggest-card" onClick={()=>{setTab("Needs Optimization");setPage(1);notify("Showing posts that need optimization")}}><span className="suggest-icon red"><Icon name="target" size={20}/></span><div><b>Optimize <i>{needsWorkCount}</i> post{needsWorkCount===1?"":"s"}</b><small>Low SEO score</small></div></button>
+        )}
+        {audit.topIssue && (
+          <button className="suggest-card" onClick={()=>notify(`"${audit.topIssue!.label}" fails on ${audit.topIssue!.failingCount} checked post(s)`)}><span className="suggest-icon green"><Icon name="meta" size={20}/></span><div><b>Fix &quot;{audit.topIssue.label}&quot;</b><small>{audit.topIssue.failingCount} post{audit.topIssue.failingCount===1?"":"s"}</small></div></button>
+        )}
+        {!audit.loading && needsWorkCount===0 && !audit.topIssue && (
+          <div style={{fontSize:11,color:"#5f6a82"}}>Every checked post is already at the maximum score.</div>
+        )}
         <button className="suggest-arrow" onClick={()=>notify("All AI suggestions")}><Icon name="arrowRight" size={22}/></button>
       </section>
     </main>
@@ -280,7 +299,7 @@ export default function BlogOptimizationPage({ params }: { params: Promise<{ pla
       .date-btn{height:37px;border:1px solid #e0e4ec;background:#fff;border-radius:8px;padding:0 13px;display:flex;align-items:center;gap:9px;font-size:13px;color:#26304a;box-shadow:0 1px 3px rgba(31,40,70,.02)}
       .date-btn svg{color:#66728c}
       .export{height:32px;margin-top:3px;border-radius:7px;padding:0 13px;background:linear-gradient(100deg,#6a32ee,#7a45ef);color:#fff;font-size:12px;display:flex;align-items:center;gap:7px;box-shadow:0 5px 13px rgba(105,48,238,.18)}
-      .metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;margin-top:3px}
+      .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-top:3px}
       .metric-card{height:175px;background:rgba(255,255,255,.92);border:1px solid #eef0f5;border-radius:12px;padding:21px 21px 13px;box-shadow:0 5px 18px rgba(41,48,78,.045);position:relative;overflow:hidden}
       .metric-title{font-size:12px;font-weight:700;color:#12192f;margin-bottom:13px}
       .metric-main{height:34px;display:flex;align-items:center;gap:4px}
@@ -306,7 +325,7 @@ export default function BlogOptimizationPage({ params }: { params: Promise<{ pla
       table{width:100%;border-collapse:collapse;table-layout:fixed}
       thead{height:37px;background:#fbfcfe}
       th{font-size:11px;font-weight:700;text-align:left;color:#10172f;padding:0 21px;border-bottom:1px solid #e7eaf0}
-      th:nth-child(1){width:31%}th:nth-child(2){width:9%}th:nth-child(3){width:12%}th:nth-child(4){width:10%}th:nth-child(5){width:10%}th:nth-child(6){width:10%}th:nth-child(7){width:18%}
+      th:nth-child(1){width:32%}th:nth-child(2){width:10%}th:nth-child(3){width:13%}th:nth-child(4){width:25%}th:nth-child(5){width:20%}
       tbody tr{height:74px;border-bottom:1px solid #edf0f4}
       tbody tr:last-child{border-bottom:0}
       td{font-size:11px;color:#10172f;padding:0 21px;vertical-align:middle}
@@ -327,6 +346,7 @@ export default function BlogOptimizationPage({ params }: { params: Promise<{ pla
       .muted{color:#66718a}
       .action-cell{position:relative;display:flex;align-items:center;gap:16px}
       .details{height:30px;min-width:105px;border:1px solid #9976ff;border-radius:6px;color:#6330eb;font-size:10px;font-weight:600;background:#fff}
+      .details:disabled{opacity:.6;cursor:default}
       .dots{width:20px;height:30px;display:grid;place-items:center;color:#6d7890}
       .row-menu{position:absolute;right:0;top:38px;width:105px;background:#fff;border:1px solid #e7eaf1;border-radius:7px;box-shadow:0 9px 25px rgba(30,39,70,.13);z-index:5;padding:5px}
       .row-menu button{display:block;width:100%;text-align:left;padding:7px 8px;font-size:10px;border-radius:4px}

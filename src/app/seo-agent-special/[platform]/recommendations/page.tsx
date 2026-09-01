@@ -8,7 +8,7 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { usePlatformParam, platformLabel } from "@/lib/agent-data";
+import { usePlatformParam, platformLabel, useSeoAudit, improveSeoPost, categorizeReason, type SeoPostRow, type SeoIssueCategory } from "@/lib/agent-data";
 import type { PlatformKey } from "@/lib/platforms";
 
 type IconName =
@@ -99,19 +99,50 @@ const nav = [
   ["Blog Optimization", "edit", "blog-optimization"],
 ] as const;
 
-const rows = [
-  { title:"Optimize meta titles for 18 pages", desc:"Your meta titles are missing or not optimized. Optimizing them can increase CTR and rankings.", icon:"document" as IconName, tone:"red", score:92, scoreLabel:"High", effort:2, effortLabel:"Low", priority:"High", tags:[["On-Page SEO","purple"],["Quick Win","green"]] },
-  { title:"Build backlinks to priority pages", desc:"You have 5 important pages with low domain authority. Building quality backlinks can boost rankings.", icon:"link" as IconName, tone:"orange", score:88, scoreLabel:"High", effort:2, effortLabel:"Medium", priority:"High", tags:[["Backlinks","purple"],["Long Term","orange"]] },
-  { title:"Add alt text to 32 images", desc:"Images without alt text can hurt accessibility and your rankings. Add descriptive alt text.", icon:"image" as IconName, tone:"green", score:75, scoreLabel:"Medium", effort:1, effortLabel:"Low", priority:"Medium", tags:[["Technical SEO","purple"],["Quick Win","green"]] },
-  { title:"Target 45 new keyword opportunities", desc:"These keywords have high potential and low competition. Creating content around them can drive more traffic.", icon:"search" as IconName, tone:"blue", score:85, scoreLabel:"High", effort:2, effortLabel:"Medium", priority:"Medium", tags:[["Keyword Research","purple"],["Long Term","orange"]] },
-  { title:"Fix 18 technical SEO issues", desc:"Technical issues are blocking your site from ranking higher. Fixing these will improve your site health.", icon:"code" as IconName, tone:"purple", score:90, scoreLabel:"High", effort:3, effortLabel:"High", priority:"High", tags:[["Technical SEO","purple"],["High Impact","red"]] },
-];
+type DisplayRow = SeoPostRow & {
+  priority: "High" | "Medium";
+  desc: string;
+  tags: string[];
+  issueCount: number | null;
+};
 
-function ScoreRing({ score, label }: { score: number; label: string }) {
-  const deg = Math.round(score * 3.6);
+/** Turns one real, backend-scored post into everything this page's row needs to render — no invented fields. */
+function buildDisplayRow(p: SeoPostRow, maxScore: number, topIssue: SeoIssueCategory | null, platform: PlatformKey): DisplayRow {
+  const priority: "High" | "Medium" = p.score < maxScore - 3 ? "High" : "Medium";
+  const issueCount = platform === "shadilife" ? p.reasons.length : null;
+  let desc: string;
+  let tags: string[];
+  if (p.reasons.length > 0) {
+    desc = p.reasons.slice(0, 3).join(" · ");
+    tags = Array.from(new Set(p.reasons.map(categorizeReason))).slice(0, 3);
+  } else if (topIssue) {
+    desc = `Scores ${p.score}/${maxScore}. Site-wide, the most common issue is "${topIssue.label}" (failing on ${topIssue.failingPercent ?? "—"}% of checked posts) — apply the AI fix to regenerate this post's title and description.`;
+    tags = [];
+  } else {
+    desc = `Scores ${p.score}/${maxScore}. Apply the AI fix to regenerate this post's title and description.`;
+    tags = [];
+  }
+  return { ...p, priority, desc, tags, issueCount };
+}
+
+function iconForCategory(label?: string): IconName {
+  switch (label) {
+    case "Meta Title":
+    case "Meta Description": return "document";
+    case "Keywords": return "search";
+    case "Content Length": return "file";
+    case "Headings / Structure": return "code";
+    case "Images": return "image";
+    case "URL / Slug": return "link";
+    default: return "document";
+  }
+}
+
+function ScoreRing({ score, maxScore, label }: { score: number; maxScore: number; label: string }) {
+  const deg = Math.round((score / maxScore) * 360);
   return (
     <div className="scoreBox">
-      <div className="scoreRing" style={{ background: `conic-gradient(#18b47b ${deg}deg, #e4e8ef ${deg}deg)` }}>
+      <div className="scoreRing" style={{ background: `conic-gradient(#18b47b 0deg ${deg}deg, #e4e8ef ${deg}deg 360deg)` }}>
         <div className="scoreInner">{score}</div>
       </div>
       <div className="scoreLabel">{label}</div>
@@ -119,11 +150,15 @@ function ScoreRing({ score, label }: { score: number; label: string }) {
   );
 }
 
-function Effort({ count, label }: { count: number; label: string }) {
+function IssueCount({ count }: { count: number | null }) {
   return (
     <div className="effortBox">
-      <div className="effortDots">{[0,1,2].map(i => <span key={i} className={i < count ? "filled" : ""}/>)}</div>
-      <div className="scoreLabel">{label}</div>
+      {count === null ? (
+        <div className="scoreInner" style={{ background: "transparent", fontSize: 15, color: "#9aa3b8" }}>—</div>
+      ) : (
+        <div className="effortDots">{[0,1,2].map(i => <span key={i} className={i < Math.min(count,3) ? "filled" : ""}/>)}</div>
+      )}
+      <div className="scoreLabel">{count === null ? "Not tracked" : `${count} issue${count===1?"":"s"}`}</div>
     </div>
   );
 }
@@ -141,51 +176,50 @@ function StatCard({ title, value, sub, icon, tone }: { title:string; value:strin
   );
 }
 
-function PriorityOverview() {
+function PriorityOverview({ high, medium, total }: { high:number; medium:number; total:number }) {
+  const highPct = total ? Math.round((high/total)*1000)/10 : 0;
+  const medPct = total ? Math.round((medium/total)*1000)/10 : 0;
+  const highDeg = total ? Math.round((high/total)*360) : 0;
   return (
     <section className="sideCard priorityCard">
       <h3>Priority Overview</h3>
       <div className="priorityContent">
-        <div className="donut">
-          <div className="donutHole"><strong>24</strong><span>Total</span></div>
+        <div className="donut" style={{ background: total ? `conic-gradient(#ff434a 0deg ${highDeg}deg, #f6a42d ${highDeg}deg 360deg)` : "#e4e8ef" }}>
+          <div className="donutHole"><strong>{total}</strong><span>Total</span></div>
         </div>
         <div className="legend">
-          <div><i className="dot redDot"/><span>High Priority</span><b>8 (33%)</b></div>
-          <div><i className="dot orangeDot"/><span>Medium Priority</span><b>10 (42%)</b></div>
-          <div><i className="dot greenDot"/><span>Low Priority</span><b>6 (25%)</b></div>
+          <div><i className="dot redDot"/><span>High Priority</span><b>{high} ({highPct}%)</b></div>
+          <div><i className="dot orangeDot"/><span>Medium Priority</span><b>{medium} ({medPct}%)</b></div>
         </div>
       </div>
     </section>
   );
 }
 
-function ImplementationImpact() {
-  const bars = [["Increase Organic Traffic","15.2K",92],["Improve Rankings","12.8K",68],["Increase Conversions","8.4K",38],["Improve Site Health","90%",0]];
+function IssuePrevalence({ categories }: { categories: SeoIssueCategory[] }) {
+  const top = categories.slice(0, 4);
   return (
     <section className="sideCard impactCard">
-      <h3>Implementation Impact</h3>
-      {bars.map(([label,val,width],i)=>(
-        <div className="impactRow" key={String(label)}>
-          <div className="impactMeta"><span>{label}</span><b>{val}</b></div>
-          <div className={`impactTrack ${i===3 ? "health" : ""}`}><span style={{width: `${width}%`}}/></div>
+      <h3>Most Common Issues</h3>
+      {top.length === 0 ? <div className="scoreLabel">No recurring SEO issues detected.</div> : top.map((c) => (
+        <div className="impactRow" key={c.label}>
+          <div className="impactMeta"><span>{c.label}</span><b>{c.failingPercent != null ? `${c.failingPercent}%` : c.failingCount}</b></div>
+          <div className="impactTrack"><span style={{ width: `${Math.min(100, c.failingPercent ?? 0)}%` }}/></div>
         </div>
       ))}
     </section>
   );
 }
 
-function CategoryCard() {
+function CategoryCard({ categories }: { categories: SeoIssueCategory[] }) {
+  const tones = ["purple","green","orange","blue"];
+  const top = categories.slice(0, 4);
   return (
     <section className="sideCard categoriesCard">
-      <h3>Top Recommendation Categories</h3>
-      {[
-        ["list","On-Page SEO","8","purple"],
-        ["gear","Technical SEO","6","green"],
-        ["link","Backlinks","5","orange"],
-        ["search","Keyword Research","5","blue"],
-      ].map(([ic,name,n,tone])=>(
-        <div className="catRow" key={name}>
-          <span className={`catIcon ${tone}`}><Icon name={ic as IconName} size={15}/></span><span>{name}</span><b>{n}</b>
+      <h3>Top Issue Categories</h3>
+      {top.length === 0 ? <div className="scoreLabel">No issues found — every checked post is clean.</div> : top.map((c, i) => (
+        <div className="catRow" key={c.label}>
+          <span className={`catIcon ${tones[i % tones.length]}`}><Icon name={iconForCategory(c.label)} size={15}/></span><span>{c.label}</span><b>{c.failingCount}</b>
         </div>
       ))}
     </section>
@@ -195,23 +229,52 @@ function CategoryCard() {
 export default function AIRecommendationsPage({ params }: { params: Promise<{ platform: string }> }) {
   const platform = usePlatformParam(params);
   const pathname = usePathname();
+  const audit = useSeoAudit(platform);
   const [tab, setTab] = useState("All Recommendations");
   const [page, setPage] = useState(1);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [toast, setToast] = useState("");
-  const tabs = ["All Recommendations","High Priority","Quick Wins","Long Term","Completed"];
+  const [scoreOverrides, setScoreOverrides] = useState<Record<string, number>>({});
+  const [fixingId, setFixingId] = useState<string | null>(null);
+  const tabs = ["All Recommendations","High Priority","Medium Priority"];
+  const PAGE_SIZE = 8;
+
+  const rows = useMemo<DisplayRow[]>(() => {
+    return audit.needsImprovement
+      .map((p) => (scoreOverrides[p.id] !== undefined ? { ...p, score: scoreOverrides[p.id] } : p))
+      .filter((p) => p.score < audit.maxScore)
+      .map((p) => buildDisplayRow(p, audit.maxScore, audit.topIssue, platform));
+  }, [audit.needsImprovement, audit.maxScore, audit.topIssue, scoreOverrides, platform]);
+
+  const highCount = rows.filter((r) => r.priority === "High").length;
+  const mediumCount = rows.length - highCount;
 
   const filteredRows = useMemo(() => {
     if (tab === "High Priority") return rows.filter(r => r.priority === "High");
-    if (tab === "Quick Wins") return rows.filter(r => r.tags.some(t => t[0] === "Quick Win"));
-    if (tab === "Long Term") return rows.filter(r => r.tags.some(t => t[0] === "Long Term"));
-    if (tab === "Completed") return [];
+    if (tab === "Medium Priority") return rows.filter(r => r.priority === "Medium");
     return rows;
-  }, [tab]);
+  }, [rows, tab]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pagedRows = filteredRows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   function notify(message:string) {
     setToast(message);
     window.setTimeout(()=>setToast(""),2200);
+  }
+
+  async function applyFix(row: DisplayRow) {
+    setFixingId(row.id);
+    try {
+      const newScore = await improveSeoPost(platform, row.id);
+      setScoreOverrides((prev) => ({ ...prev, [row.id]: newScore }));
+      notify(`Applied AI fix to "${row.title}" — new score ${newScore}/${audit.maxScore}`);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Could not apply the AI fix.");
+    } finally {
+      setFixingId(null);
+    }
   }
 
   return (
@@ -257,12 +320,20 @@ export default function AIRecommendationsPage({ params }: { params: Promise<{ pl
           </div>
         </header>
 
+        {audit.error && (
+          <div className="empty" style={{ height:"auto", padding:"14px 18px", border:"1px solid #ffd7da", background:"#fff5f6", borderRadius:10, marginBottom:14, color:"#b3212c", fontSize:12, textAlign:"left" }}>
+            {audit.error}
+            <div style={{ marginTop:6, fontSize:11, color:"#8a3a41" }}>
+              Connect {platformLabel(platform)} on the <Link href="/connect" style={{ color:"#6330eb", fontWeight:650 }}>Connect</Link> page, and make sure its backend is running.
+            </div>
+          </div>
+        )}
+
         <div className="stats">
-          <StatCard title="Total Recommendations" value="24" sub="↑ 8 new this week" icon="wand" tone="purple"/>
-          <StatCard title="High Priority" value="8" sub="Require immediate action" icon="alert" tone="red"/>
-          <StatCard title="Potential Traffic Gain" value="15.2K" sub="Monthly estimated" icon="chart" tone="green"/>
-          <StatCard title="Avg. SEO Impact Score" value="78" sub="High impact overall" icon="target" tone="purple"/>
-          <StatCard title="Completed This Month" value="12" sub="Recommendations" icon="check" tone="blue"/>
+          <StatCard title="Total Recommendations" value={audit.loading ? "…" : String(rows.length)} sub="Posts scoring below the maximum" icon="wand" tone="purple"/>
+          <StatCard title="High Priority" value={audit.loading ? "…" : String(highCount)} sub="More than 3 points below max" icon="alert" tone="red"/>
+          <StatCard title="Avg. SEO Impact Score" value={audit.loading ? "…" : `${audit.averageScore ?? "—"}/${audit.maxScore}`} sub="Live average across checked posts" icon="target" tone="purple"/>
+          <StatCard title="Posts Checked" value={audit.loading ? "…" : String(audit.checkedCount ?? "—")} sub={audit.checkedScopeLabel || "Live count"} icon="check" tone="blue"/>
         </div>
 
         <div className="workspace">
@@ -278,45 +349,55 @@ export default function AIRecommendationsPage({ params }: { params: Promise<{ pl
             </div>
 
             <div className="tableHeader">
-              <div>Recommendation</div><div>Impact</div><div>Effort</div><div>Priority</div><div>Action</div>
+              <div>Recommendation</div><div>SEO Score</div><div>Issues Found</div><div>Priority</div><div>Action</div>
             </div>
 
             <div className="rows">
-              {filteredRows.length === 0 ? <div className="empty">No recommendations in this category.</div> : filteredRows.map((r)=>(
-                <div className="recRow" key={r.title}>
+              {audit.loading ? (
+                <div className="empty">Loading live recommendations…</div>
+              ) : pagedRows.length === 0 ? (
+                <div className="empty">{rows.length === 0 ? "Every checked post is already at the maximum score." : "No recommendations in this category."}</div>
+              ) : pagedRows.map((r)=>(
+                <div className="recRow" key={r.id}>
                   <div className="recommendation">
-                    <div className={`recIcon ${r.tone}`}><Icon name={r.icon} size={24}/></div>
+                    <div className={`recIcon ${r.priority === "High" ? "red" : "orange"}`}><Icon name={iconForCategory(r.tags[0])} size={24}/></div>
                     <div className="recText">
                       <b>{r.title}</b>
                       <p>{r.desc}</p>
-                      <div className="tags">{r.tags.map(([tag,tone])=><span key={tag} className={`tag ${tone}`}>{tag}</span>)}</div>
+                      {r.tags.length > 0 && <div className="tags">{r.tags.map((tag)=><span key={tag} className="tag purple">{tag}</span>)}</div>}
                     </div>
                   </div>
-                  <ScoreRing score={r.score} label={r.scoreLabel}/>
-                  <Effort count={r.effort} label={r.effortLabel}/>
+                  <ScoreRing score={r.score} maxScore={audit.maxScore} label="SEO Score"/>
+                  <IssueCount count={r.issueCount}/>
                   <div><span className={`priority ${r.priority.toLowerCase()}`}>{r.priority}</span></div>
-                  <div className="actionCell"><button className="details" onClick={()=>notify(`Viewing ${r.title}`)}>View Details</button><button className="dots" onClick={()=>notify("More actions")}><Icon name="dots" size={18}/></button></div>
+                  <div className="actionCell">
+                    {r.canFix ? (
+                      <button className="details" disabled={fixingId===r.id} onClick={()=>applyFix(r)}>{fixingId===r.id ? "Applying…" : "Apply AI Fix"}</button>
+                    ) : (
+                      <span className="muted-note">No auto-fix available</span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
 
             <div className="tableFooter">
-              <span>Showing {filteredRows.length ? "1 to 5" : "0 to 0"} of {tab==="All Recommendations" ? "24" : filteredRows.length} recommendations</span>
+              <span>Showing {filteredRows.length === 0 ? 0 : (safePage-1)*PAGE_SIZE+1} to {Math.min(safePage*PAGE_SIZE, filteredRows.length)} of {filteredRows.length} recommendations</span>
               <div className="pagination">
-                <button onClick={()=>setPage(Math.max(1,page-1))}><Icon name="chevron" size={15}/></button>
-                {[1,2,3].map(n=><button key={n} className={page===n ? "page activePage":"page"} onClick={()=>setPage(n)}>{n}</button>)}
-                <span>...</span><button className="page" onClick={()=>setPage(5)}>5</button><button onClick={()=>setPage(Math.min(5,page+1))}><Icon name="chevron" size={15}/></button>
+                <button onClick={()=>setPage(Math.max(1,safePage-1))}><Icon name="chevron" size={15}/></button>
+                {Array.from({length: totalPages}, (_, i) => i + 1).map(n=><button key={n} className={safePage===n ? "page activePage":"page"} onClick={()=>setPage(n)}>{n}</button>)}
+                <button onClick={()=>setPage(Math.min(totalPages,safePage+1))}><Icon name="chevron" size={15}/></button>
               </div>
             </div>
           </section>
 
           <aside className="rightRail">
-            <PriorityOverview/>
-            <ImplementationImpact/>
-            <CategoryCard/>
+            <PriorityOverview high={highCount} medium={mediumCount} total={rows.length}/>
+            <IssuePrevalence categories={audit.issueCategories}/>
+            <CategoryCard categories={audit.issueCategories}/>
             <section className="sideCard insightCard">
               <div className="insightRobot"><Robot small/></div>
-              <div><h3>AI Powered Insights</h3><p>Recommendations are based on your website data, competitor analysis, and latest SEO best practices.</p><button onClick={()=>notify("How it works opened")}>How it works <Icon name="arrow" size={15}/></button></div>
+              <div><h3>AI Powered Insights</h3><p>Recommendations are based on your website's real published content, scored live by the SEO Agent.</p><button onClick={()=>notify("How it works opened")}>How it works <Icon name="arrow" size={15}/></button></div>
             </section>
           </aside>
         </div>
@@ -367,7 +448,7 @@ export default function AIRecommendationsPage({ params }: { params: Promise<{ pl
         .dateButton,.exportButton{height:34px;border:1px solid #dfe4ed;border-radius:6px;background:#fff;color:#283454;font-size:12px;display:flex;align-items:center;justify-content:center;gap:9px;white-space:nowrap;padding:0 13px;cursor:pointer}
         .dateButton{width:220px}
         .exportButton{width:179px;background:linear-gradient(90deg,#6230ee,#7732ef);border-color:#6230ee;color:#fff;box-shadow:0 4px 10px rgba(102,47,236,.12)}
-        .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:18px}
+        .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:18px}
         .statCard{height:110px;border:1px solid #edf0f5;border-radius:9px;background:#fff;box-shadow:0 3px 14px rgba(35,45,80,.055);padding:18px 15px;display:flex;justify-content:space-between}
         .statTitle{font-size:11px;font-weight:650;color:#17203d}
         .statValue{font-size:25px;font-weight:750;line-height:34px;color:#101633}
@@ -412,6 +493,8 @@ export default function AIRecommendationsPage({ params }: { params: Promise<{ pl
         .priority.high{color:#f23d4b;background:#fff0f1;border:1px solid #ffd7da}.priority.medium{color:#ee9419;background:#fff7e8;border:1px solid #ffe1b0}
         .actionCell{display:flex;align-items:center;justify-content:center;gap:7px}
         .details{height:28px;border:1px solid #bca8ff;border-radius:5px;background:#fff;color:#6430ed;font-size:10px;padding:0 11px;cursor:pointer;white-space:nowrap}
+        .details:disabled{opacity:.6;cursor:default}
+        .muted-note{font-size:10px;color:#8a93ab;white-space:nowrap}
         .dots{border:0;background:#fff;color:#6b7590;padding:3px;cursor:pointer}
         .empty{height:509px;display:flex;align-items:center;justify-content:center;color:#6b7590;font-size:12px}
         .tableFooter{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 17px 0 20px;color:#384465;font-size:10px}

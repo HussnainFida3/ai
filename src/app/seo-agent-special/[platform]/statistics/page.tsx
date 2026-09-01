@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { usePlatformParam, platformLabel } from "@/lib/agent-data";
+import { usePlatformParam, platformLabel, useSeoAudit, improveSeoPost, type SeoPostRow } from "@/lib/agent-data";
 
 /**
  * ShadiLife.com — Statistics dashboard clone
@@ -80,13 +80,6 @@ const Sparkline = ({
   </svg>
 );
 
-const MiniTrend = ({ kind = "purple" }: { kind?: "purple" | "green" }) => (
-  <svg viewBox="0 0 185 62" className={`mini-trend ${kind}`}>
-    <path d="M0 49 C18 48 18 43 31 46 C44 49 45 37 58 40 C70 44 72 29 84 35 C96 41 99 25 111 32 C122 39 123 23 136 29 C149 35 153 18 163 25 C171 31 176 17 185 7 L185 62 L0 62 Z" className="mini-area"/>
-    <path d="M0 49 C18 48 18 43 31 46 C44 49 45 37 58 40 C70 44 72 29 84 35 C96 41 99 25 111 32 C122 39 123 23 136 29 C149 35 153 18 163 25 C171 31 176 17 185 7" className="mini-line"/>
-  </svg>
-);
-
 const Donut = ({
   segments,
   center,
@@ -106,52 +99,23 @@ const Donut = ({
   </div>
 );
 
-const BarChart = () => {
-  const values = [36, 39, 41, 46, 48, 47, 52, 57, 55, 51, 52, 54, 58, 60, 65, 70, 77, 69, 64, 68, 70, 70, 73, 80, 86, 84, 87, 88, 93, 98];
-  const keywords = [23, 25, 27, 31, 33, 32, 35, 38, 44, 42, 39, 40, 44, 47, 50, 57, 64, 57, 53, 56, 60, 59, 61, 67, 72, 71, 75, 78, 80, 84];
+/** Real per-post score chart — one bar per scored post, sorted worst-first, height = score/maxScore. Replaces the fake "Organic Traffic" line chart with something the SEO Agent can actually back up. */
+const ScoreBarChart = ({ posts, maxScore }: { posts: SeoPostRow[]; maxScore: number }) => {
+  if (posts.length === 0) {
+    return <div className="score-bars-empty">No scored posts yet.</div>;
+  }
+  const sorted = [...posts].sort((a, b) => a.score - b.score);
   return (
-    <div className="traffic-chart">
-      <div className="chart-y left"><span>200K</span><span>150K</span><span>100K</span><span>50K</span><span>0</span></div>
-      <div className="chart-y right"><span>8K</span><span>6K</span><span>4K</span><span>2K</span><span>0</span></div>
-      <div className="grid-lines">{[0,1,2,3,4].map(i=><i key={i}/>)}</div>
-      <svg viewBox="0 0 720 205" preserveAspectRatio="none" className="traffic-svg">
-        <defs>
-          <linearGradient id="trafficFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#6940f6" stopOpacity=".20"/>
-            <stop offset="100%" stopColor="#6940f6" stopOpacity=".03"/>
-          </linearGradient>
-          <linearGradient id="keywordFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#18b77a" stopOpacity=".16"/>
-            <stop offset="100%" stopColor="#18b77a" stopOpacity=".03"/>
-          </linearGradient>
-        </defs>
-        <path d={`M0 112 ${values.map((v,i)=>`L${i*24.8} ${190-v*1.58}`).join(" ")} L720 205 L0 205 Z`} fill="url(#trafficFill)"/>
-        <polyline points={values.map((v,i)=>`${i*24.8},${190-v*1.58}`).join(" ")} fill="none" stroke="#6741f5" strokeWidth="2.4"/>
-        <path d={`M0 163 ${keywords.map((v,i)=>`L${i*24.8} ${190-v*1.32}`).join(" ")} L720 205 L0 205 Z`} fill="url(#keywordFill)"/>
-        <polyline points={keywords.map((v,i)=>`${i*24.8},${190-v*1.32}`).join(" ")} fill="none" stroke="#12b878" strokeWidth="2"/>
-        {values.map((v,i)=><circle key={`p${i}`} cx={i*24.8} cy={190-v*1.58} r="2.2" fill="#6741f5"/>)}
-      </svg>
-      <div className="chart-x"><span>May 22</span><span>May 26</span><span>May 30</span><span>Jun 3</span><span>Jun 7</span><span>Jun 11</span><span>Jun 15</span><span>Jun 19</span><span>Jun 22</span></div>
-    </div>
-  );
-};
-
-const RankingBars = () => {
-  const bars = [74,78,80,83,76,88,85,90,87,91,93,95,97,96,94,100,99];
-  return (
-    <div className="ranking-chart">
-      <div className="ranking-y"><span>7K</span><span>6K</span><span>5K</span><span>4K</span><span>3K</span><span>2K</span><span>1K</span><span>0</span></div>
-      <div className="ranking-bars">
-        {bars.map((h,i)=>(
-          <div className="stack" key={i}>
-            <i style={{height:`${h*.20}%`}} className="s1"/>
-            <i style={{height:`${h*.28}%`}} className="s2"/>
-            <i style={{height:`${h*.29}%`}} className="s3"/>
-            <i style={{height:`${h*.13}%`}} className="s4"/>
+    <div className="score-bars">
+      {sorted.map((p) => {
+        const pct = Math.max(3, Math.round((p.score / maxScore) * 100));
+        const tone = p.score >= maxScore - 1 ? "good" : p.score >= maxScore - 3 ? "warn" : "bad";
+        return (
+          <div className="score-bar-col" key={p.id} title={`${p.title}: ${p.score}/${maxScore}`}>
+            <div className={`score-bar-fill ${tone}`} style={{ height: `${pct}%` }} />
           </div>
-        ))}
-      </div>
-      <div className="ranking-x"><span>May 22</span><span>May 30</span><span>Jun 7</span><span>Jun 15</span><span>Jun 22</span></div>
+        );
+      })}
     </div>
   );
 };
@@ -176,10 +140,12 @@ const NavItem = ({
 export default function StatisticsPage({ params }: { params: Promise<{ platform: string }> }) {
   const platform = usePlatformParam(params);
   const pathname = usePathname();
+  const audit = useSeoAudit(platform);
   const [range, setRange] = React.useState("May 22, 2025  -  Jun 22, 2025");
   const [showRange, setShowRange] = React.useState(false);
   const [notice, setNotice] = React.useState("");
-  const [report, setReport] = React.useState(false);
+  const [scoreOverrides, setScoreOverrides] = React.useState<Record<string, number>>({});
+  const [fixingId, setFixingId] = React.useState<string | null>(null);
 
   const nav: Array<[string, string, string]> = [
     ["dashboard", "Overview", "overview"],
@@ -194,17 +160,75 @@ export default function StatisticsPage({ params }: { params: Promise<{ platform:
     window.setTimeout(() => setNotice(""), 2300);
   };
 
+  const posts = React.useMemo(
+    () => audit.posts.map((p) => (scoreOverrides[p.id] !== undefined ? { ...p, score: scoreOverrides[p.id] } : p)),
+    [audit.posts, scoreOverrides],
+  );
+  const needsAttention = React.useMemo(
+    () => posts.filter((p) => p.score < audit.maxScore).sort((a, b) => a.score - b.score),
+    [posts, audit.maxScore],
+  );
+  const healthPct = audit.averageScore == null ? null : Math.round((audit.averageScore / audit.maxScore) * 100);
+
+  const buckets = React.useMemo(() => {
+    let b9 = 0, b7 = 0, b5 = 0, bLow = 0;
+    for (const p of posts) {
+      if (p.score >= 9) b9++;
+      else if (p.score >= 7) b7++;
+      else if (p.score >= 5) b5++;
+      else bLow++;
+    }
+    return { b9, b7, b5, bLow, total: posts.length };
+  }, [posts]);
+  const bucketPct = (n: number) => (buckets.total ? Math.round((n / buckets.total) * 1000) / 10 : 0);
+  const distSegments = React.useMemo(() => {
+    if (!buckets.total) return "#e4e8ef 0% 100%";
+    const parts: string[] = [];
+    let acc = 0;
+    const push = (n: number, color: string) => {
+      const start = acc;
+      acc += (n / buckets.total) * 100;
+      parts.push(`${color} ${start}% ${acc}%`);
+    };
+    push(buckets.b9, "#15b77b");
+    push(buckets.b7, "#3e82e7");
+    push(buckets.b5, "#f4a52b");
+    push(buckets.bLow, "#ed626c");
+    return parts.join(", ");
+  }, [buckets]);
+
+  async function applyFix(row: SeoPostRow) {
+    setFixingId(row.id);
+    try {
+      const newScore = await improveSeoPost(platform, row.id);
+      setScoreOverrides((prev) => ({ ...prev, [row.id]: newScore }));
+      toast(`Applied AI fix to "${row.title}" — new score ${newScore}/${audit.maxScore}`);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Could not apply the AI fix.");
+    } finally {
+      setFixingId(null);
+    }
+  }
+
   const exportReport = () => {
-    const blob = new Blob(
-      ["ShadiLife.com SEO Statistics Report\n\nOrganic Sessions: 128.6K\nTotal Keywords: 5,842\nTop 3 Rankings: 1,256\nSEO Score: 87/100\nConversions: 2,845"],
-      {type:"text/plain"}
-    );
+    const lines = [
+      `${platformLabel(platform)}.com SEO Statistics Report`,
+      "",
+      `SEO Score: ${audit.averageScore ?? "—"} / ${audit.maxScore}`,
+      `Posts Checked: ${audit.checkedCount ?? "—"} (${audit.checkedScopeLabel || "live scope"})`,
+      `Needs Improvement: ${needsAttention.length}`,
+      `Most Common Issue: ${audit.topIssue ? `${audit.topIssue.label} (${audit.topIssue.failingPercent ?? "—"}% of checked posts)` : "None detected"}`,
+      "",
+      "Posts needing attention:",
+      ...(needsAttention.length ? needsAttention.map((p) => `- ${p.title}: ${p.score}/${audit.maxScore}`) : ["- None — every checked post is at the maximum score."]),
+    ];
+    const blob = new Blob([lines.join("\n")], { type: "text/plain" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "shadilife-seo-report.txt";
+    a.download = `${platform}-seo-report.txt`;
     a.click();
     URL.revokeObjectURL(a.href);
-    toast("Report exported successfully");
+    toast(audit.loading ? "Report exported (live data still loading)" : "Report exported successfully");
   };
 
   return (
@@ -257,7 +281,7 @@ export default function StatisticsPage({ params }: { params: Promise<{ platform:
         .date-menu button{display:block;width:100%;border:0;background:#fff;text-align:left;padding:9px 10px;border-radius:5px;font-size:12px;color:#37415f;cursor:pointer}
         .date-menu button:hover{background:#f5f1ff;color:#6034ea}
         .content{padding:0 21px 20px 27px}
-        .metric-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:10px}
+        .metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px}
         .card{background:#fff;border:1px solid #eef0f5;border-radius:11px;box-shadow:0 2px 9px rgba(25,34,75,.035)}
         .metric{height:149px;padding:15px 14px 8px;position:relative;overflow:hidden}
         .metric-top{display:flex;align-items:flex-start;gap:12px}
@@ -271,17 +295,24 @@ export default function StatisticsPage({ params }: { params: Promise<{ platform:
         .sparkline{width:100%;height:37px;display:block}.spark-line{fill:none;stroke:#6a3ff5;stroke-width:2}.spark-fill{fill:url(#x)}
         .score-card{display:flex;flex-direction:column}
         .score-content{display:flex;align-items:center;gap:10px;margin-top:3px}
-        .score-ring{width:71px;height:71px;border-radius:50%;background:conic-gradient(#6741ef 0 61%,#238ee7 61% 77%,#10b878 77% 87%,#e9edf2 87% 100%);position:relative;display:grid;place-items:center}
+        .score-ring{width:71px;height:71px;border-radius:50%;background:#e9edf2;position:relative;display:grid;place-items:center}
         .score-ring:after{content:"";position:absolute;inset:7px;border-radius:50%;background:#fff}
         .score-number{position:relative;z-index:1;text-align:center}.score-number strong{display:block;font-size:20px}.score-number span{font-size:8px;color:#7b849e}
         .excellent{font-size:11px;color:#08a96b;font-weight:650;margin-bottom:4px}.points{font-size:9px;color:#06a76c}.score-sub{font-size:8.5px;color:#6d7691;margin-top:4px}
-        .row1{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(350px,1.1fr);gap:10px;margin-bottom:10px}
+        .row1{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:10px}
         .traffic-card{height:275px;padding:17px 25px 12px}
         .card-head{display:flex;justify-content:space-between;align-items:center}
         .card-title{font-size:12.5px;font-weight:750;color:#11162d}
         .select{height:26px;min-width:95px;border:1px solid #e1e4ed;border-radius:5px;background:#fff;font-size:10px;color:#2e3856;padding:0 8px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
         .legend{display:flex;align-items:center;gap:23px;margin:15px 0 6px 16px;font-size:10px;color:#4e5879}
         .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:7px}.dot.p{background:#6741ef}.dot.g{background:#14b77b}.dot.b{background:#3288ed}.dot.o{background:#f4a528}.dot.r{background:#ee636e}
+        .score-bars{height:197px;display:flex;align-items:flex-end;gap:3px;padding:4px 4px 0;overflow-x:auto}
+        .score-bar-col{flex:1 1 6px;max-width:26px;height:100%;display:flex;align-items:flex-end}
+        .score-bar-fill{width:100%;border-radius:3px 3px 0 0;background:#f4a528}
+        .score-bar-fill.good{background:#14b77b}
+        .score-bar-fill.warn{background:#f4a528}
+        .score-bar-fill.bad{background:#ee636e}
+        .score-bars-empty{height:197px;display:flex;align-items:center;justify-content:center;color:#7c8495;font-size:12px}
         .traffic-chart{height:197px;position:relative;padding-left:43px;padding-right:38px}
         .chart-y{position:absolute;top:7px;bottom:25px;display:flex;flex-direction:column;justify-content:space-between;font-size:9px;color:#4e5a7e}.chart-y.left{left:0}.chart-y.right{right:0;text-align:left}
         .grid-lines{position:absolute;left:43px;right:38px;top:7px;bottom:25px;display:flex;flex-direction:column;justify-content:space-between}.grid-lines i{height:1px;background:#edf0f5;width:100%}
@@ -291,7 +322,7 @@ export default function StatisticsPage({ params }: { params: Promise<{ platform:
         .channel-body{display:flex;align-items:center;gap:15px;height:195px}
         .channel-list{flex:1;display:flex;flex-direction:column;gap:13px;margin-top:1px}.channel-row{display:grid;grid-template-columns:10px 1fr 34px 40px;gap:8px;align-items:center;font-size:10px;color:#46506e}.channel-row .pct{text-align:right}.channel-row .num{text-align:right;color:#18203b}
         .channel-link,.view-link{font-size:9.5px;color:#6032ee;text-decoration:none;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-        .row2{display:grid;grid-template-columns:1.05fr 1.12fr 1.22fr;gap:10px;margin-bottom:10px}
+        .row2{display:grid;grid-template-columns:1fr 1.6fr;gap:10px;margin-bottom:10px}
         .small-card{height:226px;padding:17px 17px 12px}
         .distribution{display:flex;align-items:center;height:157px;gap:18px}
         .donut-wrap{width:145px;height:145px;display:grid;place-items:center;flex:0 0 auto}
@@ -299,16 +330,17 @@ export default function StatisticsPage({ params }: { params: Promise<{ platform:
         .donut-hole{width:89px;height:89px;background:#fff;border-radius:50%;display:grid;place-items:center;align-content:center;text-align:center}.donut-hole strong{font-size:16px;letter-spacing:-.4px}.donut-hole span{font-size:8px;color:#65708e;margin-top:2px}
         .dist-legend{display:flex;flex-direction:column;gap:13px;font-size:9.5px;color:#4c5675;min-width:135px}.dist-row{display:grid;grid-template-columns:10px 1fr 36px 38px;gap:6px;align-items:center}.dist-row b{font-weight:500}.dist-row .pct{text-align:right}.dist-row .val{text-align:right;color:#252e4a}
         .ranking-card{padding-left:19px}.ranking-card .legend{margin-left:0;margin-top:14px;gap:18px}.ranking-chart{height:156px;position:relative;margin-top:0;padding-left:29px;padding-bottom:19px}.ranking-y{position:absolute;left:0;top:4px;bottom:23px;display:flex;flex-direction:column;justify-content:space-between;font-size:8px;color:#64708e}.ranking-bars{position:absolute;left:29px;right:4px;bottom:23px;top:4px;display:flex;gap:6px;align-items:flex-end;border-top:1px solid #eef0f5;background:repeating-linear-gradient(to bottom,transparent 0,transparent 20px,#eef0f5 21px)}.stack{width:15px;display:flex;flex-direction:column-reverse;justify-content:flex-start;height:100%;align-items:stretch}.stack i{display:block;width:100%}.s1{background:#16b77a}.s2{background:#4385e8}.s3{background:#f3a52a}.s4{background:#ed6670}.ranking-x{position:absolute;left:29px;right:4px;bottom:0;display:flex;justify-content:space-between;font-size:8px;color:#65708e}
-        .pages-card{padding:17px 13px 11px}.view-all{height:25px;padding:0 10px;border:1px solid #d8cfff;background:#fff;border-radius:5px;color:#6332ee;font-size:9px;cursor:pointer}.pages-table{width:100%;border-collapse:collapse;margin-top:15px}.pages-table th{text-align:left;color:#53607f;font-size:8.5px;font-weight:500;border-bottom:1px solid #e9ebf1;padding:0 0 8px}.pages-table th:nth-child(2),.pages-table th:nth-child(3){text-align:right}.pages-table td{height:28px;border-bottom:1px solid #eef0f4;font-size:9.5px;color:#18203c}.pages-table td:nth-child(2),.pages-table td:nth-child(3){text-align:right}.up{color:#0bae70;font-size:9px;margin-left:6px}
-        .row3{display:grid;grid-template-columns:1.05fr 1.12fr 1.22fr;gap:10px}
-        .health-card,.backlink-card,.countries-card{height:226px;padding:17px}
-        .health-body{display:flex;align-items:center;gap:14px;height:153px}.health-ring{width:83px;height:83px;border-radius:50%;background:conic-gradient(#16b77b 0 76%,#cbd0d7 76% 100%);display:grid;place-items:center;flex:0 0 auto;position:relative}.health-ring:after{content:"";position:absolute;inset:7px;border-radius:50%;background:#fff}.health-score{position:relative;z-index:1;text-align:center}.health-score strong{display:block;font-size:22px}.health-score span{font-size:8px;color:#68718b}.health-copy{min-width:0}.health-excellent{font-size:10px;color:#08a96c;font-weight:650}.health-note{font-size:8.5px;color:#56617f;line-height:14px;margin:4px 0 9px}.health-items{display:grid;grid-template-columns:1fr auto;gap:7px 10px;font-size:8px;color:#485370}.good{color:#09aa6e}.status-icon{display:inline-grid;place-items:center;width:12px;height:12px;border-radius:3px;margin-right:5px;color:#13b77b}.backlink-body{height:157px;display:flex;align-items:center;gap:10px}.backlink-stats{width:158px}.stat-label{font-size:8.5px;color:#65708c;margin-top:9px}.stat-value{font-size:15px;font-weight:750;margin-top:3px}.stat-growth{font-size:8.5px;color:#0aaa6b;margin-left:6px}.backlink-chart{height:118px;flex:1;border-left:1px solid #eef0f4;border-bottom:1px solid #eef0f4;position:relative;background:repeating-linear-gradient(to bottom,transparent 0,transparent 28px,#eef0f4 29px)}.backlink-chart svg{width:100%;height:100%}.backlink-chart .area{fill:#6741ef;opacity:.12}.backlink-chart .line{fill:none;stroke:#6741ef;stroke-width:2}
+        .pages-card{padding:17px 13px 11px}.view-all{height:25px;padding:0 10px;border:1px solid #d8cfff;background:#fff;border-radius:5px;color:#6332ee;font-size:9px;cursor:pointer}.pages-table{width:100%;border-collapse:collapse;margin-top:15px}.pages-table th{text-align:left;color:#53607f;font-size:8.5px;font-weight:500;border-bottom:1px solid #e9ebf1;padding:0 0 8px}.pages-table th:nth-child(2),.pages-table th:nth-child(3){text-align:right}.pages-table td{height:38px;border-bottom:1px solid #eef0f4;font-size:9.5px;color:#18203c;vertical-align:middle}.pages-table td:nth-child(2),.pages-table td:nth-child(3){text-align:right}.up{color:#0bae70;font-size:9px;margin-left:6px}
+        .mini-fix-btn{height:22px;padding:0 10px;border:1px solid #d8cfff;background:#fff;border-radius:5px;color:#6332ee;font-size:9px;cursor:pointer}.mini-fix-btn:disabled{opacity:.6;cursor:default}
+        .row3{display:grid;grid-template-columns:1fr;gap:10px}
+        .health-card{height:226px;padding:17px}
+        .health-body{display:flex;align-items:center;gap:14px;height:153px}.health-ring{width:83px;height:83px;border-radius:50%;background:#e9edf2;display:grid;place-items:center;flex:0 0 auto;position:relative}.health-ring:after{content:"";position:absolute;inset:7px;border-radius:50%;background:#fff}.health-score{position:relative;z-index:1;text-align:center}.health-score strong{display:block;font-size:22px}.health-score span{font-size:8px;color:#68718b}.health-copy{min-width:0}.health-excellent{font-size:10px;color:#08a96c;font-weight:650}.health-note{font-size:8.5px;color:#56617f;line-height:14px;margin:4px 0 9px}.health-items{display:grid;grid-template-columns:1fr auto;gap:7px 10px;font-size:8px;color:#485370}.good{color:#09aa6e}.warn{color:#d98a12}.bad{color:#e14a4a}.status-icon{display:inline-grid;place-items:center;width:12px;height:12px;border-radius:3px;margin-right:5px;color:#13b77b}.backlink-body{height:157px;display:flex;align-items:center;gap:10px}.backlink-stats{width:158px}.stat-label{font-size:8.5px;color:#65708c;margin-top:9px}.stat-value{font-size:15px;font-weight:750;margin-top:3px}.stat-growth{font-size:8.5px;color:#0aaa6b;margin-left:6px}.backlink-chart{height:118px;flex:1;border-left:1px solid #eef0f4;border-bottom:1px solid #eef0f4;position:relative;background:repeating-linear-gradient(to bottom,transparent 0,transparent 28px,#eef0f4 29px)}.backlink-chart svg{width:100%;height:100%}.backlink-chart .area{fill:#6741ef;opacity:.12}.backlink-chart .line{fill:none;stroke:#6741ef;stroke-width:2}
         .country-list{margin-top:13px;display:flex;flex-direction:column;gap:11px}.country-row{display:grid;grid-template-columns:16px 1fr 40px 160px 34px;gap:6px;align-items:center;font-size:9px;color:#35405e}.flag{font-size:15px}.country-number{text-align:right;color:#17203c}.progress{height:5px;background:#eceef3;border-radius:8px;overflow:hidden}.progress i{display:block;height:100%;background:linear-gradient(90deg,#6a3bf0,#8864f4);border-radius:8px}.country-pct{text-align:right;color:#596481}
         .bottom-link{margin-top:4px}
         .toast{position:fixed;right:25px;bottom:25px;background:#161b35;color:#fff;padding:11px 16px;border-radius:8px;font-size:12px;box-shadow:0 15px 35px rgba(20,24,50,.22);z-index:50;animation:toastIn .25s ease-out}
         @keyframes toastIn{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
         @media(max-width:1100px){
-          .sidebar{width:205px}.main{margin-left:205px;width:calc(100% - 205px)}.nav-item{width:173px}.metric-grid{grid-template-columns:repeat(3,1fr)}.row1{grid-template-columns:1fr}.row2,.row3{grid-template-columns:1fr 1fr}.country-row{grid-template-columns:16px 1fr 40px minmax(100px,160px) 34px}
+          .sidebar{width:205px}.main{margin-left:205px;width:calc(100% - 205px)}.nav-item{width:173px}.metric-grid{grid-template-columns:repeat(2,1fr)}.row1{grid-template-columns:1fr}.row2{grid-template-columns:1fr 1fr}.row3{grid-template-columns:1fr}.country-row{grid-template-columns:16px 1fr 40px minmax(100px,160px) 34px}
         }
         @media(max-width:760px){
           .seo-app{min-height:100vh}.sidebar{position:relative;width:0;overflow:hidden;border:0}.main{margin-left:0;width:100%}.topbar{padding-left:16px}.toolbar{padding-left:16px}.content{padding-left:12px;padding-right:12px}.metric-grid,.row2,.row3{grid-template-columns:1fr}.topbar{height:auto;padding-top:18px;padding-bottom:8px;align-items:flex-start}.heading p{max-width:260px}.profile{display:none}.toolbar{height:auto;justify-content:flex-start;padding-bottom:12px;overflow:auto}.date-btn{min-width:250px}.export{min-width:130px}.row1{grid-template-columns:1fr}.traffic-card,.channel-card,.small-card,.health-card,.backlink-card,.countries-card{height:auto;min-height:225px}.metric{height:149px}
@@ -379,83 +411,83 @@ export default function StatisticsPage({ params }: { params: Promise<{ platform:
 
         <section className="content">
           <div className="metric-grid">
-            <div className="card metric">
-              <div className="metric-top"><div className="metric-icon purple"><Icon name="users2" size={21}/></div><div><div className="metric-label">Organic Sessions</div><div className="metric-value">128.6K <span className="growth">↑ 28.5%</span></div></div></div>
-              <div className="metric-sub">vs Apr 22 - May 21, 2025</div>
-              <div className="metric-chart"><MiniTrend/></div>
-            </div>
-            <div className="card metric">
-              <div className="metric-top"><div className="metric-icon blue"><Icon name="search" size={21}/></div><div><div className="metric-label">Total Keywords</div><div className="metric-value">5,842 <span className="growth">↑ 15.3%</span></div></div></div>
-              <div className="metric-sub">vs Apr 22 - May 21, 2025</div>
-              <div className="metric-chart"><MiniTrend/></div>
-            </div>
-            <div className="card metric">
-              <div className="metric-top"><div className="metric-icon green"><Icon name="trophy" size={21}/></div><div><div className="metric-label">Top 3 Rankings</div><div className="metric-value">1,256 <span className="growth">↑ 22.1%</span></div></div></div>
-              <div className="metric-sub">vs Apr 22 - May 21, 2025</div>
-              <div className="metric-chart"><MiniTrend kind="green"/></div>
-            </div>
             <div className="card metric score-card">
               <div className="metric-top"><div className="metric-icon purple"><Icon name="target" size={21}/></div><div><div className="metric-label">SEO Score</div></div></div>
-              <div className="score-content"><div className="score-ring"><div className="score-number"><strong>87</strong><span>/100</span></div></div><div><div className="excellent">Excellent</div><div className="points">↑ 12 pts</div><div className="score-sub">vs last 30 days</div></div></div>
+              <div className="score-content">
+                <div
+                  className="score-ring"
+                  style={
+                    healthPct == null
+                      ? { background: "#e9edf2" }
+                      : { background: `conic-gradient(#6741ef 0deg ${Math.round((healthPct / 100) * 360)}deg, #e9edf2 ${Math.round((healthPct / 100) * 360)}deg 360deg)` }
+                  }
+                >
+                  <div className="score-number"><strong>{audit.loading ? "…" : (audit.averageScore ?? "—")}</strong><span>/{audit.maxScore}</span></div>
+                </div>
+                <div>
+                  <div className="excellent">{healthPct == null ? "—" : healthPct >= 80 ? "Excellent" : healthPct >= 60 ? "Good" : "Needs work"}</div>
+                  <div className="score-sub">Real, live average across {audit.checkedScopeLabel || "checked posts"}</div>
+                </div>
+              </div>
             </div>
             <div className="card metric">
-              <div className="metric-top"><div className="metric-icon orange"><Icon name="cart" size={21}/></div><div><div className="metric-label">Conversions</div><div className="metric-value">2,845 <span className="growth">↑ 31.7%</span></div></div></div>
-              <div className="metric-sub">vs Apr 22 - May 21, 2025</div>
-              <div className="metric-chart"><MiniTrend/></div>
+              <div className="metric-top"><div className="metric-icon blue"><Icon name="report" size={21}/></div><div><div className="metric-label">Published Posts</div><div className="metric-value">{audit.loading ? "…" : (audit.checkedCount ?? "—")}</div></div></div>
+              <div className="metric-sub">{audit.error ? `Live data unavailable: ${audit.error}` : audit.checkedScopeLabel ? `Real count — ${audit.checkedScopeLabel}` : "Real, live count"}</div>
+            </div>
+            <div className="card metric">
+              <div className="metric-top"><div className="metric-icon orange"><Icon name="tasks" size={21}/></div><div><div className="metric-label">Needs Improvement</div><div className="metric-value">{audit.loading ? "…" : needsAttention.length}</div></div></div>
+              <div className="metric-sub">Posts scoring below {audit.maxScore}</div>
+            </div>
+            <div className="card metric">
+              <div className="metric-top"><div className="metric-icon green"><Icon name="search" size={21}/></div><div><div className="metric-label">Most Common Issue</div></div></div>
+              <div className="metric-sub" style={{ margin: "10px 0 0 54px", fontSize: 12.5, color: "#10142a", fontWeight: 650, lineHeight: "17px" }}>
+                {audit.loading ? "…" : audit.topIssue ? audit.topIssue.label : "None detected"}
+              </div>
+              {!audit.loading && audit.topIssue && (
+                <div className="metric-sub" style={{ margin: "4px 0 0 54px" }}>{`Failing on ${audit.topIssue.failingPercent ?? "—"}% of checked posts`}</div>
+              )}
             </div>
           </div>
 
           <div className="row1">
             <div className="card traffic-card">
-              <div className="card-head"><div className="card-title">Organic Traffic Overview</div><button className="select" onClick={()=>toast("Showing Last 30 Days")}>Last 30 Days <Icon name="chevron" size={11}/></button></div>
-              <div className="legend"><span><i className="dot p"/>Organic Traffic</span><span><i className="dot g"/>Organic Keywords</span></div>
-              <BarChart/>
-            </div>
-
-            <div className="card channel-card">
-              <div className="card-title">Traffic by Channel</div>
-              <div className="channel-body">
-                <Donut center="128.6K" segments="#6741ef 0 76.2%, #3988ed 76.2% 88.7%, #12b77b 88.7% 95%, #f3a52b 95% 98.1%, #aeb4be 98.1% 100%"/>
-                <div className="channel-list">
-                  <div className="channel-row"><i className="dot p"/><span>Organic Search</span><span className="pct">76.2%</span><span className="num">98.1K</span></div>
-                  <div className="channel-row"><i className="dot b"/><span>Direct</span><span className="pct">12.5%</span><span className="num">16.1K</span></div>
-                  <div className="channel-row"><i className="dot g"/><span>Referral</span><span className="pct">6.3%</span><span className="num">8.1K</span></div>
-                  <div className="channel-row"><i className="dot o"/><span>Social Media</span><span className="pct">3.1%</span><span className="num">4.0K</span></div>
-                  <div className="channel-row"><i className="dot" style={{background:"#adb2bc"}}/><span>Others</span><span className="pct">1.9%</span><span className="num">2.3K</span></div>
-                </div>
-              </div>
-              <a className="channel-link" onClick={()=>toast("Full traffic report opened")}>View full report <Icon name="arrow" size={12}/></a>
+              <div className="card-head"><div className="card-title">Post Scores Overview</div></div>
+              <div className="legend"><span><i className="dot g"/>Healthy (≥ {(audit.maxScore - 1).toFixed(1)})</span><span><i className="dot o"/>Needs work</span><span><i className="dot r"/>Low (&lt; {(audit.maxScore - 3).toFixed(1)})</span></div>
+              <ScoreBarChart posts={posts} maxScore={audit.maxScore}/>
             </div>
           </div>
 
           <div className="row2">
             <div className="card small-card">
-              <div className="card-title">Keyword Position Distribution</div>
+              <div className="card-title">Score Distribution</div>
               <div className="distribution">
-                <Donut center="5,842" segments="#15b77b 0 21.5%, #3e82e7 21.5% 58%, #f4a52b 58% 91.2%, #ed626c 91.2% 100%"/>
+                <Donut center={String(buckets.total)} segments={distSegments}/>
                 <div className="dist-legend">
-                  <div className="dist-row"><i className="dot g"/><b>Top 3</b><span className="val">1,256</span><span className="pct">(21.5%)</span></div>
-                  <div className="dist-row"><i className="dot b"/><b>4 - 10</b><span className="val">2,134</span><span className="pct">(36.5%)</span></div>
-                  <div className="dist-row"><i className="dot o"/><b>11 - 50</b><span className="val">1,942</span><span className="pct">(33.2%)</span></div>
-                  <div className="dist-row"><i className="dot r"/><b>51 - 100</b><span className="val">510</span><span className="pct">(8.8%)</span></div>
+                  <div className="dist-row"><i className="dot g"/><b>9+</b><span className="val">{buckets.b9}</span><span className="pct">({bucketPct(buckets.b9)}%)</span></div>
+                  <div className="dist-row"><i className="dot b"/><b>7 – 8.9</b><span className="val">{buckets.b7}</span><span className="pct">({bucketPct(buckets.b7)}%)</span></div>
+                  <div className="dist-row"><i className="dot o"/><b>5 – 6.9</b><span className="val">{buckets.b5}</span><span className="pct">({bucketPct(buckets.b5)}%)</span></div>
+                  <div className="dist-row"><i className="dot r"/><b>Below 5</b><span className="val">{buckets.bLow}</span><span className="pct">({bucketPct(buckets.bLow)}%)</span></div>
                 </div>
               </div>
-              <a className="view-link" onClick={()=>toast("Keyword distribution report opened")}>View full report <Icon name="arrow" size={12}/></a>
-            </div>
-
-            <div className="card small-card ranking-card">
-              <div className="card-head"><div className="card-title">Rankings Over Time</div><button className="select" onClick={()=>toast("Showing Last 30 Days")}>Last 30 Days <Icon name="chevron" size={11}/></button></div>
-              <div className="legend"><span><i className="dot g"/>Top 3</span><span><i className="dot b"/>4-10</span><span><i className="dot o"/>11-50</span><span><i className="dot r"/>51-100</span></div>
-              <RankingBars/>
-              <a className="view-link" onClick={()=>toast("Rankings report opened")}>View full report <Icon name="arrow" size={12}/></a>
+              <a className="view-link" onClick={()=>toast("Real distribution of every checked post's live SEO score")}>How this is built <Icon name="arrow" size={12}/></a>
             </div>
 
             <div className="card small-card pages-card">
-              <div className="card-head"><div className="card-title">Top Performing Pages</div><button className="view-all" onClick={()=>toast("All pages opened")}>View All</button></div>
+              <div className="card-head"><div className="card-title">Posts Needing Attention</div><button className="view-all" onClick={()=>toast(`${needsAttention.length} post(s) below ${audit.maxScore}`)}>View All</button></div>
               <table className="pages-table">
-                <thead><tr><th>Page</th><th>Sessions</th><th>Change</th></tr></thead>
+                <thead><tr><th>Post</th><th>Score</th><th>Action</th></tr></thead>
                 <tbody>
-                  {[["/","12.4K","3"],["/rishta","8.9K","5"],["/search","7.2K","2"],["/success-stories","5.6K","4"],["/membership","4.3K","6"]].map(r=><tr key={r[0]}><td>{r[0]}</td><td>{r[1]}</td><td><span className="up">↑ {r[2]}</span></td></tr>)}
+                  {audit.loading ? (
+                    <tr><td colSpan={3} style={{textAlign:"center",color:"#7c8495"}}>Loading…</td></tr>
+                  ) : needsAttention.length === 0 ? (
+                    <tr><td colSpan={3} style={{textAlign:"center",color:"#7c8495"}}>Every checked post is at the maximum score.</td></tr>
+                  ) : needsAttention.slice(0,6).map((p)=>(
+                    <tr key={p.id}>
+                      <td><strong style={{display:"block",fontWeight:650}}>{p.title}</strong><span style={{fontSize:9,color:"#7c8698"}}>{p.reasons[0] ?? (audit.topIssue ? `Common site issue: ${audit.topIssue.label}` : "—")}</span></td>
+                      <td>{p.score}/{audit.maxScore}</td>
+                      <td>{p.canFix ? <button className="mini-fix-btn" disabled={fixingId===p.id} onClick={()=>applyFix(p)}>{fixingId===p.id ? "…" : "Fix"}</button> : <span style={{color:"#9aa3b8"}}>—</span>}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -465,52 +497,34 @@ export default function StatisticsPage({ params }: { params: Promise<{ platform:
             <div className="card health-card">
               <div className="card-title">SEO Health Overview</div>
               <div className="health-body">
-                <div className="health-ring"><div className="health-score"><strong>92</strong><span>/100</span></div></div>
+                <div
+                  className="health-ring"
+                  style={
+                    healthPct == null
+                      ? { background: "#e9edf2" }
+                      : { background: `conic-gradient(#16b77b 0deg ${Math.round((healthPct / 100) * 360)}deg, #cbd0d7 ${Math.round((healthPct / 100) * 360)}deg 360deg)` }
+                  }
+                >
+                  <div className="health-score"><strong>{healthPct ?? "—"}</strong><span>/100</span></div>
+                </div>
                 <div className="health-copy">
-                  <div className="health-excellent">Excellent</div>
-                  <div className="health-note">Your website's SEO health<br/>is excellent. Keep it up!</div>
+                  <div className="health-excellent">{healthPct == null ? "—" : healthPct >= 80 ? "Excellent" : healthPct >= 60 ? "Good" : "Needs work"}</div>
+                  <div className="health-note">{audit.checkedCount ? `Computed live from ${audit.checkedCount} checked posts.` : "Computed live from checked posts."}</div>
                   <div className="health-items">
-                    <span>▣ &nbsp;Technical SEO</span><b className="good">Good</b>
-                    <span>◈ &nbsp;Content Quality</span><b className="good">Good</b>
-                    <span>⊙ &nbsp;On-Page SEO</span><b className="good">Excellent</b>
-                    <span>⌁ &nbsp;Backlinks</span><b className="good">Good</b>
-                    <span>◌ &nbsp;User Experience</span><b className="good">Good</b>
+                    {audit.issueCategories.length === 0 ? (
+                      <span style={{gridColumn:"1 / -1"}}>No recurring issues detected across checked posts.</span>
+                    ) : audit.issueCategories.slice(0,5).map((c)=>(
+                      <React.Fragment key={c.label}>
+                        <span>▣ &nbsp;{c.label}</span>
+                        <b className={c.failingPercent == null || c.failingPercent < 20 ? "good" : c.failingPercent < 50 ? "warn" : "bad"}>
+                          {c.failingCount} post{c.failingCount===1?"":"s"}{c.failingPercent!=null?` (${c.failingPercent}%)`:""}
+                        </b>
+                      </React.Fragment>
+                    ))}
                   </div>
                 </div>
               </div>
-              <a className="view-link" onClick={()=>toast("SEO health report opened")}>View full report <Icon name="arrow" size={12}/></a>
-            </div>
-
-            <div className="card backlink-card">
-              <div className="card-title">Backlink Overview</div>
-              <div className="backlink-body">
-                <div className="backlink-stats">
-                  <div className="stat-label">Total Backlinks</div><div className="stat-value">24.8K <span className="stat-growth">↑ 18.6%</span></div>
-                  <div className="stat-label">Referring Domains</div><div className="stat-value">3.2K <span className="stat-growth">↑ 12.4%</span></div>
-                  <div className="stat-label">Domain Authority</div><div className="stat-value">46 <span className="stat-growth">↑ 5 pts</span></div>
-                </div>
-                <div className="backlink-chart">
-                  <svg viewBox="0 0 280 120" preserveAspectRatio="none">
-                    <path className="area" d="M0 94 L25 86 L48 82 L70 84 L95 73 L118 76 L140 67 L164 65 L186 56 L208 62 L231 48 L255 56 L280 42 L280 120 L0 120Z"/>
-                    <polyline className="line" points="0,94 25,86 48,82 70,84 95,73 118,76 140,67 164,65 186,56 208,62 231,48 255,56 280,42"/>
-                  </svg>
-                </div>
-              </div>
-              <a className="view-link" onClick={()=>toast("Backlink report opened")}>View full report <Icon name="arrow" size={12}/></a>
-            </div>
-
-            <div className="card countries-card">
-              <div className="card-head"><div className="card-title">Top Countries</div><button className="select" onClick={()=>toast("Sessions selected")}>Sessions <Icon name="chevron" size={11}/></button></div>
-              <div className="country-list">
-                {[
-                  ["🇵🇰","Pakistan","68.5K",53.2, "53.2%"],
-                  ["🇺🇸","United States","18.7K",27.2, "14.5%"],
-                  ["🇮🇳","India","12.4K",18.1, "9.6%"],
-                  ["🇬🇧","United Kingdom","6.3K",9.2, "4.9%"],
-                  ["🇨🇦","Canada","4.1K",6.0, "3.2%"],
-                ].map(([flag,name,num,pct,label])=><div className="country-row" key={String(name)}><span className="flag">{flag}</span><span>{name}</span><span className="country-number">{num}</span><div className="progress"><i style={{width:`${pct}%`}}/></div><span className="country-pct">{label}</span></div>)}
-              </div>
-              <a className="view-link bottom-link" onClick={()=>toast("Countries report opened")}>View full report <Icon name="arrow" size={12}/></a>
+              <a className="view-link" onClick={()=>toast("Health score = real average score ÷ max score. Categories come from real per-post issues.")}>How this is calculated <Icon name="arrow" size={12}/></a>
             </div>
           </div>
         </section>
