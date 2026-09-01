@@ -1,0 +1,464 @@
+/* app/ai-recommendations/page.tsx
+   Single-file recreation of the supplied ShadiLife.com AI Recommendations dashboard.
+   No external CSS or icon package is required.
+*/
+
+"use client";
+
+import React, { useMemo, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { usePlatformParam, platformLabel } from "@/lib/agent-data";
+import type { PlatformKey } from "@/lib/platforms";
+
+type IconName =
+  | "heart" | "grid" | "bell" | "search" | "chart" | "edit" | "gear"
+  | "users" | "file" | "shield" | "spark" | "download" | "calendar"
+  | "filter" | "chevron" | "wand" | "alert" | "target" | "check"
+  | "document" | "link" | "image" | "code" | "dots" | "arrow"
+  | "message" | "list";
+
+function Icon({ name, size = 18, stroke = 1.8 }: { name: IconName; size?: number; stroke?: number }) {
+  const common = {
+    width: size,
+    height: size,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: stroke,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+  switch (name) {
+    case "heart": return <svg {...common}><path d="M20.8 8.9c0 5.5-8.8 10.2-8.8 10.2S3.2 14.4 3.2 8.9A4.6 4.6 0 0 1 12 6.5a4.6 4.6 0 0 1 8.8 2.4Z"/><path d="M7 10.5h3l1.1-2.2 2 5 1.2-2.3H17"/></svg>;
+    case "grid": return <svg {...common}><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>;
+    case "bell": return <svg {...common}><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>;
+    case "search": return <svg {...common}><circle cx="11" cy="11" r="6.8"/><path d="m16 16 4.2 4.2"/></svg>;
+    case "chart": return <svg {...common}><path d="M4 19V5"/><path d="M4 19h16"/><path d="m7 15 4-4 3 2 5-7"/><path d="M16 6h3v3"/></svg>;
+    case "edit": return <svg {...common}><path d="m4 20 4.2-.9L19 8.3a2 2 0 0 0-3.3-2.3L4.9 16.8 4 20Z"/><path d="m14.5 7.5 2 2"/></svg>;
+    case "gear": return <svg {...common}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.9 1.9-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V22h-2.7v-.2a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1-1.9-1.9.1-.1A1.7 1.7 0 0 0 7.7 15a1.7 1.7 0 0 0-1.6-1H5.9v-2.7h.2a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1 1.9-1.9.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V5h2.7v.2a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1 1.9 1.9-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2V14h-.2a1.7 1.7 0 0 0-1.6 1Z"/></svg>;
+    case "users": return <svg {...common}><circle cx="9" cy="8" r="3"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16 5.5a3 3 0 0 1 0 5.8"/><path d="M17 14.5a5 5 0 0 1 4 5"/></svg>;
+    case "file": return <svg {...common}><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h4"/><path d="M9 13h6M9 17h6"/></svg>;
+    case "shield": return <svg {...common}><path d="M12 3 20 6v5c0 5-3.4 8.5-8 10-4.6-1.5-8-5-8-10V6l8-3Z"/><path d="m9 12 2 2 4-4"/></svg>;
+    case "spark": return <svg {...common}><path d="m12 2 1.6 6.4L20 10l-6.4 1.6L12 18l-1.6-6.4L4 10l6.4-1.6L12 2Z"/><path d="m19 15 .7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7L19 15Z"/></svg>;
+    case "download": return <svg {...common}><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 20h16"/></svg>;
+    case "calendar": return <svg {...common}><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M7 3v4M17 3v4M3.5 9h17"/><path d="M8 13h2M14 13h2M8 17h2"/></svg>;
+    case "filter": return <svg {...common}><path d="M4 5h16l-6.2 7.2V19l-3.6 2v-8.8L4 5Z"/></svg>;
+    case "chevron": return <svg {...common}><path d="m8 10 4 4 4-4"/></svg>;
+    case "wand": return <svg {...common}><path d="m15 4 5 5"/><path d="m14 5-9 9a2 2 0 0 0 0 3l2 2a2 2 0 0 0 3 0l9-9"/><path d="M4 4v4M2 6h4M19 16v4M17 18h4"/></svg>;
+    case "alert": return <svg {...common}><path d="m12 3 9 17H3L12 3Z"/><path d="M12 9v5M12 17h.01"/></svg>;
+    case "target": return <svg {...common}><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="m12 12 6-6"/><path d="M18 6h-4M18 6v4"/></svg>;
+    case "check": return <svg {...common}><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg>;
+    case "document": return <svg {...common}><path d="M7 3h8l3 3v15H7z"/><path d="M15 3v4h3M10 11h5M10 15h5M10 19h3"/></svg>;
+    case "link": return <svg {...common}><path d="M10 13.5 14 9.5"/><path d="M7.5 17.5h-1a4 4 0 0 1 0-8h3"/><path d="M16.5 6.5h1a4 4 0 0 1 0 8h-3"/></svg>;
+    case "image": return <svg {...common}><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4 17 5-5 3.5 3 2.5-2 5 4"/></svg>;
+    case "code": return <svg {...common}><path d="m9 7-5 5 5 5M15 7l5 5-5 5M13 5l-2 14"/></svg>;
+    case "dots": return <svg {...common} fill="currentColor" stroke="none"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>;
+    case "arrow": return <svg {...common}><path d="M5 12h14"/><path d="m14 7 5 5-5 5"/></svg>;
+    case "message": return <svg {...common}><path d="M5 5h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-4 3v-3H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/><path d="M8 11h8M8 14h5"/></svg>;
+    case "list": return <svg {...common}><path d="M8 6h12M8 12h12M8 18h12"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg>;
+  }
+}
+
+function Logo({ platform }: { platform: PlatformKey }) {
+  return (
+    <div className="brand">
+      <div className="brandMark"><Icon name="heart" size={36} stroke={2.3}/></div>
+      <div>
+        <div className="brandName">{platformLabel(platform)}.com</div>
+        <div className="brandTag">SEO Agent Special</div>
+      </div>
+    </div>
+  );
+}
+
+function Robot({ small = false }: { small?: boolean }) {
+  return (
+    <div className={small ? "robot robotSmall" : "robot"}>
+      <div className="robotGlow"/>
+      <div className="robotHead">
+        <div className="robotFace">
+          <span className="robotEye"/><span className="robotEye"/>
+        </div>
+      </div>
+      <div className="robotEar left"/>
+      <div className="robotEar right"/>
+      <div className="robotBody">
+        <div className="robotCore"/>
+      </div>
+    </div>
+  );
+}
+
+const nav = [
+  ["Overview", "grid", "overview"],
+  ["Chat", "shield", "chat"],
+  ["Statistics", "chart", "statistics"],
+  ["AI Recommendations", "spark", "recommendations"],
+  ["Blog Optimization", "edit", "blog-optimization"],
+] as const;
+
+const rows = [
+  { title:"Optimize meta titles for 18 pages", desc:"Your meta titles are missing or not optimized. Optimizing them can increase CTR and rankings.", icon:"document" as IconName, tone:"red", score:92, scoreLabel:"High", effort:2, effortLabel:"Low", priority:"High", tags:[["On-Page SEO","purple"],["Quick Win","green"]] },
+  { title:"Build backlinks to priority pages", desc:"You have 5 important pages with low domain authority. Building quality backlinks can boost rankings.", icon:"link" as IconName, tone:"orange", score:88, scoreLabel:"High", effort:2, effortLabel:"Medium", priority:"High", tags:[["Backlinks","purple"],["Long Term","orange"]] },
+  { title:"Add alt text to 32 images", desc:"Images without alt text can hurt accessibility and your rankings. Add descriptive alt text.", icon:"image" as IconName, tone:"green", score:75, scoreLabel:"Medium", effort:1, effortLabel:"Low", priority:"Medium", tags:[["Technical SEO","purple"],["Quick Win","green"]] },
+  { title:"Target 45 new keyword opportunities", desc:"These keywords have high potential and low competition. Creating content around them can drive more traffic.", icon:"search" as IconName, tone:"blue", score:85, scoreLabel:"High", effort:2, effortLabel:"Medium", priority:"Medium", tags:[["Keyword Research","purple"],["Long Term","orange"]] },
+  { title:"Fix 18 technical SEO issues", desc:"Technical issues are blocking your site from ranking higher. Fixing these will improve your site health.", icon:"code" as IconName, tone:"purple", score:90, scoreLabel:"High", effort:3, effortLabel:"High", priority:"High", tags:[["Technical SEO","purple"],["High Impact","red"]] },
+];
+
+function ScoreRing({ score, label }: { score: number; label: string }) {
+  const deg = Math.round(score * 3.6);
+  return (
+    <div className="scoreBox">
+      <div className="scoreRing" style={{ background: `conic-gradient(#18b47b ${deg}deg, #e4e8ef ${deg}deg)` }}>
+        <div className="scoreInner">{score}</div>
+      </div>
+      <div className="scoreLabel">{label}</div>
+    </div>
+  );
+}
+
+function Effort({ count, label }: { count: number; label: string }) {
+  return (
+    <div className="effortBox">
+      <div className="effortDots">{[0,1,2].map(i => <span key={i} className={i < count ? "filled" : ""}/>)}</div>
+      <div className="scoreLabel">{label}</div>
+    </div>
+  );
+}
+
+function StatCard({ title, value, sub, icon, tone }: { title:string; value:string; sub:string; icon:IconName; tone:string }) {
+  return (
+    <div className="statCard">
+      <div>
+        <div className="statTitle">{title}</div>
+        <div className="statValue">{value}</div>
+        <div className={`statSub ${tone === "green" ? "positive" : ""}`}>{sub}</div>
+      </div>
+      <div className={`statIcon ${tone}`}><Icon name={icon} size={28} stroke={1.8}/></div>
+    </div>
+  );
+}
+
+function PriorityOverview() {
+  return (
+    <section className="sideCard priorityCard">
+      <h3>Priority Overview</h3>
+      <div className="priorityContent">
+        <div className="donut">
+          <div className="donutHole"><strong>24</strong><span>Total</span></div>
+        </div>
+        <div className="legend">
+          <div><i className="dot redDot"/><span>High Priority</span><b>8 (33%)</b></div>
+          <div><i className="dot orangeDot"/><span>Medium Priority</span><b>10 (42%)</b></div>
+          <div><i className="dot greenDot"/><span>Low Priority</span><b>6 (25%)</b></div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ImplementationImpact() {
+  const bars = [["Increase Organic Traffic","15.2K",92],["Improve Rankings","12.8K",68],["Increase Conversions","8.4K",38],["Improve Site Health","90%",0]];
+  return (
+    <section className="sideCard impactCard">
+      <h3>Implementation Impact</h3>
+      {bars.map(([label,val,width],i)=>(
+        <div className="impactRow" key={String(label)}>
+          <div className="impactMeta"><span>{label}</span><b>{val}</b></div>
+          <div className={`impactTrack ${i===3 ? "health" : ""}`}><span style={{width: `${width}%`}}/></div>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function CategoryCard() {
+  return (
+    <section className="sideCard categoriesCard">
+      <h3>Top Recommendation Categories</h3>
+      {[
+        ["list","On-Page SEO","8","purple"],
+        ["gear","Technical SEO","6","green"],
+        ["link","Backlinks","5","orange"],
+        ["search","Keyword Research","5","blue"],
+      ].map(([ic,name,n,tone])=>(
+        <div className="catRow" key={name}>
+          <span className={`catIcon ${tone}`}><Icon name={ic as IconName} size={15}/></span><span>{name}</span><b>{n}</b>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+export default function AIRecommendationsPage({ params }: { params: Promise<{ platform: string }> }) {
+  const platform = usePlatformParam(params);
+  const pathname = usePathname();
+  const [tab, setTab] = useState("All Recommendations");
+  const [page, setPage] = useState(1);
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [toast, setToast] = useState("");
+  const tabs = ["All Recommendations","High Priority","Quick Wins","Long Term","Completed"];
+
+  const filteredRows = useMemo(() => {
+    if (tab === "High Priority") return rows.filter(r => r.priority === "High");
+    if (tab === "Quick Wins") return rows.filter(r => r.tags.some(t => t[0] === "Quick Win"));
+    if (tab === "Long Term") return rows.filter(r => r.tags.some(t => t[0] === "Long Term"));
+    if (tab === "Completed") return [];
+    return rows;
+  }, [tab]);
+
+  function notify(message:string) {
+    setToast(message);
+    window.setTimeout(()=>setToast(""),2200);
+  }
+
+  return (
+    <div className="app">
+      <aside className="sidebar">
+        <Logo platform={platform}/>
+        <nav className="nav">
+          {nav.map(([label,icon,slug])=>{
+            const href = `/seo-agent-special/${platform}/${slug}`;
+            return (
+            <Link key={label} href={href} className={`navItem ${pathname===href ? "active":""}`}>
+              <Icon name={icon as IconName} size={18}/><span>{label}</span>
+            </Link>
+            );
+          })}
+        </nav>
+        <div className="agentCard">
+          <div className="agentTitle">SEO AI Agent</div>
+          <Robot/>
+          <div className="agentHello">Hi! I'm your SEO AI Agent.</div>
+          <div className="agentText">I analyze, optimize &<br/>grow your traffic.</div>
+          <Link href={`/seo-agent-special/${platform}/chat`} className="primaryButton agentButton" style={{textDecoration:"none"}}><Icon name="message" size={15}/>Chat with AI Agent</Link>
+        </div>
+      </aside>
+
+      <main className="main">
+        <header className="header">
+          <div>
+            <h1>AI Recommendations <span className="titleSpark"><Icon name="spark" size={23}/></span></h1>
+            <p>Personalized SEO recommendations to boost your rankings and traffic</p>
+          </div>
+          <div className="headerRight">
+            <button className="iconButton"><Icon name="bell" size={19}/></button>
+            <div className="profile">
+              <div className="avatar">A</div>
+              <div><b>Admin</b><span>SEO Manager</span></div>
+              <Icon name="chevron" size={15}/>
+            </div>
+            <div className="headerActions">
+              <button className="dateButton"><Icon name="calendar" size={16}/>May 22, 2025 - Jun 22, 2025</button>
+              <button className="exportButton" onClick={()=>notify("Recommendations exported")}><Icon name="download" size={16}/>Export Recommendations</button>
+            </div>
+          </div>
+        </header>
+
+        <div className="stats">
+          <StatCard title="Total Recommendations" value="24" sub="↑ 8 new this week" icon="wand" tone="purple"/>
+          <StatCard title="High Priority" value="8" sub="Require immediate action" icon="alert" tone="red"/>
+          <StatCard title="Potential Traffic Gain" value="15.2K" sub="Monthly estimated" icon="chart" tone="green"/>
+          <StatCard title="Avg. SEO Impact Score" value="78" sub="High impact overall" icon="target" tone="purple"/>
+          <StatCard title="Completed This Month" value="12" sub="Recommendations" icon="check" tone="blue"/>
+        </div>
+
+        <div className="workspace">
+          <section className="recommendationCard">
+            <div className="tabsRow">
+              <div className="tabs">
+                {tabs.map(t=><button key={t} onClick={()=>{setTab(t);setPage(1)}} className={tab===t ? "tab activeTab":"tab"}>{t}</button>)}
+              </div>
+              <div className="categoryWrap">
+                <button className="categorySelect" onClick={()=>setCategoryOpen(v=>!v)}><Icon name="filter" size={15}/><span>All Categories</span><Icon name="chevron" size={14}/></button>
+                {categoryOpen && <div className="categoryMenu">{["All Categories","On-Page SEO","Technical SEO","Backlinks","Keyword Research"].map(x=><button key={x} onClick={()=>{setCategoryOpen(false);notify(`${x} selected`)}}>{x}</button>)}</div>}
+              </div>
+            </div>
+
+            <div className="tableHeader">
+              <div>Recommendation</div><div>Impact</div><div>Effort</div><div>Priority</div><div>Action</div>
+            </div>
+
+            <div className="rows">
+              {filteredRows.length === 0 ? <div className="empty">No recommendations in this category.</div> : filteredRows.map((r)=>(
+                <div className="recRow" key={r.title}>
+                  <div className="recommendation">
+                    <div className={`recIcon ${r.tone}`}><Icon name={r.icon} size={24}/></div>
+                    <div className="recText">
+                      <b>{r.title}</b>
+                      <p>{r.desc}</p>
+                      <div className="tags">{r.tags.map(([tag,tone])=><span key={tag} className={`tag ${tone}`}>{tag}</span>)}</div>
+                    </div>
+                  </div>
+                  <ScoreRing score={r.score} label={r.scoreLabel}/>
+                  <Effort count={r.effort} label={r.effortLabel}/>
+                  <div><span className={`priority ${r.priority.toLowerCase()}`}>{r.priority}</span></div>
+                  <div className="actionCell"><button className="details" onClick={()=>notify(`Viewing ${r.title}`)}>View Details</button><button className="dots" onClick={()=>notify("More actions")}><Icon name="dots" size={18}/></button></div>
+                </div>
+              ))}
+            </div>
+
+            <div className="tableFooter">
+              <span>Showing {filteredRows.length ? "1 to 5" : "0 to 0"} of {tab==="All Recommendations" ? "24" : filteredRows.length} recommendations</span>
+              <div className="pagination">
+                <button onClick={()=>setPage(Math.max(1,page-1))}><Icon name="chevron" size={15}/></button>
+                {[1,2,3].map(n=><button key={n} className={page===n ? "page activePage":"page"} onClick={()=>setPage(n)}>{n}</button>)}
+                <span>...</span><button className="page" onClick={()=>setPage(5)}>5</button><button onClick={()=>setPage(Math.min(5,page+1))}><Icon name="chevron" size={15}/></button>
+              </div>
+            </div>
+          </section>
+
+          <aside className="rightRail">
+            <PriorityOverview/>
+            <ImplementationImpact/>
+            <CategoryCard/>
+            <section className="sideCard insightCard">
+              <div className="insightRobot"><Robot small/></div>
+              <div><h3>AI Powered Insights</h3><p>Recommendations are based on your website data, competitor analysis, and latest SEO best practices.</p><button onClick={()=>notify("How it works opened")}>How it works <Icon name="arrow" size={15}/></button></div>
+            </section>
+          </aside>
+        </div>
+
+        <section className="bottomHelp">
+          <div className="tinyRobot"><Robot small/></div>
+          <div><b>Need help implementing these recommendations?</b><span>Chat with our AI Agent to get step-by-step guidance.</span></div>
+          <Link href={`/seo-agent-special/${platform}/chat`} className="primaryButton" style={{textDecoration:"none"}}><Icon name="message" size={16}/>Chat with AI Agent</Link>
+        </section>
+      </main>
+
+      {toast && <div className="toast">{toast}</div>}
+
+      <style jsx global>{`
+        *{box-sizing:border-box}
+        html,body{margin:0;padding:0;background:#fff;color:#101737;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+        button{font:inherit}
+        .app{width:1536px;min-width:1536px;min-height:1024px;background:#fff;display:flex;overflow:hidden}
+        .sidebar{width:242px;min-width:242px;border-right:1px solid #edf0f7;background:#fff;position:relative;padding:39px 14px 28px}
+        .brand{height:67px;display:flex;align-items:center;padding-left:12px;gap:8px}
+        .brandMark{color:#d83294;width:35px;display:flex;align-items:center}
+        .brandName{font-size:23px;font-weight:800;letter-spacing:-.7px;background:linear-gradient(90deg,#3b1bc4,#d72c9c);-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}
+        .brandTag{font-size:11px;color:#435174;margin-top:2px;letter-spacing:.1px}
+        .nav{margin-top:19px;display:flex;flex-direction:column;gap:3px}
+        .navItem{height:39px;width:100%;border:0;background:#fff;border-radius:6px;display:flex;align-items:center;gap:16px;padding:0 15px;color:#3f4c72;font-size:14px;text-align:left;cursor:pointer}
+        .navItem svg{color:#506086}
+        .navItem.active{background:linear-gradient(90deg,#6430f4,#8043ee);color:#fff;box-shadow:0 5px 12px rgba(101,47,239,.16)}
+        .navItem.active svg{color:#fff}
+        .agentCard{position:absolute;left:22px;right:22px;bottom:29px;height:293px;border:1px solid #e7e0ff;border-radius:10px;background:linear-gradient(180deg,#fbf9ff 0%,#f6f2ff 100%);text-align:center;padding-top:16px;overflow:hidden}
+        .agentTitle{font-size:14px;font-weight:700;color:#6331ed}
+        .agentHello{font-size:12px;color:#5d24ee;font-weight:700;margin-top:5px}
+        .agentText{font-size:12px;line-height:21px;color:#445073;margin-top:5px}
+        .primaryButton{border:0;border-radius:6px;background:linear-gradient(90deg,#6431ef,#7130ee);color:#fff;height:33px;padding:0 16px;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:0 5px 12px rgba(94,42,232,.18)}
+        .agentButton{position:absolute;left:16px;right:16px;bottom:15px;width:calc(100% - 32px)}
+        .main{width:1294px;padding:31px 24px 18px 29px;background:#fff}
+        .header{height:96px;display:flex;justify-content:space-between}
+        .header h1{margin:2px 0 4px;font-size:26px;line-height:32px;letter-spacing:-.7px;font-weight:750;color:#111632}
+        .header p{margin:0;color:#526080;font-size:13.5px}
+        .titleSpark{color:#7650f2;vertical-align:2px;margin-left:2px}
+        .headerRight{display:flex;align-items:flex-start;gap:20px;position:relative;padding-top:0}
+        .iconButton{border:0;background:#fff;color:#435072;width:25px;height:34px;margin-top:0;cursor:pointer}
+        .profile{display:flex;gap:10px;align-items:center;min-width:137px;margin-top:-1px}
+        .avatar{width:35px;height:35px;border-radius:50%;background:linear-gradient(145deg,#d9b188,#111);color:#fff;display:flex;align-items:flex-end;justify-content:center;font-size:12px;font-weight:800;padding-bottom:7px;box-shadow:inset 0 0 0 1px #eee}
+        .profile b{display:block;font-size:12px;color:#11162f;line-height:15px}
+        .profile span{display:block;font-size:11px;color:#56627f}
+        .profile svg{margin-left:auto;color:#526080}
+        .headerActions{position:absolute;right:0;top:37px;display:flex;gap:13px}
+        .dateButton,.exportButton{height:34px;border:1px solid #dfe4ed;border-radius:6px;background:#fff;color:#283454;font-size:12px;display:flex;align-items:center;justify-content:center;gap:9px;white-space:nowrap;padding:0 13px;cursor:pointer}
+        .dateButton{width:220px}
+        .exportButton{width:179px;background:linear-gradient(90deg,#6230ee,#7732ef);border-color:#6230ee;color:#fff;box-shadow:0 4px 10px rgba(102,47,236,.12)}
+        .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:18px}
+        .statCard{height:110px;border:1px solid #edf0f5;border-radius:9px;background:#fff;box-shadow:0 3px 14px rgba(35,45,80,.055);padding:18px 15px;display:flex;justify-content:space-between}
+        .statTitle{font-size:11px;font-weight:650;color:#17203d}
+        .statValue{font-size:25px;font-weight:750;line-height:34px;color:#101633}
+        .statSub{font-size:10.5px;color:#4f5b7c;white-space:nowrap}
+        .statSub.positive{color:#16a878}
+        .statIcon{width:56px;height:56px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-top:9px}
+        .statIcon.purple{color:#7141ef;background:#f0ebff}.statIcon.red{color:#ff3c4b;background:#ffebee}.statIcon.green{color:#15b67b;background:#eaf8f3}.statIcon.blue{color:#2185ff;background:#ebf4ff}
+        .workspace{display:grid;grid-template-columns:902px 313px;gap:26px;align-items:start}
+        .recommendationCard,.sideCard,.bottomHelp{border:1px solid #edf0f5;background:#fff;border-radius:10px;box-shadow:0 3px 14px rgba(35,45,80,.055)}
+        .recommendationCard{height:666px;overflow:hidden}
+        .tabsRow{height:67px;border-bottom:1px solid #eef1f6;display:flex;align-items:flex-end;justify-content:space-between;padding:0 10px 0 13px}
+        .tabs{height:100%;display:flex;align-items:flex-end}
+        .tab{height:45px;border:0;border-bottom:2px solid transparent;background:#fff;color:#313d63;font-size:11px;padding:0 19px;cursor:pointer}
+        .activeTab{color:#6330ef;border-bottom-color:#6530f4}
+        .categoryWrap{position:relative;margin-bottom:8px}
+        .categorySelect{height:28px;width:198px;border:1px solid #dfe4ed;border-radius:6px;background:#fff;color:#34405f;font-size:11px;display:flex;align-items:center;gap:8px;padding:0 10px;cursor:pointer}
+        .categorySelect span{flex:1;text-align:left}
+        .categoryMenu{position:absolute;z-index:10;right:0;top:33px;width:198px;border:1px solid #e0e4ec;border-radius:7px;background:#fff;box-shadow:0 12px 30px rgba(20,30,70,.12);padding:5px}
+        .categoryMenu button{width:100%;border:0;background:#fff;text-align:left;padding:8px;border-radius:4px;font-size:11px;color:#3b4667;cursor:pointer}
+        .categoryMenu button:hover{background:#f3efff;color:#6330ef}
+        .tableHeader{height:41px;background:#fbfcfe;display:grid;grid-template-columns:1fr 101px 103px 104px 100px;align-items:center;padding:0 14px 0 34px;color:#131a35;font-size:10px;font-weight:700}
+        .tableHeader>div:nth-child(n+2){text-align:center}
+        .rows{height:509px}
+        .recRow{height:102px;border-bottom:1px solid #edf0f5;display:grid;grid-template-columns:1fr 101px 103px 104px 100px;align-items:center;padding:0 10px 0 20px}
+        .recommendation{display:flex;align-items:center;gap:18px;min-width:0}
+        .recIcon{width:49px;height:49px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none}
+        .recIcon.red{background:#fff0f1;color:#ff4853}.recIcon.orange{background:#fff5e7;color:#ff9c19}.recIcon.green{background:#e9faf3;color:#0fb77b}.recIcon.blue{background:#edf5ff;color:#2385ff}.recIcon.purple{background:#f0ebff;color:#6e37ef}
+        .recText{min-width:0}
+        .recText b{display:block;font-size:12px;color:#111832;margin-bottom:3px}
+        .recText p{margin:0;color:#4e5b7e;font-size:10.5px;line-height:16px;max-width:410px}
+        .tags{display:flex;gap:8px;margin-top:6px}
+        .tag{font-size:9px;border-radius:4px;padding:3px 9px;border:1px solid}
+        .tag.purple{color:#6331ef;border-color:#d9ccff;background:#fbf9ff}.tag.green{color:#12a974;border-color:#bfead8;background:#effbf6}.tag.orange{color:#f08b13;border-color:#ffdba7;background:#fffaf1}.tag.red{color:#ef4752;border-color:#ffd0d3;background:#fff5f6}
+        .scoreBox,.effortBox{display:flex;flex-direction:column;align-items:center;justify-content:center}
+        .scoreRing{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+        .scoreInner{width:34px;height:34px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#14203d}
+        .scoreLabel{font-size:9px;color:#4b5878;margin-top:3px}
+        .effortDots{display:flex;gap:4px;margin-bottom:4px}
+        .effortDots span{width:13px;height:13px;border-radius:50%;border:1px solid #cfd5df;background:#fff}
+        .effortDots span.filled{border-color:#6732ef;background:#6732ef}
+        .priority{font-size:9px;border-radius:5px;padding:5px 12px;display:inline-block}
+        .priority.high{color:#f23d4b;background:#fff0f1;border:1px solid #ffd7da}.priority.medium{color:#ee9419;background:#fff7e8;border:1px solid #ffe1b0}
+        .actionCell{display:flex;align-items:center;justify-content:center;gap:7px}
+        .details{height:28px;border:1px solid #bca8ff;border-radius:5px;background:#fff;color:#6430ed;font-size:10px;padding:0 11px;cursor:pointer;white-space:nowrap}
+        .dots{border:0;background:#fff;color:#6b7590;padding:3px;cursor:pointer}
+        .empty{height:509px;display:flex;align-items:center;justify-content:center;color:#6b7590;font-size:12px}
+        .tableFooter{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 17px 0 20px;color:#384465;font-size:10px}
+        .pagination{display:flex;align-items:center;gap:4px}
+        .pagination button{width:27px;height:27px;border:1px solid #e3e7ee;border-radius:6px;background:#fff;color:#273250;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px}
+        .pagination button svg{transform:rotate(90deg)}
+        .pagination button:last-child svg{transform:rotate(-90deg)}
+        .pagination .activePage{background:#6530ef;color:#fff;border-color:#6530ef;box-shadow:0 4px 10px rgba(100,48,239,.2)}
+        .pagination span{padding:0 6px}
+        .rightRail{display:flex;flex-direction:column;gap:14px}
+        .sideCard{padding:20px 18px}
+        .sideCard h3{margin:0 0 21px;font-size:12px;color:#111832;font-weight:750}
+        .priorityCard{height:176px}.priorityContent{display:flex;align-items:center;gap:21px}
+        .donut{width:89px;height:89px;border-radius:50%;background:conic-gradient(#ff434a 0 33%,#f6a42d 33% 75%,#19b67f 75% 100%);position:relative;transform:rotate(-28deg);flex:none}
+        .donut:after{content:"";position:absolute;inset:9px;border-radius:50%;background:#fff}
+        .donutHole{position:absolute;z-index:2;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(28deg)}
+        .donutHole strong{font-size:19px;line-height:21px}.donutHole span{font-size:9px;color:#66718d}
+        .legend{width:100%;display:flex;flex-direction:column;gap:13px}
+        .legend>div{display:grid;grid-template-columns:12px 1fr auto;align-items:center;gap:8px;font-size:10px;color:#4a5676}
+        .legend b{font-size:9px;color:#202a48}
+        .dot{width:9px;height:9px;border-radius:50%;display:block}.redDot{background:#ff434a}.orangeDot{background:#f6a42d}.greenDot{background:#19b67f}
+        .impactCard{height:184px;padding-top:20px}.impactCard h3{margin-bottom:23px}
+        .impactRow{margin-bottom:10px}.impactMeta{display:flex;justify-content:space-between;font-size:9.5px;color:#3e4968;margin-bottom:5px}.impactMeta b{font-weight:500;color:#495474}
+        .impactTrack{height:6px;background:#eeeafa;border-radius:9px;overflow:hidden}.impactTrack span{height:100%;display:block;background:#6530ef;border-radius:9px}.impactTrack.health{background:transparent}.impactTrack.health span{width:90%!important;background:#c7b4fa}
+        .categoriesCard{height:173px;padding-top:20px}.categoriesCard h3{margin-bottom:17px}
+        .catRow{height:29px;display:grid;grid-template-columns:23px 1fr auto;align-items:center;font-size:10px;color:#4a5676}
+        .catRow b{font-size:10px;color:#202a48}
+        .catIcon{width:17px;height:17px;border-radius:5px;display:flex;align-items:center;justify-content:center}.catIcon.purple{color:#6732ef;background:#f2edff}.catIcon.green{color:#10ae79;background:#eaf9f3}.catIcon.orange{color:#f29a20;background:#fff6e7}.catIcon.blue{color:#2d83f7;background:#edf5ff}
+        .insightCard{height:151px;background:linear-gradient(135deg,#fbf9ff,#f7f1ff);border-color:#e8e0ff;display:flex;gap:14px;padding:20px 17px}
+        .insightRobot{width:74px;flex:none;display:flex;justify-content:center}
+        .insightCard h3{margin:4px 0 8px;font-size:12px}.insightCard p{font-size:9.5px;line-height:17px;color:#586481;margin:0 0 7px}.insightCard button{border:0;background:transparent;color:#6530ef;font-size:10px;padding:0;display:flex;align-items:center;gap:6px;cursor:pointer}
+        .bottomHelp{height:72px;margin-top:14px;display:flex;align-items:center;padding:0 19px;gap:14px}
+        .tinyRobot{width:53px;height:57px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+        .bottomHelp>div:nth-child(2){display:flex;flex-direction:column;gap:5px;flex:1}.bottomHelp b{font-size:12px;color:#111832}.bottomHelp span{font-size:10px;color:#586481}
+        .bottomHelp .primaryButton{height:33px;margin-right:0}
+        .robot{width:100px;height:106px;position:relative;margin:8px auto 0;filter:drop-shadow(0 5px 5px rgba(97,68,181,.08));transform:scale(.84)}
+        .robotGlow{position:absolute;width:78px;height:55px;left:11px;top:1px;border-radius:50%;background:radial-gradient(circle,#fff 0,#f5efff 54%,transparent 72%);filter:blur(2px)}
+        .robotHead{position:absolute;left:17px;top:20px;width:66px;height:49px;border-radius:18px 18px 21px 21px;background:linear-gradient(145deg,#fff,#e9e5f9);box-shadow:inset 0 -5px 9px rgba(91,69,167,.1),0 5px 8px rgba(70,45,130,.1)}
+        .robotFace{position:absolute;left:7px;top:9px;width:52px;height:31px;border-radius:13px;background:#07113c;display:flex;align-items:center;justify-content:center;gap:14px;box-shadow:inset 0 0 13px rgba(55,94,190,.38)}
+        .robotEye{width:7px;height:7px;border-radius:50%;background:#25d8ff;box-shadow:0 0 7px #25d8ff}
+        .robotEar{position:absolute;top:34px;width:17px;height:25px;border-radius:9px;background:#ddd4f8}.robotEar.left{left:7px}.robotEar.right{right:7px}
+        .robotBody{position:absolute;left:28px;top:69px;width:44px;height:36px;border-radius:14px 14px 18px 18px;background:linear-gradient(145deg,#fff,#e5e1f4);box-shadow:inset 0 -5px 8px rgba(91,69,167,.12)}
+        .robotCore{width:14px;height:14px;border-radius:50%;background:#c5b9ef;position:absolute;left:15px;top:8px;box-shadow:inset 0 2px 4px #fff}
+        .robotSmall{transform:scale(.62);transform-origin:center;margin:-10px 0 0 -12px;width:100px;height:106px}
+        .toast{position:fixed;z-index:100;left:50%;bottom:25px;transform:translateX(-50%);background:#111832;color:#fff;border-radius:7px;padding:10px 17px;font-size:11px;box-shadow:0 10px 25px rgba(0,0,0,.18)}
+        @media(max-width:1535px){.app{transform-origin:top left}}
+      `}</style>
+    </div>
+  );
+}
