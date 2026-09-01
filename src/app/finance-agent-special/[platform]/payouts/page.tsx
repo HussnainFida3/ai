@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { usePlatformParam, platformLabel } from "@/lib/agent-data";
+import { usePlatformParam, platformLabel, useFinanceBreakdown } from "@/lib/agent-data";
 
 /* Single-file pixel-focused recreation of the supplied 1536×1024 reference. */
 const A = {
@@ -51,39 +51,53 @@ function Icon({name,size=18}:IconProps){
   return <svg {...p}>{map[name]||map.help}</svg>
 }
 
-const rows=[
- {initials:"HS",color:"lav",name:"Hassan Shah",id:"Member #M1234",type:"Member",cat:"Membership Earnings",amount:"PKR 25,000",status:"Completed",method:"EasyPaisa",date:"May 31, 2025",time:"10:30 AM"},
- {initials:"FA",color:"mint",name:"Fatima Ali",id:"Member #M1245",type:"Member",cat:"Premium Subscription",amount:"PKR 18,500",status:"Completed",method:"JazzCash",date:"May 31, 2025",time:"09:45 AM"},
- {initials:"ZA",color:"gold",name:"Zeeshan Ahmed",id:"Member #M1256",type:"Partner",cat:"Partner Commission",amount:"PKR 50,000",status:"Completed",method:"Bank Transfer",date:"May 30, 2025",time:"06:20 PM"},
- {initials:"AR",color:"rose",name:"Areeba R.",id:"Member #M1267",type:"Member",cat:"Match Referral",amount:"PKR 12,000",status:"Pending",method:"EasyPaisa",date:"Jun 02, 2025",time:"—"},
- {initials:"SS",color:"blue",name:"Shahid Services",id:"Vendor #V112",type:"Vendor",cat:"Service Payout",amount:"PKR 85,000",status:"Pending",method:"Bank Transfer",date:"Jun 02, 2025",time:"—"},
-];
+/** Compact number formatting for chart axes and donut centers. */
+function compactPkr(n:number):string{
+ const abs=Math.abs(n);
+ if(abs>=1_000_000) return `${(n/1_000_000).toFixed(1)}M`;
+ if(abs>=1_000) return `${(n/1_000).toFixed(1)}K`;
+ return `${Math.round(n)}`;
+}
+function pct(v:number|undefined|null, total:number):number{
+ if(!v || total<=0) return 0;
+ return Math.round((v/total)*100);
+}
+function shortDate(iso:string):string{
+ const d=new Date(`${iso}T00:00:00Z`);
+ if(Number.isNaN(d.getTime())) return iso;
+ return d.toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"});
+}
 
-function Sparkline(){
- const pts=[3,5,8,8,11,13,14,16,18,23,26,28,32,35,38,42,46];
+/** Real, dynamically-scaled sparkline — no more hardcoded fake ascending points. */
+function Sparkline({values}:{values:number[]}){
+ if(values.length===0) return <svg className="sparkline" viewBox="0 0 270 92" preserveAspectRatio="none"/>;
+ const max=Math.max(...values,1), min=Math.min(...values,0), range=(max-min)||1;
+ const stepX=values.length>1?270/(values.length-1):270;
+ const pts=values.map((v,i)=>[Math.round(i*stepX),Math.round(92-((v-min)/range)*92)] as [number,number]);
+ const line=pts.map(([x,y])=>`${x},${y}`).join(" ");
  return <svg className="sparkline" viewBox="0 0 270 92" preserveAspectRatio="none">
   <defs><linearGradient id="area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#7542e9" stopOpacity=".20"/><stop offset="1" stopColor="#7542e9" stopOpacity="0"/></linearGradient></defs>
   {[12,35,58,81].map(y=><line key={y} x1="0" y1={y} x2="270" y2={y} stroke="#edf0f6"/>)}
-  <polyline points={`0,${92-pts[0]*1.55} ${pts.map((v,i)=>`${i*16.8},${92-v*1.55}`).join(" ")} 270,${92-pts.at(-1)!*1.55}`} fill="none" stroke="#6731d8" strokeWidth="2"/>
-  <polygon points={`0,92 ${pts.map((v,i)=>`${i*16.8},${92-v*1.55}`).join(" ")} 270,92`} fill="url(#area)"/>
+  <polyline points={line} fill="none" stroke="#6731d8" strokeWidth="2"/>
+  <polygon points={`0,92 ${line} 270,92`} fill="url(#area)"/>
  </svg>
 }
 
-function Donut({kind}:{kind:"method"|"status"}){
+/** Real, dynamically-scaled donut — `values` are proportions (0-1) that should
+ * sum to <=1, one per `colors` entry. No more hardcoded fake percentages. */
+function Donut({values,colors,centerLabel,centerValue}:{values:number[];colors:string[];centerLabel:string;centerValue:string}){
  const con=2*Math.PI*55;
- const method=[.45,.25,.2,.1], status=[.92,.08,0];
- const vals=kind==="method"?method:status;
  let offset=0;
  return <div className="donut-wrap"><svg viewBox="0 0 140 140" className="donut">
    <circle cx="70" cy="70" r="55" fill="none" stroke="#f1f1f4" strokeWidth="20"/>
-   {vals.map((v,i)=>{const dash=v*con; const el=<circle key={i} cx="70" cy="70" r="55" fill="none" stroke={kind==="status"?["#17b979","#f5a20c","#ed3863"][i]:["#6324ce","#dd2b82","#ff9700","#3176ef"][i]} strokeWidth="20" strokeDasharray={`${dash} ${con-dash}`} strokeDashoffset={-offset} transform="rotate(-90 70 70)"/>; offset+=dash; return el})}
- </svg><div className="donut-center"><span>Total</span><b>PKR 4.12M</b></div></div>
+   {values.map((v,i)=>{const dash=v*con; const el=<circle key={i} cx="70" cy="70" r="55" fill="none" stroke={colors[i%colors.length]} strokeWidth="20" strokeDasharray={`${dash} ${con-dash}`} strokeDashoffset={-offset} transform="rotate(-90 70 70)"/>; offset+=dash; return el})}
+ </svg><div className="donut-center"><span>{centerLabel}</span><b>{centerValue}</b></div></div>
 }
 
-function Metric({icon,title,value,change,down=false,tone}:{icon:string,title:string,value:string,change:string,down?:boolean,tone:string}){
+function Metric({icon,title,value,note,tone}:{icon:string,title:string,value:string,note?:string,tone:string}){
  return <div className="metric">
   <div className={`metric-icon ${tone}`}><Icon name={icon} size={21}/></div>
-  <div className="metric-body"><div className="metric-title">{title}</div><div className="metric-value">{value}</div><div className={`change ${down?"negative":""}`}>{down?"↓":"↑"} {change}</div><div className="compare">vs Apr 1 – Apr 30, 2025</div></div>
+  <div className="metric-body"><div className="metric-title">{title}</div><div className="metric-value">{value}</div><div className="compare">{note ?? "Real, live data"}</div></div>
  </div>
 }
 
@@ -91,15 +105,69 @@ export default function FinancePayoutsPage({ params }: { params: Promise<{ platf
  const platform = usePlatformParam(params);
  const pathname = usePathname();
  const router = useRouter();
+ const isGhrfix = platform === "ghrfix";
+ const breakdown = useFinanceBreakdown(platform);
  const [chatQ,setChatQ]=useState("");
  const [toast,setToast]=useState("");
  const [period,setPeriod]=useState("This Month");
- const [page,setPage]=useState(1);
  const [query,setQuery]=useState("");
- const [menu,setMenu]=useState<number|null>(null);
  const notify=(s:string)=>{setToast(s);window.setTimeout(()=>setToast(""),2200)};
- const visible=useMemo(()=>rows.filter(r=>!query||`${r.name} ${r.cat} ${r.type}`.toLowerCase().includes(query.toLowerCase())),[query]);
- return <div className="canvas" onClick={()=>menu!==null&&setMenu(null)}>
+
+ // GhrFix has no "payouts to providers" concept — providers are paid directly
+ // by customers (cash or platform tokens), settled per booking. The real
+ // substitute is the settlement mix from /breakdown, plus the same city
+ // breakdown as an itemizable table. ShadiLife's real agentPayouts (grouped
+ // by status) is a direct, honest fit for payout cards/table/donut.
+ const mix = breakdown.settlementMix;
+ const payouts = breakdown.agentPayouts;
+ const paidRow = (payouts ?? []).find((p) => p.status === "PAID");
+ const pendingRow = (payouts ?? []).find((p) => p.status === "PENDING");
+ const otherRows = (payouts ?? []).filter((p) => p.status !== "PAID" && p.status !== "PENDING");
+ const otherTotal = otherRows.reduce((s, p) => s + p.totalAmount, 0);
+ const totalPayoutsAmount = (payouts ?? []).reduce((s, p) => s + p.totalAmount, 0);
+ const paidAmt = paidRow?.totalAmount ?? 0;
+ const pendingAmt = pendingRow?.totalAmount ?? 0;
+
+ const metrics = isGhrfix
+   ? [
+       { icon: "walletCheck", title: "Cash Settled (Total)", value: mix ? `PKR ${Math.round(mix.totalCashSettledPKR).toLocaleString()}` : null, tone: "purple", note: "Real, live data" },
+       { icon: "check", title: "Accept Fees Collected", value: mix ? `PKR ${Math.round(mix.totalAcceptFees).toLocaleString()}` : null, tone: "green", note: "Real, live data" },
+       { icon: "wallet", title: "Tokens Applied", value: mix ? `${Math.round(mix.totalTokensApplied).toLocaleString()} tokens` : null, tone: "orange", note: "Real, live data" },
+       { icon: "chart", title: "Cash + Token Bookings", value: mix ? mix.cashPlusTokenBookings.toLocaleString() : null, tone: "pink", note: "Real, live data" },
+     ]
+   : [
+       { icon: "walletCheck", title: "Total Payouts", value: payouts ? `PKR ${Math.round(totalPayoutsAmount).toLocaleString()}` : null, tone: "purple", note: "PAID + PENDING — real, live data" },
+       { icon: "check", title: "Completed Payouts", value: payouts ? `PKR ${Math.round(paidAmt).toLocaleString()}` : null, tone: "green", note: "Real, live data" },
+       { icon: "clock", title: "Pending Payouts", value: payouts ? `PKR ${Math.round(pendingAmt).toLocaleString()}` : null, tone: "orange", note: "Real, live data" },
+       { icon: "x", title: "Failed Payouts", value: payouts ? `PKR ${Math.round(otherTotal).toLocaleString()}` : null, tone: "pink", note: "Not a modeled status — always real 0" },
+     ];
+
+ type Row = { key: string; cells: string[] };
+ const tableColumns = isGhrfix
+   ? ["City", "Bookings", "Cash Settled (PKR)", "Accept Fees (PKR)"]
+   : ["Status", "Number of Payouts", "Total Amount (PKR)", "Share of Total"];
+ const tableRows: Row[] = isGhrfix
+   ? (breakdown.revenueByCity ?? []).map((r) => ({ key: r.label, cells: [r.label, r.bookings.toLocaleString(), `PKR ${Math.round(r.cashSettled).toLocaleString()}`, `PKR ${Math.round(r.acceptFees).toLocaleString()}`] }))
+   : (payouts ?? []).map((r) => ({ key: r.status, cells: [r.status, r.count.toLocaleString(), `PKR ${Math.round(r.totalAmount).toLocaleString()}`, `${pct(r.totalAmount, totalPayoutsAmount)}%`] }));
+ const visible = useMemo(
+   () => tableRows.filter((r) => !query || r.cells.join(" ").toLowerCase().includes(query.toLowerCase())),
+   [tableRows, query],
+ );
+
+ const trendValues = (breakdown.settlementTrend ?? []).map((t) => t.total);
+ const trendDates = (breakdown.settlementTrend ?? []).map((t) => t.date);
+ const trendMax = Math.max(1, ...trendValues, 0);
+ const trendYTicks = trendValues.length === 0 ? ["", "", "", "", "", ""] : Array.from({ length: 6 }, (_, i) => compactPkr(trendMax - (i * trendMax) / 5));
+ const trendLabelCount = Math.min(7, trendDates.length || 1);
+ const trendLabelIdxs = Array.from(new Set(Array.from({ length: trendLabelCount }, (_, i) => Math.round((i / Math.max(1, trendLabelCount - 1)) * (trendDates.length - 1)))));
+
+ const bookingMixTotal = mix ? mix.cashOnlyBookings + mix.cashPlusTokenBookings : 0;
+ const bookingMixValues = bookingMixTotal > 0 && mix ? [mix.cashOnlyBookings / bookingMixTotal, mix.cashPlusTokenBookings / bookingMixTotal] : [0, 0];
+
+ const statusColors = ["#17b979", "#f5a20c", "#ed3863"];
+ const statusValues = totalPayoutsAmount > 0 ? [paidAmt / totalPayoutsAmount, pendingAmt / totalPayoutsAmount, otherTotal / totalPayoutsAmount] : [0, 0, 0];
+
+ return <div className="canvas">
   <header className="header">
    <img src={A.logo} className="logo"/>
    <div className="agent-head"><img src={A.agentIcon}/><div><h1>{platformLabel(platform)} — Finance Manager AI Agent <Icon name="spark" size={20}/></h1><p>Your intelligent finance partner for smarter decisions</p></div></div>
@@ -122,29 +190,41 @@ export default function FinancePayoutsPage({ params }: { params: Promise<{ platf
 
   <main className="main">
    <section className="content">
-    <div className="title-row"><div><h2>Payouts</h2><p>Manage and track all your payouts to members, partners and vendors.</p></div><div className="actions"><button onClick={()=>notify("Filters opened")}><Icon name="filter" size={17}/>Filters</button><button className="purple" onClick={()=>notify("Export started")}><Icon name="download" size={16}/>Export</button></div></div>
+    <div className="title-row"><div><h2>Payouts</h2><p>{breakdown.loading ? "Loading real payout data…" : breakdown.error ? `Live data unavailable: ${breakdown.error}` : isGhrfix ? "GhrFix has no per-provider payout tracking yet — showing the real settlement-mix breakdown instead." : "Real payout totals grouped by status."}</p></div><div className="actions"><button onClick={()=>notify("Filters opened")}><Icon name="filter" size={17}/>Filters</button><button className="purple" onClick={()=>notify("Export started")}><Icon name="download" size={16}/>Export</button></div></div>
     <div className="metrics">
-      <Metric icon="walletCheck" title="Total Payouts" value="PKR 4,125,000" change="16.3%" tone="purple"/>
-      <Metric icon="check" title="Completed Payouts" value="PKR 3,812,500" change="18.7%" tone="green"/>
-      <Metric icon="clock" title="Pending Payouts" value="PKR 312,500" change="8.2%" down tone="orange"/>
-      <Metric icon="x" title="Failed Payouts" value="PKR 0" change="0%" tone="pink"/>
+      {metrics.map((m)=>(
+        <Metric key={m.title} icon={m.icon} title={m.title} tone={m.tone} note={m.note} value={breakdown.loading ? "…" : m.value ?? "—"}/>
+      ))}
     </div>
 
     <section className="payout-table">
-      <div className="table-head"><h3>All Payouts</h3><select value={period} onChange={e=>setPeriod(e.target.value)}><option>This Month</option><option>Last Month</option><option>Last 3 Months</option></select></div>
-      <div className="thead"><span>Recipient</span><span>Type</span><span>Category</span><span>Amount</span><span>Status</span><span>Payout Method</span><span>Payout Date</span><span>Action</span></div>
-      {visible.map((r,i)=><div className="tr" key={r.name}>
-       <div className="recipient"><i className={r.color}>{r.initials}</i><div><b>{r.name}</b><small>{r.id}</small></div></div>
-       <span><em className={`tag ${r.type.toLowerCase()}`}>{r.type}</em></span><span>{r.cat}</span><span>{r.amount}</span><span><em className={`status ${r.status.toLowerCase()}`}>{r.status}</em></span><span>{r.method}</span><span>{r.date}<small>{r.time}</small></span>
-       <div className="action"><button onClick={e=>{e.stopPropagation();setMenu(menu===i?null:i)}}><Icon name="more" size={16}/></button>{menu===i&&<div className="row-menu"><button onClick={()=>notify("Payout details")}>View details</button><button onClick={()=>notify("Payout copied")}>Copy reference</button></div>}</div>
+      <div className="table-head"><h3>{isGhrfix ? "Cash Settlement by City" : "Payouts by Status"}</h3><select value={period} onChange={e=>setPeriod(e.target.value)}><option>This Month</option><option>Last Month</option><option>Last 3 Months</option></select></div>
+      <div className="thead" style={{gridTemplateColumns:tableColumns.map(()=>"1fr").join(" ")}}>{tableColumns.map(c=><span key={c}>{c}</span>)}</div>
+      {breakdown.loading ? (
+        <div style={{padding:"22px 15px",fontSize:11,color:"#69738b"}}>Loading real data…</div>
+      ) : breakdown.error ? (
+        <div style={{padding:"22px 15px",fontSize:11,color:"#ff2538"}}>Live data unavailable: {breakdown.error}</div>
+      ) : visible.length===0 ? (
+        <div style={{padding:"22px 15px",fontSize:11,color:"#69738b"}}>No data yet.</div>
+      ) : visible.map((r)=><div className="tr" key={r.key} style={{gridTemplateColumns:tableColumns.map(()=>"1fr").join(" ")}}>
+       {r.cells.map((c,i)=><span key={i}>{c}</span>)}
       </div>)}
-      <div className="table-foot"><span>Showing 1 to 5 of 28 payouts</span><div className="pages"><button onClick={()=>setPage(Math.max(1,page-1))}>‹</button>{[1,2,3].map(n=><button key={n} className={page===n?"current":""} onClick={()=>setPage(n)}>{n}</button>)}<span>...</span><button onClick={()=>setPage(6)} className={page===6?"current":""}>6</button><button onClick={()=>setPage(Math.min(6,page+1))}>›</button></div></div>
+      <div className="table-foot"><span>{isGhrfix ? "Real data — most recent 3,000 completed bookings, by city" : "Real data — grouped by payout status"}</span></div>
     </section>
 
-    <section className="charts">
-      <div className="chart-card overview"><div className="card-title"><h3>Payouts Overview</h3><select><option>This Month</option></select></div><div className="legend"><i/>Payout Amount (PKR)</div><div className="graph"><div className="ylabels"><span>5M</span><span>4M</span><span>3M</span><span>2M</span><span>1M</span><span>0</span></div><Sparkline/><div className="xlabels"><span>May 1</span><span>May 6</span><span>May 11</span><span>May 16</span><span>May 21</span><span>May 26</span><span>May 31</span></div></div></div>
-      <div className="chart-card"><div className="card-title"><h3>Payouts by Method</h3></div><div className="donut-row"><Donut kind="method"/><div className="legend-list"><div><i className="c1"/>EasyPaisa <b>45%</b><small>(PKR 1,856,250)</small></div><div><i className="c2"/>JazzCash <b>25%</b><small>(PKR 1,031,250)</small></div><div><i className="c3"/>Bank Transfer <b>20%</b><small>(PKR 825,000)</small></div><div><i className="c4"/>Other Methods <b>10%</b><small>(PKR 412,500)</small></div></div></div></div>
-      <div className="chart-card"><div className="card-title"><h3>Payout Status</h3></div><div className="donut-row"><Donut kind="status"/><div className="legend-list status-list"><div><i className="c1"/>Completed <b>92%</b><small>(PKR 3,812,500)</small></div><div><i className="c3"/>Pending <b>8%</b><small>(PKR 312,500)</small></div><div><i className="c2"/>Failed <b>0%</b><small>(PKR 0)</small></div></div></div></div>
+    <section className="charts" style={{gridTemplateColumns: isGhrfix ? "1.3fr 1fr" : "1fr"}}>
+      {isGhrfix && (
+        <div className="chart-card overview"><div className="card-title"><h3>Cash Settlement Trend</h3><span style={{fontSize:9,color:"#69738b"}}>Last 30 days (real)</span></div><div className="legend"><i/>Cash Settled (PKR)</div><div className="graph"><div className="ylabels">{trendYTicks.map((t,i)=><span key={i}>{t}</span>)}</div>{breakdown.loading ? <p style={{fontSize:10,color:"#69738b",margin:0}}>Loading real data…</p> : breakdown.error ? <p style={{fontSize:10,color:"#ff2538",margin:0}}>Live data unavailable: {breakdown.error}</p> : trendValues.length===0 ? <p style={{fontSize:10,color:"#69738b",margin:0}}>No data yet.</p> : <Sparkline values={trendValues}/>}<div className="xlabels">{trendLabelIdxs.map((idx)=><span key={idx}>{trendDates[idx] ? shortDate(trendDates[idx]) : ""}</span>)}</div></div></div>
+      )}
+      {breakdown.loading ? (
+        <div className="chart-card"><div className="card-title"><h3>{isGhrfix ? "Booking Settlement Mix" : "Payout Status"}</h3></div><div style={{height:205,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#69738b"}}>Loading real data…</div></div>
+      ) : breakdown.error ? (
+        <div className="chart-card"><div className="card-title"><h3>{isGhrfix ? "Booking Settlement Mix" : "Payout Status"}</h3></div><div style={{height:205,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#ff2538"}}>Live data unavailable: {breakdown.error}</div></div>
+      ) : isGhrfix ? (
+        <div className="chart-card"><div className="card-title"><h3>Booking Settlement Mix</h3></div><div className="donut-row"><Donut values={bookingMixValues} colors={["#6324ce","#3176ef"]} centerLabel="Bookings" centerValue={bookingMixTotal.toLocaleString()}/><div className="legend-list"><div><i style={{background:"#6324ce"}}/>Cash Only <b>{pct(mix?.cashOnlyBookings, bookingMixTotal)}%</b><small>{(mix?.cashOnlyBookings ?? 0).toLocaleString()} bookings</small></div><div><i style={{background:"#3176ef"}}/>Cash + Token <b>{pct(mix?.cashPlusTokenBookings, bookingMixTotal)}%</b><small>{(mix?.cashPlusTokenBookings ?? 0).toLocaleString()} bookings</small></div></div></div></div>
+      ) : (
+        <div className="chart-card"><div className="card-title"><h3>Payout Status</h3></div><div className="donut-row"><Donut values={statusValues} colors={statusColors} centerLabel="Total" centerValue={`PKR ${compactPkr(totalPayoutsAmount)}`}/><div className="legend-list status-list"><div><i style={{background:statusColors[0]}}/>Completed <b>{pct(paidAmt, totalPayoutsAmount)}%</b><small>(PKR {Math.round(paidAmt).toLocaleString()})</small></div><div><i style={{background:statusColors[1]}}/>Pending <b>{pct(pendingAmt, totalPayoutsAmount)}%</b><small>(PKR {Math.round(pendingAmt).toLocaleString()})</small></div><div><i style={{background:statusColors[2]}}/>Failed <b>{pct(otherTotal, totalPayoutsAmount)}%</b><small>(PKR {Math.round(otherTotal).toLocaleString()}) — not a modeled status</small></div></div></div></div>
+      )}
     </section>
    </section>
 
@@ -157,11 +237,21 @@ export default function FinancePayoutsPage({ params }: { params: Promise<{ platf
        ["file","Generate Financial Report"],["trend","Revenue Forecast"],["pie","Expense Analysis"],["tax","Tax Summary"]
       ].map(([i,t])=><button key={t} onClick={()=>notify(t)}><Icon name={i} size={17}/>{t}</button>)}
     </div>
-    <div className="insights"><h3>Insights for May 2025</h3>
-      <div><i className="green"><Icon name="up" size={18}/></i><span>Revenue is up by 24.6% compared<br/>to last month.</span></div>
-      <div><i className="orange"><Icon name="trend" size={17}/></i><span>Marketing spend is 39% of total<br/>expenses. Consider optimizing.</span></div>
-      <div><i className="blue"><Icon name="spark" size={16}/></i><span>Net profit margin is 28.1%.<br/>Good job! Keep it up.</span></div>
-      <div><i className="purple"><Icon name="file" size={17}/></i><span>You have 14 pending payouts<br/>totaling PKR 312,500.</span></div>
+    <div className="insights"><h3>AI Insights</h3>
+      {isGhrfix ? (
+        <p style={{fontSize:9,lineHeight:"16px",color:"#4f5874",margin:0}}>GhrFix&apos;s Finance Agent has no AI-generated summary endpoint yet.</p>
+      ) : breakdown.loading ? (
+        <p style={{fontSize:9,lineHeight:"16px",color:"#4f5874",margin:0}}>Loading real AI insights…</p>
+      ) : breakdown.aiSummary || breakdown.aiBullets.length>0 ? (
+        <>
+          {breakdown.aiSummary && <div><i className="purple"><Icon name="spark" size={16}/></i><span><b>{breakdown.aiSummary}</b></span></div>}
+          {breakdown.aiBullets.map((b,i)=>(
+            <div key={i}><i className={["green","orange","blue","purple"][i%4]}><Icon name={["up","trend","spark","file"][i%4]} size={16}/></i><span>{b}</span></div>
+          ))}
+        </>
+      ) : (
+        <p style={{fontSize:9,lineHeight:"16px",color:"#4f5874",margin:0}}>No AI insights available right now.</p>
+      )}
     </div>
     <div className="chat">
       <input

@@ -4,7 +4,7 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { usePlatformParam, platformLabel } from "@/lib/agent-data";
+import { usePlatformParam, platformLabel, useFinanceSnapshot, useFinanceBreakdown } from "@/lib/agent-data";
 
 const nav: Array<[string, string, string]> = [
   ["⌂", "Dashboard", "dashboard"],
@@ -12,17 +12,6 @@ const nav: Array<[string, string, string]> = [
   ["▥", "Reports", "reports"],
   ["▣", "Payouts", "payouts"],
   ["✧", "Chat", "chat"],
-];
-
-const tx = [
-  ["♛","orange","Premium Subscription","by Member #SL12598","Income","Subscriptions","May 31, 2025","10:30 AM","+ PKR 2,999","green","Completed","JazzCash"],
-  ["✪","orange","Membership Plan – Gold","by Member #SL12602","Income","Memberships","May 31, 2025","09:45 AM","+ PKR 4,999","green","Completed","Credit Card"],
-  ["▧","pink","Marketing Campaign","Facebook Ads","Expense","Marketing","May 31, 2025","08:20 AM","– PKR 2,450","red","Completed","Bank Transfer"],
-  ["➤","green","Boost Profile Purchase","by Member #SL12610","Income","Boost & Visibility","May 30, 2025","06:15 PM","+ PKR 1,499","green","Completed","EasyPaisa"],
-  ["♜","blue","Payout to Partner","Partner #PR556","Payout","Partner Payouts","May 30, 2025","05:40 PM","– PKR 25,000","red","Completed","Bank Transfer"],
-  ["▤","pink","Payment Gateway Fee","Transaction Charge","Expense","Bank Charges","May 30, 2025","05:10 PM","– PKR 3,210","red","Completed","—"],
-  ["↻","purple","Ad Campaign Refund","Google Ads","Refund","Refunds","May 29, 2025","11:30 AM","+ PKR 1,250","green","Completed","Bank Transfer"],
-  ["▣","gray","Withdrawal Request","by Admin","Payout","Admin Withdrawal","May 29, 2025","10:00 AM","– PKR 50,000","red","Pending","Bank Transfer"],
 ];
 
 function Icon({children, size=18}:{children:React.ReactNode,size?:number}) {
@@ -40,8 +29,11 @@ function Robot() {
   </div>;
 }
 
-function Stat({icon,tone,title,value,change,negative=false}:{icon:string;tone:string;title:string;value:string;change:string;negative?:boolean}) {
- return <div className="stat"><div><div className="statTitle">{title}</div><div className="statValue">{value}</div><div className={"change "+(negative?"negative":"")}>{change}</div><div className="note">vs Apr 1 – Apr 30, 2025</div></div><div className={"statIcon "+tone}><Icon size={19}>{icon}</Icon></div></div>
+/** `change` is optional now: cards backed by a real number with no real
+ * period-over-period comparison available just show a plain real-data note
+ * instead of an invented percentage. */
+function Stat({icon,tone,title,value,change,negative=false,note}:{icon:string;tone:string;title:string;value:string;change?:string;negative?:boolean;note?:string}) {
+ return <div className="stat"><div><div className="statTitle">{title}</div><div className="statValue">{value}</div>{change&&<div className={"change "+(negative?"negative":"")}>{change}</div>}<div className="note">{note ?? "Real, live data"}</div></div><div className={"statIcon "+tone}><Icon size={19}>{icon}</Icon></div></div>
 }
 
 function Insight({icon,tone,children}:{icon:string;tone:string;children:React.ReactNode}) {
@@ -51,15 +43,101 @@ function Insight({icon,tone,children}:{icon:string;tone:string;children:React.Re
 export default function Page({ params }: { params: Promise<{ platform: string }> }) {
  const platform = usePlatformParam(params);
  const pathname = usePathname();
- const [tab,setTab]=useState("All Transactions");
- const [search,setSearch]=useState("");
- const [page,setPage]=useState(1);
- const [toast,setToast]=useState("");
- const show=(s:string)=>{setToast(s);window.setTimeout(()=>setToast(""),1800)};
- const rows=useMemo(()=>tx.filter(x=>
-   (tab==="All Transactions" || x[4]===tab.slice(0,-1) || x[4]===tab) &&
-   (!search || x.join(" ").toLowerCase().includes(search.toLowerCase()))
- ),[tab,search]);
+ const isGhrfix = platform === "ghrfix";
+ const finance = useFinanceSnapshot(platform);
+ const breakdown = useFinanceBreakdown(platform);
+ const isLoading = finance.loading || breakdown.loading;
+
+ // GhrFix has no per-transaction list, so real revenue grouped by category or
+ // city (from /ai-agents/finance/breakdown, computed off actual completed
+ // bookings) stands in. ShadiLife has no per-transaction list either, so real
+ // payments-by-status and approved-revenue-by-tier (from /ai-agents/finance/
+ // summary) stand in there. Both are toggleable, real, aggregate views —
+ // never invented per-row transactions.
+ const [view, setView] = useState(isGhrfix ? "Category" : "Status");
+ const viewTabs = isGhrfix ? ["Category", "City"] : ["Status", "Tier"];
+ const [search, setSearch] = useState("");
+ const [toast, setToast] = useState("");
+ const show = (s: string) => { setToast(s); window.setTimeout(() => setToast(""), 1800); };
+
+ const columns: string[] = isGhrfix
+   ? view === "City"
+     ? ["City", "Accept Fees", "Cash Settled", "Bookings"]
+     : ["Category", "Accept Fees", "Cash Settled", "Tokens Applied", "Bookings"]
+   : view === "Tier"
+     ? ["Membership Tier", "Approved Payments", "Total Amount (PKR)"]
+     : ["Status", "Payments", "Total Amount (PKR)"];
+
+ type Row = { key: string; cells: string[] };
+
+ const rows: Row[] = useMemo(() => {
+   if (isGhrfix) {
+     if (view === "City") {
+       return (breakdown.revenueByCity ?? []).map((r) => ({
+         key: r.label,
+         cells: [r.label, `PKR ${Math.round(r.acceptFees).toLocaleString()}`, `PKR ${Math.round(r.cashSettled).toLocaleString()}`, r.bookings.toLocaleString()],
+       }));
+     }
+     return (breakdown.revenueByCategory ?? []).map((r) => ({
+       key: r.label,
+       cells: [r.label, `PKR ${Math.round(r.acceptFees).toLocaleString()}`, `PKR ${Math.round(r.cashSettled).toLocaleString()}`, `${Math.round(r.tokensApplied).toLocaleString()} tokens`, r.bookings.toLocaleString()],
+     }));
+   }
+   if (view === "Tier") {
+     return (breakdown.approvedRevenueByTier ?? []).map((r) => ({
+       key: r.tier,
+       cells: [r.tier, r.count.toLocaleString(), `PKR ${Math.round(r.totalAmountPkr).toLocaleString()}`],
+     }));
+   }
+   return (breakdown.payments ?? []).map((r) => ({
+     key: r.status,
+     cells: [r.status, r.count.toLocaleString(), `PKR ${Math.round(r.totalAmountPkr).toLocaleString()}`],
+   }));
+ }, [isGhrfix, view, breakdown.revenueByCity, breakdown.revenueByCategory, breakdown.approvedRevenueByTier, breakdown.payments]);
+
+ const visibleRows = useMemo(
+   () => rows.filter((r) => !search || r.cells.join(" ").toLowerCase().includes(search.toLowerCase())),
+   [rows, search],
+ );
+
+ // ---- Stat cards. Every value here is either read straight off a real
+ // endpoint, arithmetic on real numbers, or (Total Expenses only, where no
+ // real expense tracking exists on either platform) the same explicit
+ // "Illustrative — not tracked yet" pattern already shipped on the dashboard
+ // page — never a bare invented figure.
+ const totalTransactions = isGhrfix
+   ? breakdown.sampledBookings
+   : breakdown.payments == null
+     ? null
+     : breakdown.payments.reduce((s, p) => s + p.count, 0);
+ const totalTransactionsNote = isGhrfix ? "Completed bookings (recent 3,000 sample)" : "All recorded payments — real, live data";
+
+ const totalIncome = isGhrfix
+   ? finance.secondaryPkr
+   : breakdown.payments == null
+     ? null
+     : (breakdown.payments.find((p) => p.status === "APPROVED")?.totalAmountPkr ?? 0);
+ const totalIncomeNote = isGhrfix ? "Accept fees collected — real, live data" : "Approved payments — real, live data";
+
+ const totalPayoutsValue = isGhrfix
+   ? breakdown.settlementMix?.totalTokensApplied ?? null
+   : breakdown.agentPayouts == null
+     ? null
+     : breakdown.agentPayouts.reduce((s, p) => s + p.totalAmount, 0);
+ const totalPayoutsTitle = isGhrfix ? "Tokens Applied" : "Total Payouts";
+ const totalPayoutsFormatted =
+   totalPayoutsValue == null ? "—" : isGhrfix ? `${Math.round(totalPayoutsValue).toLocaleString()} tokens` : `PKR ${Math.round(totalPayoutsValue).toLocaleString()}`;
+ const totalPayoutsNote = isGhrfix ? "Settlement mix — real, live data" : "PAID + PENDING agent payouts — real, live data";
+
+ const netCashFlow = isGhrfix
+   ? finance.totalRevenuePkr
+   : finance.totalRevenuePkr != null && breakdown.agentPayoutsThisMonthPkr != null
+     ? finance.totalRevenuePkr - breakdown.agentPayoutsThisMonthPkr
+     : null;
+ const netCashFlowTitle = isGhrfix ? "Net Token Flow" : "Net Cash Flow (This Month)";
+ const netCashFlowNote = isGhrfix ? "Total credits − debits — real, live data" : "Revenue − agent payouts this month — real, live data";
+
+ const gridCols = columns.map(() => "1fr").join(" ");
 
  return <div className="screen">
   <header className="topbar">
@@ -87,34 +165,38 @@ export default function Page({ params }: { params: Promise<{ platform: string }>
 
    <main className="main">
     <div className="heading">
-     <div><h2>Transactions</h2><p>Track and manage all your financial transactions in one place.</p></div>
+     <div>
+       <h2>Transactions</h2>
+       <p>{breakdown.loading ? "Loading real transaction data…" : breakdown.error ? `Live data unavailable: ${breakdown.error}` : "Real, grouped financial activity — not individual mock rows."}</p>
+     </div>
      <div className="tools">
-      <div className="search"><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search transactions..."/><Icon>⌕</Icon></div>
+      <div className="search"><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search..."/><Icon>⌕</Icon></div>
       <button onClick={()=>show("Filters opened")}>⚱ Filters</button><button onClick={()=>show("Transactions exported")}>⇩ Export</button>
      </div>
     </div>
-    <div className="tabs">{["All Transactions","Income","Expenses","Payouts","Refunds"].map(x=><button key={x} className={tab===x?"active":""} onClick={()=>{setTab(x);setPage(1)}}>{x}</button>)}</div>
+    <div className="tabs">{viewTabs.map(x=><button key={x} className={view===x?"active":""} onClick={()=>setView(x)}>{x}</button>)}</div>
 
     <div className="stats">
-      <Stat icon="▣" tone="purple" title="Total Transactions" value="312" change="↑ 18.7%"/>
-      <Stat icon="♧" tone="green" title="Total Income" value="PKR 11,199,800" change="↑ 24.6%"/>
-      <Stat icon="▤" tone="red" title="Total Expenses" value="PKR 6,285,200" change="↓ 12.4%" negative/>
-      <Stat icon="▥" tone="blue" title="Total Payouts" value="PKR 4,125,000" change="↑ 16.3%"/>
-      <Stat icon="⌁" tone="purple" title="Net Cash Flow" value="PKR 5,312,400" change="↑ 21.8%"/>
+      <Stat icon="▣" tone="purple" title="Total Transactions" value={isLoading ? "…" : totalTransactions == null ? "—" : totalTransactions.toLocaleString()} note={totalTransactionsNote}/>
+      <Stat icon="♧" tone="green" title="Total Income" value={isLoading ? "…" : totalIncome == null ? "—" : `PKR ${Math.round(totalIncome).toLocaleString()}`} note={totalIncomeNote}/>
+      <Stat icon="▤" tone="red" title="Total Expenses" value="PKR 6,285,200" change="↓ 12.4%" negative note="Illustrative — not tracked yet"/>
+      <Stat icon="▥" tone="blue" title={totalPayoutsTitle} value={isLoading ? "…" : totalPayoutsFormatted} note={totalPayoutsNote}/>
+      <Stat icon="⌁" tone="purple" title={netCashFlowTitle} value={isLoading ? "…" : netCashFlow == null ? "—" : `PKR ${Math.round(netCashFlow).toLocaleString()}`} note={netCashFlowNote}/>
     </div>
 
     <section className="table">
-     <div className="thead"><span>Transaction</span><span>Type</span><span>Category</span><span>Date</span><span>Amount</span><span>Status</span><span>Payment Method</span><span>Action</span></div>
-     {rows.map((x:any[])=> <div className="row" key={x[2]}>
-       <div className="transaction"><i className={"txIcon "+x[1]}>{x[0]}</i><div><strong>{x[2]}</strong><small>{x[3]}</small></div></div>
-       <div><label className={"type "+x[4].toLowerCase()}>{x[4]}</label></div><div className="muted">{x[5]}</div>
-       <div className="dateCell">{x[6]}<small>{x[7]}</small></div><div className={"amount "+x[9]}>{x[8]}</div>
-       <div><label className={"status "+x[10].toLowerCase()}>{x[10]}</label></div><div className="muted">{x[11]}</div>
-       <button className="dots" onClick={()=>show("Actions for "+x[2])}>⋮</button>
+     <div className="thead" style={{gridTemplateColumns: gridCols}}>{columns.map(c=><span key={c}>{c}</span>)}</div>
+     {breakdown.loading ? (
+       <div style={{padding:"22px 15px",fontSize:11,color:"#69738b"}}>Loading real data…</div>
+     ) : breakdown.error ? (
+       <div style={{padding:"22px 15px",fontSize:11,color:"#ff2538"}}>Live data unavailable: {breakdown.error}</div>
+     ) : visibleRows.length === 0 ? (
+       <div style={{padding:"22px 15px",fontSize:11,color:"#69738b"}}>No data yet.</div>
+     ) : visibleRows.map((r)=> <div className="row" key={r.key} style={{gridTemplateColumns: gridCols}}>
+       <div className="transaction"><strong>{r.cells[0]}</strong></div>
+       {r.cells.slice(1).map((c,i)=><div key={i} className="muted">{c}</div>)}
      </div>)}
-     <div className="footer"><span>Showing {rows.length?1:0} to {rows.length} of 312 transactions</span><div className="pagination">
-       <button onClick={()=>setPage(Math.max(1,page-1))}>‹</button>{[1,2,3].map(n=><button key={n} className={page===n?"current":""} onClick={()=>setPage(n)}>{n}</button>)}<em>…</em><button className={page===39?"current":""} onClick={()=>setPage(39)}>39</button><button onClick={()=>setPage(Math.min(39,page+1))}>›</button>
-     </div></div>
+     <div className="footer"><span>{isGhrfix ? `Grouped by ${view.toLowerCase()} — real data from the most recent 3,000 completed bookings` : `Grouped by ${view.toLowerCase()} — real data`}</span></div>
     </section>
    </main>
 
@@ -126,11 +208,21 @@ export default function Page({ params }: { params: Promise<{ platform: string }>
     <section className="quick card"><h3>Quick Actions</h3>
       {["▤  Generate Financial Report","⌁  Revenue Forecast","◔  Expense Analysis","▣  Tax Summary"].map(x=><button key={x} onClick={()=>show(x)}>{x}</button>)}
     </section>
-    <section className="insights card"><h3>Insights for May 2025</h3>
-      <Insight icon="↑" tone="green">Revenue is up by <b>24.6%</b> compared<br/>to last month.</Insight>
-      <Insight icon="▤" tone="orange">Marketing spend is <b>39%</b> of total<br/>expenses. Consider optimizing.</Insight>
-      <Insight icon="♧" tone="blue">Net profit margin is <b>28.1%</b>.<br/>Good job! Keep it up.</Insight>
-      <Insight icon="▤" tone="purple">You have <b>14</b> pending payouts<br/>totaling PKR 312,500.</Insight>
+    <section className="insights card"><h3>AI Insights</h3>
+      {isGhrfix ? (
+        <p style={{fontSize:9.5,color:"#4f5975"}}>GhrFix&apos;s Finance Agent has no AI-generated summary endpoint yet.</p>
+      ) : breakdown.loading ? (
+        <p style={{fontSize:9.5,color:"#4f5975"}}>Loading real AI insights…</p>
+      ) : breakdown.aiSummary || breakdown.aiBullets.length > 0 ? (
+        <>
+          {breakdown.aiSummary && <Insight icon="✦" tone="purple"><b>{breakdown.aiSummary}</b></Insight>}
+          {breakdown.aiBullets.map((b,i)=>(
+            <Insight key={i} icon={["↑","♧","▤","▣"][i%4]} tone={["green","blue","orange","purple"][i%4]}>{b}</Insight>
+          ))}
+        </>
+      ) : (
+        <p style={{fontSize:9.5,color:"#4f5975"}}>No AI insights available right now.</p>
+      )}
     </section>
     <div className="chat"><span>Ask me anything...</span><button onClick={()=>show("AI Agent message sent")}>→</button></div>
     <div className="disclaimer">AI responses can make mistakes.<br/>Please verify important information.</div>
@@ -151,8 +243,8 @@ export default function Page({ params }: { params: Promise<{ platform: string }>
    .main{width:1054px;padding:22px 17px 23px 23px}.heading{height:67px;display:flex;justify-content:space-between}.heading h2{font-size:19px;margin:0 0 5px;letter-spacing:-.4px}.heading p{font-size:11.5px;color:#4b5675;margin:0}.tools{display:flex;gap:9px;margin-top:36px}.tools>button,.search{height:36px;border:1px solid #dfe3eb;border-radius:7px;background:#fff;color:#18213e;font-size:10px;display:flex;align-items:center;justify-content:center;gap:8px}.tools>button{padding:0 12px}.search{width:210px;padding:0 11px}.search input{border:0;outline:0;width:100%;font-size:10px}.search input::placeholder{color:#69738b}
    .tabs{height:44px;border-bottom:1px solid #e8ebf1;display:flex;align-items:flex-end}.tabs button{height:39px;border:0;border-bottom:2px solid transparent;background:#fff;color:#303a58;font-size:10.5px;padding:0 20px}.tabs .active{color:#5e25dc;border-color:#5d28e7}
    .stats{height:122px;display:grid;grid-template-columns:repeat(5,1fr);gap:7px;padding-top:16px}.stat{height:122px;border:1px solid #e7eaf0;border-radius:8px;box-shadow:0 2px 10px rgba(30,35,65,.045);display:flex;justify-content:space-between;padding:14px 12px}.statTitle{font-size:9.5px;color:#202945;margin-top:2px}.statValue{font-size:16px;font-weight:750;margin-top:6px;white-space:nowrap;letter-spacing:-.35px}.change{font-size:9px;color:#0aa873;margin-top:12px}.change.negative{color:#fa3242}.note{font-size:8.5px;color:#58627d;margin-top:8px;white-space:nowrap}.statIcon{width:37px;height:37px;border-radius:9px;display:flex;align-items:center;justify-content:center}.purple{background:#f0ebff;color:#6630dd}.green{background:#e9faf3;color:#13ae78}.red{background:#ffedef;color:#ff3d4a}.blue{background:#edf4ff;color:#367fff}
-   .table{margin-top:17px;height:632px;border:1px solid #e8ebf0;border-radius:8px;box-shadow:0 3px 12px rgba(30,35,65,.04);overflow:hidden}.thead,.row{display:grid;grid-template-columns:2.15fr .85fr 1.15fr 1.12fr 1.02fr 1.03fr 1.25fr .34fr;align-items:center}.thead{height:40px;background:#fafbfc;padding:0 13px;font-size:9px;color:#1d2641}.row{height:65px;border-top:1px solid #eef0f4;padding:0 13px}.transaction{display:flex;align-items:center;gap:11px}.transaction strong{display:block;font-size:10px;white-space:nowrap}.transaction small{display:block;font-size:8.5px;color:#56617c;margin-top:4px;white-space:nowrap}.txIcon{width:31px;height:31px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;flex:none}.txIcon.orange{background:#fff4e4;color:#ff9419}.txIcon.pink{background:#ffedf1;color:#ff4560}.txIcon.green{background:#e9faf3;color:#16ae7c}.txIcon.blue{background:#edf4ff;color:#287cf2}.txIcon.purple{background:#f0ebff;color:#6730e8}.txIcon.gray{background:#f1f3f7;color:#63708b}.type,.status{font-size:8.5px;border-radius:5px;padding:5px 10px;display:inline-block}.type.income{color:#0b9e6c;background:#effaf5;border:1px solid #d2eee2}.type.expense{color:#f33748;background:#fff0f2;border:1px solid #ffdce0}.type.payout{color:#317bf0;background:#eff5ff;border:1px solid #dce9ff}.type.refund{color:#6830e6;background:#f4efff;border:1px solid #e5dcff}.muted{font-size:9px;color:#4f5975}.dateCell{font-size:9px}.dateCell small{display:block;font-size:8px;color:#59647e;margin-top:3px}.amount{font-size:9px}.amount.green{color:#04a66f}.amount.red{color:#ff2538}.status.completed{color:#0b9d6d;background:#effaf5;border:1px solid #d2eee2}.status.pending{color:#ed9017;background:#fff7e9;border:1px solid #ffe2b7}.dots{border:0;background:#fff;color:#5f6a85;font-size:18px}.footer{height:65px;border-top:1px solid #eef0f4;display:flex;align-items:center;justify-content:space-between;padding:0 14px;color:#25304c;font-size:9.5px}.pagination{display:flex;gap:4px;align-items:center}.pagination button{width:31px;height:31px;border:1px solid #e4e7ed;border-radius:7px;background:#fff;font-size:10px}.pagination .current{background:#6330e7;border-color:#6330e7;color:#fff}.pagination em{font-style:normal;padding:0 5px}
-   .right{width:251px;border-left:1px solid #f0f1f5;padding:7px 15px 0 0}.card{border:1px solid #e8eaf0;border-radius:8px;box-shadow:0 2px 9px rgba(35,40,70,.035);background:#fff;margin-bottom:10px}.ai{height:286px;padding:16px 14px}.ai h3{font-size:13px;margin:0}.ai h3 span{float:right;color:#a5adbf}.online{font-size:9px;color:#069d6c;margin-top:7px}.robotBox{height:126px;display:flex;justify-content:center;align-items:center}.ai>strong{font-size:12px}.ai>p{font-size:10px;line-height:19px;margin:6px 0}.quick{height:190px;padding:13px 8px}.card h3{font-size:13px;margin:0 3px 10px}.quick button{height:32px;width:100%;border:1px solid #cfc0fa;background:#fff;border-radius:6px;color:#5c24cf;display:block;text-align:left;padding:0 11px;margin-bottom:6px;font-size:10px}.insights{height:267px;padding:14px 9px}.insight{display:flex;gap:10px;margin-bottom:13px}.insightIcon{width:29px;height:29px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}.insight p{margin:0;font-size:9.5px;line-height:17px;color:#161c30}.insightIcon.green{background:#eaf9f3;color:#0aac73}.insightIcon.orange{background:#fff2e7;color:#ff891d}.insightIcon.blue{background:#edf4ff;color:#307cf2}.insightIcon.purple{background:#f1ebff;color:#7134ea}.chat{height:47px;border:1px solid #e0e3eb;border-radius:8px;display:flex;align-items:center;padding-left:13px;font-size:10px;color:#45516e}.chat span{flex:1}.chat button{width:32px;height:32px;border:0;border-radius:50%;background:#6328d9;color:#fff;margin-right:5px}.disclaimer{text-align:center;color:#68728a;font-size:8px;line-height:16px;margin-top:18px}
+   .table{margin-top:17px;height:632px;border:1px solid #e8ebf0;border-radius:8px;box-shadow:0 3px 12px rgba(30,35,65,.04);overflow:auto}.thead,.row{display:grid;align-items:center}.thead{height:40px;background:#fafbfc;padding:0 13px;font-size:9px;color:#1d2641}.row{min-height:65px;border-top:1px solid #eef0f4;padding:0 13px}.transaction{display:flex;align-items:center;gap:11px}.transaction strong{display:block;font-size:10.5px;white-space:nowrap}.transaction small{display:block;font-size:8.5px;color:#56617c;margin-top:4px;white-space:nowrap}.txIcon{width:31px;height:31px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;flex:none}.txIcon.orange{background:#fff4e4;color:#ff9419}.txIcon.pink{background:#ffedf1;color:#ff4560}.txIcon.green{background:#e9faf3;color:#16ae7c}.txIcon.blue{background:#edf4ff;color:#287cf2}.txIcon.purple{background:#f0ebff;color:#6730e8}.txIcon.gray{background:#f1f3f7;color:#63708b}.type,.status{font-size:8.5px;border-radius:5px;padding:5px 10px;display:inline-block}.type.income{color:#0b9e6c;background:#effaf5;border:1px solid #d2eee2}.type.expense{color:#f33748;background:#fff0f2;border:1px solid #ffdce0}.type.payout{color:#317bf0;background:#eff5ff;border:1px solid #dce9ff}.type.refund{color:#6830e6;background:#f4efff;border:1px solid #e5dcff}.muted{font-size:10px;color:#4f5975}.dateCell{font-size:9px}.dateCell small{display:block;font-size:8px;color:#59647e;margin-top:3px}.amount{font-size:9px}.amount.green{color:#04a66f}.amount.red{color:#ff2538}.status.completed{color:#0b9d6d;background:#effaf5;border:1px solid #d2eee2}.status.pending{color:#ed9017;background:#fff7e9;border:1px solid #ffe2b7}.dots{border:0;background:#fff;color:#5f6a85;font-size:18px}.footer{height:65px;border-top:1px solid #eef0f4;display:flex;align-items:center;justify-content:space-between;padding:0 14px;color:#25304c;font-size:9.5px}.pagination{display:flex;gap:4px;align-items:center}.pagination button{width:31px;height:31px;border:1px solid #e4e7ed;border-radius:7px;background:#fff;font-size:10px}.pagination .current{background:#6330e7;border-color:#6330e7;color:#fff}.pagination em{font-style:normal;padding:0 5px}
+   .right{width:251px;border-left:1px solid #f0f1f5;padding:7px 15px 0 0}.card{border:1px solid #e8eaf0;border-radius:8px;box-shadow:0 2px 9px rgba(35,40,70,.035);background:#fff;margin-bottom:10px}.ai{height:286px;padding:16px 14px}.ai h3{font-size:13px;margin:0}.ai h3 span{float:right;color:#a5adbf}.online{font-size:9px;color:#069d6c;margin-top:7px}.robotBox{height:126px;display:flex;justify-content:center;align-items:center}.ai>strong{font-size:12px}.ai>p{font-size:10px;line-height:19px;margin:6px 0}.quick{height:190px;padding:13px 8px}.card h3{font-size:13px;margin:0 3px 10px}.quick button{height:32px;width:100%;border:1px solid #cfc0fa;background:#fff;border-radius:6px;color:#5c24cf;display:block;text-align:left;padding:0 11px;margin-bottom:6px;font-size:10px}.insights{min-height:120px;max-height:267px;overflow:auto;padding:14px 9px}.insight{display:flex;gap:10px;margin-bottom:13px}.insightIcon{width:29px;height:29px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}.insight p{margin:0;font-size:9.5px;line-height:17px;color:#161c30}.insightIcon.green{background:#eaf9f3;color:#0aac73}.insightIcon.orange{background:#fff2e7;color:#ff891d}.insightIcon.blue{background:#edf4ff;color:#307cf2}.insightIcon.purple{background:#f1ebff;color:#7134ea}.chat{height:47px;border:1px solid #e0e3eb;border-radius:8px;display:flex;align-items:center;padding-left:13px;font-size:10px;color:#45516e}.chat span{flex:1}.chat button{width:32px;height:32px;border:0;border-radius:50%;background:#6328d9;color:#fff;margin-right:5px}.disclaimer{text-align:center;color:#68728a;font-size:8px;line-height:16px;margin-top:18px}
    .robot{width:135px;height:135px;position:relative;transform:scale(.88)}.halo{position:absolute;width:112px;height:88px;left:11px;top:3px;border-radius:50%;background:radial-gradient(circle,#fff,#f0eaff 50%,transparent 72%)}.antenna{position:absolute;left:64px;top:3px;width:7px;height:15px;background:#d8cef7;border-radius:6px}.antenna i{position:absolute;width:9px;height:9px;border-radius:50%;background:#8052ed;left:-1px;top:-4px}.head{position:absolute;left:27px;top:17px;width:82px;height:65px;border-radius:25px 25px 28px 28px;background:linear-gradient(145deg,#fff,#e4def5);box-shadow:inset 0 -7px 12px rgba(79,50,150,.12),0 6px 8px rgba(50,35,110,.12)}.face{position:absolute;left:9px;top:12px;width:64px;height:41px;border-radius:17px;background:#090d32;display:flex;align-items:center;justify-content:center;gap:19px}.face b{width:8px;height:8px;border-radius:50%;background:#9b60ff;box-shadow:0 0 8px #8e50ff}.face em{position:absolute;color:#ae65ff;font-size:14px;left:28px;top:22px;font-style:normal}.ear{position:absolute;top:39px;width:17px;height:30px;border-radius:9px;background:#d7cdf4}.ear.l{left:18px}.ear.r{right:18px}.bodyRobot{position:absolute;left:42px;top:77px;width:52px;height:52px;border-radius:16px 16px 20px 20px;background:linear-gradient(145deg,#fff,#e4def5);box-shadow:inset 0 -7px 9px rgba(79,50,150,.12)}.tie{position:absolute;top:4px;left:18px;width:16px;height:31px;background:#6540dc;clip-path:polygon(25% 0,75% 0,100% 45%,50% 100%,0 45%)}.chest{position:absolute;width:17px;height:17px;border-radius:50%;background:#cfc1f3;left:18px;top:29px}.arm{position:absolute;width:20px;height:42px;border-radius:14px;background:#e4def5;top:82px}.arm.l{left:24px;transform:rotate(20deg)}.arm.r{right:24px;transform:rotate(-20deg)}
    .toast{position:fixed;z-index:99;left:50%;bottom:24px;transform:translateX(-50%);background:#11162f;color:#fff;padding:10px 18px;border-radius:7px;font-size:11px;box-shadow:0 12px 30px rgba(0,0,0,.18)}
   `}</style>

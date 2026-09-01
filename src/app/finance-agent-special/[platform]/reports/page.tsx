@@ -3,7 +3,14 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { usePlatformParam, platformLabel } from "@/lib/agent-data";
+import {
+  usePlatformParam,
+  platformLabel,
+  useFinanceSnapshot,
+  useFinanceBreakdown,
+  useFinanceTrend,
+  generateGhrfixFinanceReport,
+} from "@/lib/agent-data";
 
 /**
  * ShadiLife Finance Manager — Reports
@@ -17,7 +24,7 @@ const I = ({name, size=18}: {name:string; size?:number}) => {
     users:<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></>,
     heart:<><path d="M20.8 8.7c0 5.5-8.8 10.8-8.8 10.8S3.2 14.2 3.2 8.7A5 5 0 0 1 12 6.1a5 5 0 0 1 8.8 2.6Z"/><path d="M8 10h3l1.2-2.2L14 13l1.2-2H18"/></>,
     msg:<><rect x="3" y="4" width="18" height="15" rx="4"/><path d="m8 19-2 3 5-3"/><circle cx="8" cy="11.5" r=".7" fill="currentColor"/><circle cx="12" cy="11.5" r=".7" fill="currentColor"/><circle cx="16" cy="11.5" r=".7" fill="currentColor"/></>,
-    diamond:<><path d="m3 9 5-6h8l5 6-9 12Z"/><path d="m3 9h18M8 3l4 18 4-18"/></>,
+    diamond:<path d="m12 3 7 5-7 13L5 8l7-5Zm0 0 7 5H5l7-5Z"/>,
     card:<><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></>,
     finance:<><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h2M13 15h2M9 18h2M13 18h2"/></>,
     bot:<><path d="M12 3v3"/><rect x="5" y="7" width="14" height="13" rx="4"/><path d="M9 12h.01M15 12h.01M9 16c1.5 1 4.5 1 6 0"/><path d="M3 12v4M21 12v4"/></>,
@@ -36,8 +43,8 @@ const I = ({name, size=18}: {name:string; size?:number}) => {
     forecast:<><path d="M4 19V5M4 19h17"/><path d="M7 15l4-5 3 3 5-7"/></>,
     pie:<><path d="M12 3a9 9 0 1 0 9 9h-9Z"/><path d="M12 3v9h9A9 9 0 0 0 12 3Z"/></>,
     calculator:<><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M14 11h2M8 15h2M14 15h2M8 18h2M14 18h2"/></>,
-    arrowUp:<><path d="M12 19V5M6 11l6-6 6 6"/></>,
-    sparkle:<><path d="m12 2 1.7 6.3L20 10l-6.3 1.7L12 18l-1.7-6.3L4 10l6.3-1.7Z"/><path d="m20 17 .6 2.4L23 20l-2.4.6L20 23l-.6-2.4L17 20l2.4-.6Z"/></>,
+    up:<path d="m7 14 5-5 5 5"/>,
+    spark:<><path d="m12 2 1.5 5L18 9l-4.5 2L12 16l-1.5-5L6 9l4.5-2L12 2Z"/><path d="m19 15 .7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7L19 15Z"/></>,
     send:<><path d="m3 3 18 9-18 9 4-9z"/><path d="M7 12h14"/></>,
     more:<><circle cx="12" cy="5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="19" r="1" fill="currentColor"/></>,
     close:<><path d="m6 6 12 12M18 6 6 18"/></>,
@@ -45,24 +52,66 @@ const I = ({name, size=18}: {name:string; size?:number}) => {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{p[name]||p.file}</svg>;
 };
 
-const MiniLine=({color="#6532e9", expense=false}:{color?:string;expense?:boolean})=>(
-  <svg className="mini-line" viewBox="0 0 190 55" preserveAspectRatio="none">
-    <defs><linearGradient id={expense?"expfill":"revfill"} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={color} stopOpacity=".13"/><stop offset="1" stopColor={color} stopOpacity=".01"/></linearGradient></defs>
-    <path d={expense?"M0 42 L20 39 L40 30 L60 32 L80 23 L100 27 L120 21 L140 20 L160 13 L175 14 L190 7 L190 55 L0 55Z":"M0 37 L20 36 L40 22 L60 23 L80 17 L100 10 L120 16 L140 7 L160 12 L175 3 L190 0 L190 55 L0 55Z"} fill={`url(#${expense?"expfill":"revfill"})`}/>
-    <polyline points={expense?"0,42 20,39 40,30 60,32 80,23 100,27 120,21 140,20 160,13 175,14 190,7":"0,37 20,36 40,22 60,23 80,17 100,10 120,16 140,7 160,12 175,3 190,0"} fill="none" stroke={color} strokeWidth="2.2"/>
-  </svg>
-);
+/** Compact number formatting shared by the y-axis ticks and donut center. */
+function compact(n: number): string {
+  const abs = Math.abs(n);
+  if (abs >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return `${Math.round(n)}`;
+}
+
+function formatShortDate(iso: string): string {
+  const d = new Date(`${iso}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+}
+
+/** Top-N real entries plus a real "Other" bucket for whatever's left, so displayed
+ * shares always sum to 100% of the real set actually returned by the backend —
+ * never a fabricated percentage. */
+function topNWithOther(items: Array<{ label: string; value: number }>, n = 4): Array<{ label: string; value: number }> {
+  const sorted = [...items].sort((a, b) => b.value - a.value);
+  const top = sorted.slice(0, n);
+  const rest = sorted.slice(n);
+  const restSum = rest.reduce((s, t) => s + t.value, 0);
+  if (restSum > 0) top.push({ label: "Other", value: restSum });
+  return top;
+}
+
+const DONUT_COLORS = ["#6524d9", "#e32e91", "#f37c25", "#3c78ed", "#8a8f9e"];
+
+function buildConicGradient(source: Array<{ value: number }>, total: number): string {
+  if (total <= 0 || source.length === 0) return "conic-gradient(#e5e7ef 0 100%)";
+  let acc = 0;
+  const stops = source.map((s, i) => {
+    const startPct = (acc / total) * 100;
+    acc += s.value;
+    const endPct = (acc / total) * 100;
+    return `${DONUT_COLORS[i % DONUT_COLORS.length]} ${startPct}% ${endPct}%`;
+  });
+  return `conic-gradient(${stops.join(",")})`;
+}
 
 export default function FinanceReportsPage({ params }: { params: Promise<{ platform: string }> }){
   const platform = usePlatformParam(params);
   const pathname = usePathname();
   const router = useRouter();
+  const isGhrfix = platform === "ghrfix";
+  const finance = useFinanceSnapshot(platform);
+  const breakdown = useFinanceBreakdown(platform);
+  const trend = useFinanceTrend(platform);
+
   const [range,setRange]=React.useState("May 1 – May 31, 2025");
   const [month,setMonth]=React.useState("This Month");
   const [openDate,setOpenDate]=React.useState(false);
   const [notice,setNotice]=React.useState("");
   const [chat,setChat]=React.useState("");
-  const [sent,setSent]=React.useState<string[]>([]);
+
+  const [reportSnapshot, setReportSnapshot] = React.useState<Record<string, unknown> | null>(null);
+  const [reportGeneratedAt, setReportGeneratedAt] = React.useState<string | null>(null);
+  const [reportBusy, setReportBusy] = React.useState(false);
+  const [reportError, setReportError] = React.useState<string | null>(null);
+  const [showSnapshot, setShowSnapshot] = React.useState(false);
 
   const toast=(x:string)=>{setNotice(x);window.setTimeout(()=>setNotice(""),2200)};
   const nav: Array<[string, string, string]> = [
@@ -73,9 +122,120 @@ export default function FinanceReportsPage({ params }: { params: Promise<{ platf
     ["bot", "Chat", "chat"],
   ];
 
+  // ---- Metric cards: Total Revenue and (GhrFix) Cash Balance are real, live
+  // numbers straight off /summary via the same useFinanceSnapshot the
+  // dashboard page already uses. Net Profit and Total Expenses have no real
+  // backend equivalent on either platform (no expense tracking exists
+  // anywhere) — they keep the dashboard's own "Illustrative — not tracked
+  // yet" pattern instead of a bare invented figure. ShadiLife has no literal
+  // "cash balance" concept either, so that fourth card is honestly relabeled
+  // to a real figure (Revenue This Year) instead of faking a balance.
+  const totalRevenueValue = isGhrfix ? finance.secondaryPkr : finance.totalRevenuePkr;
+  const totalRevenueDisplay = totalRevenueValue == null ? null : `PKR ${Math.round(totalRevenueValue).toLocaleString()}`;
+  const totalRevenueCaption = isGhrfix ? "Accept fees collected — real, live data" : "Revenue this month — real, live data";
+
+  const cashBalanceTitle = isGhrfix ? "Cash Balance" : "Revenue This Year";
+  const cashBalanceDisplay = isGhrfix ? finance.cashOrPendingValue : (finance.secondaryPkr == null ? null : `PKR ${finance.secondaryPkr.toLocaleString()}`);
+  const cashBalanceCaption = isGhrfix ? "Cash settled via bookings — real, live data" : "Real, live data";
+
+  // ---- Revenue chart: real daily series only, Expenses line dropped entirely
+  // (no real expense time series exists on either platform).
+  const histValues = trend.points.map((p) => p.value);
+  const projValues = trend.projected.map((p) => p.value);
+  const totalCount = histValues.length + projValues.length;
+  const CHART_W = 520, CHART_H = 160;
+  const allValues = [...histValues, ...projValues];
+  const maxV = Math.max(1, ...allValues);
+  const minV = Math.min(0, ...allValues);
+  const range_ = maxV - minV || 1;
+  const stepX = totalCount > 1 ? CHART_W / (totalCount - 1) : CHART_W;
+  const toXY = (v: number, i: number): [number, number] => [Math.round(i * stepX), Math.round(CHART_H - ((v - minV) / range_) * CHART_H)];
+  const histPts = histValues.map((v, i) => toXY(v, i));
+  const projPtsRaw = projValues.map((v, i) => toXY(v, i + Math.max(0, histValues.length - 1)));
+  const projPts = histPts.length && projPtsRaw.length ? [histPts[histPts.length - 1], ...projPtsRaw] : projPtsRaw;
+  const toPath = (pts: Array<[number, number]>) => (pts.length ? pts.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x} ${y}`).join(" ") : "");
+  const histPath = toPath(histPts);
+  const projPath = toPath(projPts);
+  const histArea = histPts.length ? `${histPath} L${histPts[histPts.length - 1][0]} ${CHART_H} L0 ${CHART_H} Z` : "";
+  const yTicks = allValues.length === 0 ? ["", "", "", "", "", ""] : Array.from({ length: 6 }, (_, i) => compact(maxV - (i * (maxV - minV)) / 5));
+  const allDates = [...trend.points.map((p) => p.date), ...trend.projected.map((p) => p.date)];
+  const xLabelCount = Math.min(7, allDates.length || 1);
+  const xLabelIdxs = Array.from(new Set(Array.from({ length: xLabelCount }, (_, i) => Math.round((i / Math.max(1, xLabelCount - 1)) * (allDates.length - 1)))));
+
+  // ---- Profit Breakdown donut: real revenue split by category (GhrFix) or
+  // membership tier (ShadiLife) — no invented cost-center percentages.
+  const donutSource = topNWithOther(
+    isGhrfix
+      ? (breakdown.revenueByCategory ?? []).map((r) => ({ label: r.label, value: r.acceptFees }))
+      : (breakdown.approvedRevenueByTier ?? []).map((r) => ({ label: r.tier, value: r.totalAmountPkr })),
+  );
+  const donutTotal = donutSource.reduce((s, d) => s + d.value, 0);
+  const donutTitle = isGhrfix ? "Revenue by Category" : "Revenue by Membership Tier";
+
+  async function handleGenerateReport() {
+    setReportBusy(true);
+    setReportError(null);
+    try {
+      if (isGhrfix) {
+        const snap = await generateGhrfixFinanceReport();
+        setReportSnapshot(snap as unknown as Record<string, unknown>);
+        setReportGeneratedAt(snap.generatedAt);
+        toast(`Report generated by ${snap.generatedBy} — permanently audit-logged`);
+      } else {
+        const snap: Record<string, unknown> = {
+          generatedAt: new Date().toISOString(),
+          generatedBy: "Admin — client-compiled (ShadiLife's finance-agent has no server-side report log)",
+          revenueThisMonthPkr: finance.totalRevenuePkr,
+          revenueThisYearPkr: finance.secondaryPkr,
+          monthOverMonthChangePct: finance.changePct,
+          pendingPaymentsCount: breakdown.pendingPaymentsCount,
+          payments: breakdown.payments,
+          approvedRevenueByTier: breakdown.approvedRevenueByTier,
+          agentPayouts: breakdown.agentPayouts,
+          agentPayoutsThisMonthPkr: breakdown.agentPayoutsThisMonthPkr,
+          revenueForecastNext30dPkr: trend.projectedNext30dTotalPkr,
+        };
+        setReportSnapshot(snap);
+        setReportGeneratedAt(snap.generatedAt as string);
+        toast("Snapshot compiled from real, currently-loaded data");
+      }
+      setShowSnapshot(true);
+    } catch (err) {
+      setReportError(err instanceof Error ? err.message : "Could not generate report.");
+      toast("Report generation failed");
+    } finally {
+      setReportBusy(false);
+    }
+  }
+
+  function downloadSnapshot(){
+    if (!reportSnapshot) return;
+    const text = JSON.stringify(reportSnapshot, null, 2);
+    const b = new Blob([text], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(b);
+    a.download = `${platform}-finance-report-${(reportGeneratedAt ?? new Date().toISOString()).slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
   const exportReport=()=>{
-    const text=`${platformLabel(platform)} Finance Report\nPeriod: ${range}\n\nTotal Revenue: PKR 8,742,500\nNet Profit: PKR 2,457,300\nTotal Expenses: PKR 6,285,200\nCash Balance: PKR 5,312,400`;
-    const b=new Blob([text],{type:"text/plain"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`${platform}-finance-report.txt`;a.click();URL.revokeObjectURL(a.href);toast("Reports exported successfully");
+    const lines = [
+      `${platformLabel(platform)} Finance Report`,
+      `Exported: ${new Date().toLocaleString()}`,
+      "",
+      `Total Revenue (${totalRevenueCaption}): ${totalRevenueDisplay ?? "—"}`,
+      `${cashBalanceTitle} (${cashBalanceCaption}): ${cashBalanceDisplay ?? "—"}`,
+      "Net Profit: Illustrative — not tracked yet (no expense data exists to compute a real profit figure)",
+      "Total Expenses: Illustrative — not tracked yet (no expense tracking exists on this platform)",
+      "",
+      `${donutTitle} (real):`,
+      ...donutSource.map((d) => `  ${d.label}: PKR ${Math.round(d.value).toLocaleString()} (${donutTotal > 0 ? Math.round((d.value / donutTotal) * 100) : 0}%)`),
+      "",
+      reportSnapshot ? `Last generated report: ${reportGeneratedAt}` : "No report has been generated yet this session.",
+    ];
+    const text=lines.join("\n");
+    const b=new Blob([text],{type:"text/plain"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`${platform}-finance-report.txt`;a.click();URL.revokeObjectURL(a.href);toast("Exported the real numbers currently on screen");
   };
   const sendChat=()=>{if(!chat.trim())return;router.push(`/finance-agent-special/${platform}/chat?q=${encodeURIComponent(chat.trim())}`)};
 
@@ -112,9 +272,9 @@ export default function FinanceReportsPage({ params }: { params: Promise<{ platf
       .actions{display:flex;gap:11px}.select{height:37px;min-width:111px;border:1px solid #dfe3eb;background:#fff;border-radius:7px;padding:0 12px;display:flex;align-items:center;justify-content:space-between;gap:16px;color:#222942;font-size:11px;cursor:pointer}.export{height:37px;border:1px solid #a96ef1;color:#5e20d1;background:#fff;border-radius:7px;padding:0 13px;display:flex;align-items:center;gap:7px;font-size:11px;font-weight:650;cursor:pointer}
       .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:11px}.metric{height:119px;background:#fff;border:1px solid #edf0f5;border-radius:8px;box-shadow:0 2px 8px rgba(31,35,70,.035);padding:16px 15px;position:relative}.metric-top{display:flex;gap:12px}.micon{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;flex:0 0 auto}.m-purple{background:#f1e9ff;color:#7030e6}.m-green{background:#e5f8ed;color:#11a967}.m-red{background:#ffe7e8;color:#f3484d}.m-blue{background:#e8f0ff;color:#3678ed}.m-label{font-size:11px;color:#333b55;margin-top:1px}.m-value{font-size:18px;font-weight:780;letter-spacing:-.4px;margin-top:5px;white-space:nowrap}.m-growth{display:block;font-size:9.5px;color:#06a95e;margin-top:6px}.m-growth.red{color:#ef3347}.m-sub{font-size:8.5px;color:#59617a;margin-top:5px}.cash .m-sub{margin-left:52px;margin-top:12px}
       .charts{display:grid;grid-template-columns:1.05fr 1fr;gap:9px;margin-bottom:11px}.chart-card{height:281px;background:#fff;border:1px solid #edf0f5;border-radius:8px;box-shadow:0 2px 8px rgba(31,35,70,.035);padding:16px 19px}.card-head{display:flex;justify-content:space-between;align-items:center}.card-title{font-size:12.5px;font-weight:750}.legend{display:flex;gap:20px;font-size:9px;color:#4d5670;margin:11px 0 7px 34px}.legend i{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}.purple-dot{background:#6530e4}.pink-dot{background:#e63391}
-      .linechart{height:193px;position:relative;padding:8px 0 22px 40px}.grid{position:absolute;left:40px;right:0;top:8px;bottom:23px;display:flex;flex-direction:column;justify-content:space-between}.grid i{height:1px;background:#edf0f5}.ylabels{position:absolute;left:0;top:5px;bottom:21px;display:flex;flex-direction:column;justify-content:space-between;font-size:9px;color:#515b78}.xlabels{position:absolute;left:40px;right:0;bottom:0;display:flex;justify-content:space-between;font-size:8.5px;color:#525d7a}.linechart svg{position:absolute;left:40px;right:0;top:8px;width:calc(100% - 40px);height:158px}.revline{fill:none;stroke:#6631e5;stroke-width:2.2}.expline{fill:none;stroke:#e9368f;stroke-width:2.2}
-      .profit-body{display:flex;align-items:center;height:210px;gap:25px}.donut{width:177px;height:177px;border-radius:50%;background:conic-gradient(#6524d9 0 56%,#e32e91 56% 78%,#f37c25 78% 92%,#3c78ed 92% 100%);display:grid;place-items:center;flex:0 0 auto}.donut-hole{width:115px;height:115px;border-radius:50%;background:#fff;display:grid;place-items:center;align-content:center;text-align:center}.donut-hole span{font-size:11px;color:#3c425a}.donut-hole strong{font-size:15px;margin-top:5px}.profit-list{display:flex;flex-direction:column;gap:15px;font-size:10px}.profit-row{display:grid;grid-template-columns:12px 1fr;gap:8px}.profit-row b{font-size:11px;font-weight:500}.profit-row small{display:block;font-size:9.5px;color:#4e5771;margin-top:3px}.p1{background:#6524d9}.p2{background:#e32e91}.p3{background:#f37c25}.p4{background:#3c78ed}
-      .reports{height:411px;background:#fff;border:1px solid #edf0f5;border-radius:8px;box-shadow:0 2px 8px rgba(31,35,70,.035);padding:17px 15px}.reports-desc{font-size:10px;color:#3f465e;margin:6px 0 12px}.table{width:100%;border-collapse:collapse;table-layout:fixed}.table th{height:31px;background:#fafbfe;font-size:9px;font-weight:550;color:#39415e;text-align:left;padding:0 7px}.table td{height:47px;border-bottom:1px solid #edf0f4;font-size:9px;color:#303750;padding:0 7px}.table th:nth-child(1){width:21%}.table th:nth-child(2){width:27%}.table th:nth-child(3){width:20%}.table th:nth-child(4){width:15%}.table th:nth-child(5){width:17%}.report-name{display:flex;align-items:center;gap:10px;font-weight:700;color:#11162a}.report-icon{width:31px;height:31px;border-radius:8px;display:grid;place-items:center}.ri1{background:#f0e7ff;color:#6730e6}.ri2{background:#e3f8ec;color:#10a969}.ri3{background:#ffe5e7;color:#f34a52}.ri4{background:#e8efff;color:#3579ed}.ri5{background:#fff0df;color:#ff891e}.period{height:30px;border:1px solid #e1e4eb;border-radius:6px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 8px;font-size:9px;color:#323b57}.view{height:29px;border:1px solid #d5aaf4;background:#fff;color:#6023ce;border-radius:6px;padding:0 9px;font-size:9px;display:inline-flex;align-items:center;gap:7px;cursor:pointer}.dots{border:0;background:none;cursor:pointer;color:#525a72}.pagination{height:50px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:#343c56}.pages{display:flex;align-items:center;gap:15px}.page-btn{width:32px;height:31px;border:1px solid #e3e5ec;background:#fff;border-radius:6px;color:#333c59;cursor:pointer}.page-btn.active{background:linear-gradient(135deg,#7030ee,#5e2be2);color:#fff;border-color:#7030ee}
+      .linechart{height:193px;position:relative;padding:8px 0 22px 40px}.grid{position:absolute;left:40px;right:0;top:8px;bottom:23px;display:flex;flex-direction:column;justify-content:space-between}.grid i{height:1px;background:#edf0f5}.ylabels{position:absolute;left:0;top:5px;bottom:21px;display:flex;flex-direction:column;justify-content:space-between;font-size:9px;color:#515b78}.xlabels{position:absolute;left:40px;right:0;bottom:0;display:flex;justify-content:space-between;font-size:8.5px;color:#525d7a}.linechart svg{position:absolute;left:40px;right:0;top:8px;width:calc(100% - 40px);height:158px}.revline{fill:none;stroke:#6631e5;stroke-width:2.2}.expline{fill:none;stroke:#e9368f;stroke-width:2.2;stroke-dasharray:5 4}
+      .profit-body{display:flex;align-items:center;height:210px;gap:25px}.donut{width:177px;height:177px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto}.donut-hole{width:115px;height:115px;border-radius:50%;background:#fff;display:grid;place-items:center;align-content:center;text-align:center}.donut-hole span{font-size:11px;color:#3c425a}.donut-hole strong{font-size:15px;margin-top:5px}.profit-list{display:flex;flex-direction:column;gap:15px;font-size:10px;overflow:auto;max-height:210px}.profit-row{display:grid;grid-template-columns:12px 1fr;gap:8px}.profit-row b{font-size:11px;font-weight:500}.profit-row small{display:block;font-size:9.5px;color:#4e5771;margin-top:3px}.profit-row .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-top:3px}.p1{background:#6524d9}.p2{background:#e32e91}.p3{background:#f37c25}.p4{background:#3c78ed}.p5{background:#8a8f9e}
+      .reports{min-height:200px;background:#fff;border:1px solid #edf0f5;border-radius:8px;box-shadow:0 2px 8px rgba(31,35,70,.035);padding:17px 15px}.reports-desc{font-size:10px;color:#3f465e;margin:6px 0 12px}.table{width:100%;border-collapse:collapse;table-layout:fixed}.table th{height:31px;background:#fafbfe;font-size:9px;font-weight:550;color:#39415e;text-align:left;padding:0 7px}.table td{padding:10px 7px;border-bottom:1px solid #edf0f4;font-size:9px;color:#303750;vertical-align:top}.table th:nth-child(1){width:19%}.table th:nth-child(2){width:33%}.table th:nth-child(3){width:26%}.table th:nth-child(4){width:14%}.table th:nth-child(5){width:8%}.report-name{display:flex;align-items:center;gap:10px;font-weight:700;color:#11162a}.report-icon{width:31px;height:31px;border-radius:8px;display:grid;place-items:center;flex:0 0 auto}.ri1{background:#f0e7ff;color:#6730e6}.view{height:29px;border:1px solid #d5aaf4;background:#fff;color:#6023ce;border-radius:6px;padding:0 9px;font-size:9px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap}.view:disabled{opacity:.6;cursor:default}.dots{border:0;background:none;cursor:pointer;color:#525a72;margin-left:6px}
       .agent{background:#fff;border:1px solid #edf0f5;border-radius:8px;box-shadow:0 2px 8px rgba(31,35,70,.04);min-height:906px;padding:16px 10px}.agent-title{font-size:12.5px;font-weight:750;display:flex;justify-content:space-between}.online{font-size:10px;color:#0aa96a;margin-top:6px}.online i{width:9px;height:9px;background:#09ad6c;border-radius:50%;display:inline-block;margin-right:5px}.robot{height:132px;display:grid;place-items:center;position:relative}.robot-head{width:95px;height:86px;border-radius:45px 45px 34px 34px;background:linear-gradient(145deg,#fff,#d8d4ff);box-shadow:0 7px 15px rgba(102,67,213,.16);position:relative;border:2px solid #a397ef}.robot-head:before{content:"";position:absolute;left:21px;top:27px;width:53px;height:37px;border-radius:18px;background:#17142d;box-shadow:inset 0 0 15px #42347f}.robot-head:after{content:"••";position:absolute;left:31px;top:29px;color:#c178ff;font-size:18px;letter-spacing:11px}.robot-tie{position:absolute;bottom:5px;left:45px;width:13px;height:34px;background:#6731df;clip-path:polygon(20% 0,80% 0,100% 100%,50% 76%,0 100%)}.robot-ear{position:absolute;width:13px;height:34px;border-radius:8px;background:#ddd8ff;top:33px}.ear-l{left:59px}.ear-r{right:59px}.agent-text{font-size:11px;line-height:19px;color:#171a2d}.agent-text strong{font-size:12px}.quick{border-top:1px solid #f0f1f5;margin-top:14px;padding-top:12px}.quick-title{font-size:12px;font-weight:750;margin-bottom:8px}.quick button{height:32px;width:100%;border:1px solid #bb86ef;background:#fff;border-radius:6px;color:#5e21cf;text-align:left;padding:0 10px;display:flex;align-items:center;gap:8px;font-size:9.5px;margin-bottom:6px;cursor:pointer}.insights{margin-top:14px;border-top:1px solid #f0f1f5;padding-top:13px}.insights-title{font-size:12px;font-weight:750;margin-bottom:11px}.insight{display:flex;gap:9px;margin:10px 0;font-size:9.5px;line-height:15px}.insight-icon{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto}.ig{background:#e8faee;color:#08a96a}.io{background:#fff0df;color:#f18b25}.ib{background:#e9f1ff;color:#377eea}.ip{background:#f0e8ff;color:#7131e8}.chat{margin-top:17px;height:48px;border:1px solid #e0e4ec;border-radius:8px;display:flex;align-items:center;padding:0 7px 0 11px}.chat input{border:0;outline:0;flex:1;font-size:9.5px;color:#555d74;background:transparent}.send{width:31px;height:31px;border-radius:50%;border:0;background:#6424d8;color:#fff;display:grid;place-items:center;cursor:pointer}.disclaimer{text-align:center;font-size:8px;color:#697087;line-height:14px;margin-top:20px}
       .date-menu{position:absolute;right:165px;top:62px;width:220px;background:#fff;border:1px solid #e0e3eb;border-radius:8px;box-shadow:0 12px 30px rgba(30,33,65,.13);padding:6px;z-index:50}.date-menu button{width:100%;border:0;background:#fff;text-align:left;padding:9px;border-radius:5px;font-size:11px;cursor:pointer;color:#343b55}.date-menu button:hover{background:#f4efff;color:#5f24d2}
       .toast{position:fixed;right:24px;bottom:22px;background:#171a31;color:#fff;border-radius:8px;padding:11px 15px;font-size:11px;box-shadow:0 14px 35px rgba(20,22,50,.25);z-index:100;animation:in .22s ease-out}@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -140,7 +300,7 @@ export default function FinanceReportsPage({ params }: { params: Promise<{ platf
 
     <main className="main">
       <header className="top">
-        <div className="ai-header"><div className="ai-head-icon"><I name="trend"/></div><div><div className="ai-heading">{platformLabel(platform)} — Finance Manager AI Agent <span className="spark">✦</span></div><div className="ai-sub">Your intelligent finance partner for smarter decisions</div></div></div>
+        <div className="ai-header"><div className="ai-head-icon"><I name="trend"/></div><div><div className="ai-heading">{platformLabel(platform)} — Finance Manager AI Agent <span className="spark">✦</span></div><div className="ai-sub">{breakdown.loading||finance.loading ? "Loading real finance data…" : (finance.error||breakdown.error) ? `Live data unavailable: ${finance.error||breakdown.error}` : "Your intelligent finance partner for smarter decisions"}</div></div></div>
         <div className="top-right">
           <div style={{position:"relative"}}>
             <button className="top-date" onClick={()=>setOpenDate(!openDate)}><span>{range}</span><I name="calendar" size={17}/></button>
@@ -159,62 +319,113 @@ export default function FinanceReportsPage({ params }: { params: Promise<{ platf
           </div>
 
           <div className="metrics">
-            <div className="metric"><div className="metric-top"><div className="micon m-purple"><I name="revenue" size={19}/></div><div><div className="m-label">Total Revenue</div><div className="m-value">PKR 8,742,500</div><span className="m-growth">↑ 24.6%</span><div className="m-sub">vs Apr 1 – Apr 30, 2025</div></div></div></div>
-            <div className="metric"><div className="metric-top"><div className="micon m-green"><I name="profit" size={19}/></div><div><div className="m-label">Net Profit</div><div className="m-value">PKR 2,457,300</div><span className="m-growth">↑ 18.7%</span><div className="m-sub">vs Apr 1 – Apr 30, 2025</div></div></div></div>
-            <div className="metric"><div className="metric-top"><div className="micon m-red"><I name="expense" size={19}/></div><div><div className="m-label">Total Expenses</div><div className="m-value">PKR 6,285,200</div><span className="m-growth red">↑ 12.4%</span><div className="m-sub">vs Apr 1 – Apr 30, 2025</div></div></div></div>
-            <div className="metric cash"><div className="metric-top"><div className="micon m-blue"><I name="cash" size={19}/></div><div><div className="m-label">Cash Balance</div><div className="m-value">PKR 5,312,400</div><div className="m-sub">Available Balance</div></div></div></div>
+            <div className="metric"><div className="metric-top"><div className="micon m-purple"><I name="revenue" size={19}/></div><div>
+              <div className="m-label">Total Revenue</div>
+              <div className="m-value">{finance.loading ? "…" : totalRevenueDisplay ?? "—"}</div>
+              {!isGhrfix && finance.changePct!=null && <span className={`m-growth ${finance.changePct<0?"red":""}`}>{finance.changePct>=0?"↑":"↓"} {Math.abs(finance.changePct)}%</span>}
+              <div className="m-sub">{totalRevenueCaption}</div>
+            </div></div></div>
+            <div className="metric"><div className="metric-top"><div className="micon m-green"><I name="profit" size={19}/></div><div>
+              <div className="m-label">Net Profit</div>
+              <div className="m-value">PKR 2,457,300</div>
+              <span className="m-growth">↑ 18.7%</span>
+              <div className="m-sub">Illustrative — not tracked yet</div>
+            </div></div></div>
+            <div className="metric"><div className="metric-top"><div className="micon m-red"><I name="expense" size={19}/></div><div>
+              <div className="m-label">Total Expenses</div>
+              <div className="m-value">PKR 6,285,200</div>
+              <span className="m-growth red">↑ 12.4%</span>
+              <div className="m-sub">Illustrative — not tracked yet</div>
+            </div></div></div>
+            <div className="metric cash"><div className="metric-top"><div className="micon m-blue"><I name="cash" size={19}/></div><div>
+              <div className="m-label">{cashBalanceTitle}</div>
+              <div className="m-value">{finance.loading ? "…" : cashBalanceDisplay ?? "—"}</div>
+              <div className="m-sub">{cashBalanceCaption}</div>
+            </div></div></div>
           </div>
 
           <div className="charts">
             <div className="chart-card">
-              <div className="card-head"><div className="card-title">Revenue vs Expenses</div><button className="select" onClick={()=>toast(`${month} selected`)}>{month}<I name="chevron" size={11}/></button></div>
-              <div className="legend"><span><i className="purple-dot"/>Revenue</span><span><i className="pink-dot"/>Expenses</span></div>
+              <div className="card-head"><div className="card-title">{trend.unit==="tokens" ? "Wallet Credits Trend" : "Revenue Trend"}</div><button className="select" onClick={()=>toast(`${month} selected`)}>{month}<I name="chevron" size={11}/></button></div>
+              <div className="legend">
+                <span><i className="purple-dot"/>{trend.unit==="tokens" ? "Wallet credits (tokens, real)" : "Revenue (PKR, real)"}</span>
+                {projValues.length>0 && <span><i className="pink-dot"/>Projected next 30 days (real forecast)</span>}
+              </div>
               <div className="linechart">
-                <div className="ylabels"><span>10M</span><span>8M</span><span>6M</span><span>4M</span><span>2M</span><span>0</span></div>
+                <div className="ylabels">{yTicks.map((t,i)=><span key={i}>{t}</span>)}</div>
                 <div className="grid">{[0,1,2,3,4,5].map(i=><i key={i}/>)}</div>
-                <svg viewBox="0 0 520 160" preserveAspectRatio="none">
-                  <defs><linearGradient id="rfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#7132e8" stopOpacity=".13"/><stop offset="1" stopColor="#7132e8" stopOpacity=".01"/></linearGradient><linearGradient id="efill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#e73691" stopOpacity=".12"/><stop offset="1" stopColor="#e73691" stopOpacity=".01"/></linearGradient></defs>
-                  <path d="M0 112L40 112 80 96 120 97 160 87 200 65 240 78 280 57 320 66 360 48 400 35 440 27 480 18 520 9V160H0Z" fill="url(#rfill)"/>
-                  <path d="M0 112L40 112 80 96 120 97 160 87 200 65 240 78 280 57 320 66 360 48 400 35 440 27 480 18 520 9" className="revline"/>
-                  <path d="M0 137L40 132 80 119 120 121 160 109 200 108 240 109 280 101 320 105 360 102 400 91 440 90 480 75 520 67V160H0Z" fill="url(#efill)"/>
-                  <path d="M0 137L40 132 80 119 120 121 160 109 200 108 240 109 280 101 320 105 360 102 400 91 440 90 480 75 520 67" className="expline"/>
-                  {[0,40,80,120,160,200,240,280,320,360,400,440,480,520].map((x,i)=><circle key={i} cx={x} cy={([112,112,96,97,87,65,78,57,66,48,35,27,18,9][i])} r="2.4" fill="#6631e5"/>)}
-                </svg>
-                <div className="xlabels"><span>May 1</span><span>May 6</span><span>May 11</span><span>May 16</span><span>May 21</span><span>May 26</span><span>May 31</span></div>
+                {breakdown.loading || trend.loading ? (
+                  <div style={{position:"absolute",left:40,right:0,top:8,height:158,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#69738b"}}>Loading real data…</div>
+                ) : trend.error ? (
+                  <div style={{position:"absolute",left:40,right:0,top:8,height:158,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#ff2538"}}>Live data unavailable: {trend.error}</div>
+                ) : histPts.length===0 ? (
+                  <div style={{position:"absolute",left:40,right:0,top:8,height:158,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#69738b"}}>No data yet.</div>
+                ) : (
+                  <svg viewBox={`0 0 ${CHART_W} ${CHART_H}`} preserveAspectRatio="none">
+                    <defs><linearGradient id="rfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#7132e8" stopOpacity=".13"/><stop offset="1" stopColor="#7132e8" stopOpacity=".01"/></linearGradient></defs>
+                    {histArea && <path d={histArea} fill="url(#rfill)"/>}
+                    <path d={histPath} className="revline"/>
+                    {projPath && <path d={projPath} className="expline"/>}
+                  </svg>
+                )}
+                <div className="xlabels">{xLabelIdxs.map((idx)=><span key={idx}>{allDates[idx] ? formatShortDate(allDates[idx]) : ""}</span>)}</div>
               </div>
             </div>
 
             <div className="chart-card">
-              <div className="card-head"><div className="card-title">Profit Breakdown</div><button className="select" onClick={()=>toast(`${month} selected`)}>{month}<I name="chevron" size={11}/></button></div>
-              <div className="profit-body"><div className="donut"><div className="donut-hole"><span>Total</span><strong>PKR 2.46M</strong></div></div><div className="profit-list">
-                <div className="profit-row"><i className="dot p1"/><div><b>Operating Profit</b><small><strong>56%</strong> &nbsp;(PKR 1,376,088)</small></div></div>
-                <div className="profit-row"><i className="dot p2"/><div><b>Marketing Profit</b><small><strong>22%</strong> &nbsp;(PKR 540,606)</small></div></div>
-                <div className="profit-row"><i className="dot p3"/><div><b>Subscription Profit</b><small><strong>14%</strong> &nbsp;(PKR 343,058)</small></div></div>
-                <div className="profit-row"><i className="dot p4"/><div><b>Other Income</b><small><strong>8%</strong> &nbsp;(PKR 197,548)</small></div></div>
-              </div></div>
+              <div className="card-head"><div className="card-title">{donutTitle}</div><button className="select" onClick={()=>toast(`${month} selected`)}>{month}<I name="chevron" size={11}/></button></div>
+              {breakdown.loading ? (
+                <div style={{height:210,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#69738b"}}>Loading real data…</div>
+              ) : breakdown.error ? (
+                <div style={{height:210,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#ff2538"}}>Live data unavailable: {breakdown.error}</div>
+              ) : donutSource.length===0 ? (
+                <div style={{height:210,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#69738b"}}>No data yet.</div>
+              ) : (
+                <div className="profit-body">
+                  <div className="donut" style={{background: buildConicGradient(donutSource, donutTotal)}}>
+                    <div className="donut-hole"><span>Total</span><strong>PKR {compact(donutTotal)}</strong></div>
+                  </div>
+                  <div className="profit-list">
+                    {donutSource.map((d,i)=>(
+                      <div className="profit-row" key={d.label}>
+                        <i className={`dot p${i+1<=4?i+1:5}`}/>
+                        <div><b>{d.label}</b><small><strong>{donutTotal>0?Math.round((d.value/donutTotal)*100):0}%</strong> &nbsp;(PKR {Math.round(d.value).toLocaleString()})</small></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="reports">
+          <div className="reports" style={showSnapshot ? {height:"auto"} : undefined}>
             <div className="card-title">Available Reports</div>
-            <div className="reports-desc">View and download detailed financial reports.</div>
+            <div className="reports-desc">{isGhrfix ? "Pull every live figure into a timestamped, permanently audit-logged snapshot." : "Compile every real figure currently loaded on this page into a downloadable snapshot."}</div>
             <table className="table">
-              <thead><tr><th>Report Name</th><th>Description</th><th>Period</th><th>Generated On</th><th>Action</th></tr></thead>
+              <thead><tr><th>Report Name</th><th>Description</th><th>Data Source</th><th>Generated On</th><th>Action</th></tr></thead>
               <tbody>
-                {[
-                  ["Profit & Loss Statement","Summary of revenues, expenses and net profit.","ri1","revenue"],
-                  ["Revenue Report","Detailed breakdown of all income sources.","ri2","profit"],
-                  ["Expense Report","Detailed breakdown of all expenses.","ri3","expense"],
-                  ["Cash Flow Statement","Cash inflows and outflows summary.","ri4","cash"],
-                  ["Tax Summary Report","Taxable income and tax summary.","ri5","calculator"],
-                ].map(([name,desc,cls,icon],i)=><tr key={name}>
-                  <td><div className="report-name"><span className={`report-icon ${cls}`}><I name={icon}/></span>{name}</div></td>
-                  <td>{desc}</td><td><button className="period" onClick={()=>toast(`Period: ${range}`)}>{range}<I name="chevron" size={10}/></button></td>
-                  <td>May 31, 2025<br/>10:30 AM</td><td><button className="view" onClick={()=>toast(`${name} opened`)}>View Report <I name="chevron" size={10}/></button><button className="dots" onClick={()=>toast("More report actions")}><I name="more" size={15}/></button></td>
-                </tr>)}
+                <tr>
+                  <td><div className="report-name"><span className="report-icon ri1"><I name="file"/></span>Financial Snapshot Report</div></td>
+                  <td>{isGhrfix ? "Every live wallet, booking and settlement figure, pulled fresh from the database." : "Every live revenue, payment-status and payout figure currently loaded on this page."}</td>
+                  <td>{isGhrfix ? "POST /finance/report/generate — real, permanently audit-logged" : "Client-compiled from /summary + /forecast — real, not server-logged"}</td>
+                  <td>{reportGeneratedAt ? new Date(reportGeneratedAt).toLocaleString() : "Not generated yet"}</td>
+                  <td>
+                    <button className="view" onClick={handleGenerateReport} disabled={reportBusy}>{reportBusy?"Generating…":"Generate"}<I name="chevron" size={10}/></button>
+                    {reportSnapshot && <button className="dots" onClick={()=>setShowSnapshot((s)=>!s)}><I name="more" size={15}/></button>}
+                  </td>
+                </tr>
               </tbody>
             </table>
-            <div className="pagination"><span>Showing 1 to 5 of 12 reports</span><div className="pages"><button className="page-btn" onClick={()=>toast("Previous page")}>‹</button><button className="page-btn active">1</button><button className="page-btn" onClick={()=>toast("Page 2")}>2</button><button className="page-btn" onClick={()=>toast("Page 3")}>3</button><span>…</span><button className="page-btn" onClick={()=>toast("Page 12")}>12</button><button className="page-btn" onClick={()=>toast("Next page")}>›</button></div></div>
+            {reportError && <p style={{color:"#f34a52",fontSize:10,marginTop:10}}>Report generation failed: {reportError}</p>}
+            {showSnapshot && reportSnapshot && (
+              <div style={{marginTop:12,padding:12,background:"#fafbfe",border:"1px solid #edf0f5",borderRadius:8}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8,gap:8}}>
+                  <strong style={{fontSize:11}}>{isGhrfix ? "Real snapshot — exact server response" : "Real snapshot — compiled client-side from real data"}</strong>
+                  <button className="view" onClick={downloadSnapshot}><I name="download" size={12}/>Download JSON</button>
+                </div>
+                <pre style={{fontSize:9.5,maxHeight:220,overflow:"auto",margin:0,whiteSpace:"pre-wrap",wordBreak:"break-word"}}>{JSON.stringify(reportSnapshot,null,2)}</pre>
+              </div>
+            )}
           </div>
         </section>
 
@@ -229,15 +440,24 @@ export default function FinanceReportsPage({ params }: { params: Promise<{ platf
                 ["file","Generate Financial Report"],["forecast","Revenue Forecast"],["pie","Expense Analysis"],["calculator","Tax Summary"]
               ].map(([ic,tx])=><button key={tx} onClick={()=>toast(`${tx} started`)}><I name={ic} size={15}/>{tx}</button>)}
             </div>
-            <div className="insights"><div className="insights-title">Insights for May 2025</div>
-              <div className="insight"><span className="insight-icon ig"><I name="arrowUp" size={15}/></span><span>Revenue is up by 24.6% compared to last month.</span></div>
-              <div className="insight"><span className="insight-icon io"><I name="expense" size={14}/></span><span>Marketing spend is 39% of total expenses. Consider optimizing.</span></div>
-              <div className="insight"><span className="insight-icon ib"><I name="sparkle" size={14}/></span><span>Net profit margin is 28.1%. Good job! Keep it up.</span></div>
-              <div className="insight"><span className="insight-icon ip"><I name="finance" size={14}/></span><span>You have 14 pending payouts totaling PKR 312,500.</span></div>
+            <div className="insights"><div className="insights-title">AI Insights</div>
+              {isGhrfix ? (
+                <p style={{fontSize:9.5,color:"#4e5771"}}>GhrFix&apos;s Finance Agent has no AI-generated summary endpoint yet.</p>
+              ) : breakdown.loading ? (
+                <p style={{fontSize:9.5,color:"#4e5771"}}>Loading real AI insights…</p>
+              ) : breakdown.aiSummary || breakdown.aiBullets.length>0 ? (
+                <>
+                  {breakdown.aiSummary && <div className="insight"><span className="insight-icon ip"><I name="spark" size={14}/></span><span><b>{breakdown.aiSummary}</b></span></div>}
+                  {breakdown.aiBullets.map((b,i)=>(
+                    <div className="insight" key={i}><span className={`insight-icon ${["ig","io","ib","ip"][i%4]}`}><I name={["up","expense","spark","finance"][i%4]} size={14}/></span><span>{b}</span></div>
+                  ))}
+                </>
+              ) : (
+                <p style={{fontSize:9.5,color:"#4e5771"}}>No AI insights available right now.</p>
+              )}
             </div>
             <div className="chat"><input value={chat} onChange={e=>setChat(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")sendChat()}} placeholder="Ask me anything..."/><button className="send" onClick={sendChat}><I name="send" size={15}/></button></div>
             <div className="disclaimer">AI responses can make mistakes.<br/>Please verify important information.</div>
-            {sent.length>0&&<div style={{display:"none"}}>{sent.join("|")}</div>}
           </div>
         </aside>
       </div>
