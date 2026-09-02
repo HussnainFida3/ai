@@ -41,7 +41,7 @@ import {
 
 import { AgentOrb } from "@/components/agents/AgentOrb";
 import { PLATFORM_LIST, agentTitle } from "@/lib/platforms";
-import { isConnected } from "@/lib/api";
+import { isConnected, onAuthChanged } from "@/lib/api";
 
 interface SpecialWorkspace {
   href: string;
@@ -145,16 +145,24 @@ export default function HubPage() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    setConnected(
-      Object.fromEntries(
-        PLATFORM_LIST.map((platform) => [
-          platform.key,
-          isConnected(platform.key),
-        ]),
-      ),
-    );
+    const refresh = () =>
+      setConnected(
+        Object.fromEntries(
+          PLATFORM_LIST.map((platform) => [
+            platform.key,
+            isConnected(platform.key),
+          ]),
+        ),
+      );
 
+    refresh();
     setMounted(true);
+
+    // Live-updates this the moment a session actually dies mid-use (apiFetch
+    // signs a platform out automatically on a dead refresh token) — without
+    // this, the badge would keep saying "Connected" until a manual reload,
+    // even though every agent on that platform is now 401ing.
+    return onAuthChanged(refresh);
   }, []);
 
   async function handleLogout() {
@@ -907,6 +915,22 @@ export default function HubPage() {
           border: 1px solid rgba(255, 255, 255, 0.06);
         }
 
+        a.hub-connection.off {
+          cursor: pointer;
+          text-decoration: none;
+          transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+
+        a.hub-connection.off:hover {
+          color: #fbbf24;
+          background: rgba(251, 191, 36, 0.08);
+          border-color: rgba(251, 191, 36, 0.22);
+        }
+
+        a.hub-connection.off:hover .hub-connection-dot {
+          background: #fbbf24;
+        }
+
         .hub-connection-dot {
           width: 6px;
           height: 6px;
@@ -1439,19 +1463,17 @@ export default function HubPage() {
                   </div>
 
                   <div className="hub-platform-meta">
-                    <span
-                      className={`hub-connection ${
-                        platformConnected ? "on" : "off"
-                      }`}
-                    >
-                      <span className="hub-connection-dot" />
-
-                      {mounted
-                        ? platformConnected
-                          ? "Connected"
-                          : "Not connected"
-                        : "Checking"}
-                    </span>
+                    {mounted && !platformConnected ? (
+                      <Link href="/connect" className="hub-connection off" title={`Reconnect ${platform.label}`}>
+                        <span className="hub-connection-dot" />
+                        Not connected — Reconnect
+                      </Link>
+                    ) : (
+                      <span className={`hub-connection ${platformConnected ? "on" : "off"}`}>
+                        <span className="hub-connection-dot" />
+                        {mounted ? "Connected" : "Checking"}
+                      </span>
+                    )}
                   </div>
                 </div>
 

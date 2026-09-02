@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { ApiError, type AgentChatResult, type ChatTurn } from "@/lib/api";
 
 interface Message extends ChatTurn {
@@ -25,6 +26,7 @@ export function ChatPanel({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,6 +37,7 @@ export function ChatPanel({
     const content = (text ?? input).trim();
     if (!content || loading) return;
     setError(null);
+    setSessionExpired(false);
     setInput("");
     const history: ChatTurn[] = messages.map((m) => ({ role: m.role, content: m.content }));
     setMessages((prev) => [...prev, { role: "user", content }]);
@@ -43,7 +46,12 @@ export function ChatPanel({
       const result = await onSend(content, history);
       setMessages((prev) => [...prev, { role: "assistant", content: result.reply, toolCalls: result.toolCallsExecuted }]);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not reach the agent.");
+      if (err instanceof ApiError && err.code === "SESSION_EXPIRED") {
+        setSessionExpired(true);
+        setError(err.message);
+      } else {
+        setError(err instanceof ApiError ? err.message : "Could not reach the agent.");
+      }
     } finally {
       setLoading(false);
     }
@@ -85,7 +93,19 @@ export function ChatPanel({
         </div>
       )}
 
-      {error && <div className="ag-error-banner">{error}</div>}
+      {error && (
+        <div className="ag-error-banner">
+          {error}
+          {sessionExpired && (
+            <>
+              {" "}
+              <Link href="/connect" style={{ fontWeight: 700, textDecoration: "underline" }}>
+                Reconnect →
+              </Link>
+            </>
+          )}
+        </div>
+      )}
 
       <div className="ag-chat-input-row">
         <input
