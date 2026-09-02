@@ -12,13 +12,18 @@ import {
   Check,
   ChevronRight,
   CircleDot,
+  ClipboardList,
   Command,
   Cpu,
   Database,
-  Globe2,
+  FileText,
   Layers3,
   LayoutDashboard,
+  LifeBuoy,
+  LineChart,
   LogOut,
+  Megaphone,
+  MessagesSquare,
   Network,
   Plus,
   Radar,
@@ -27,6 +32,8 @@ import {
   Sparkles,
   Terminal,
   Unplug,
+  UserCircle,
+  Wallet,
   Wifi,
   Zap,
   type LucideIcon,
@@ -35,6 +42,33 @@ import {
 import { AgentOrb } from "@/components/agents/AgentOrb";
 import { PLATFORM_LIST, agentTitle } from "@/lib/platforms";
 import { isConnected } from "@/lib/api";
+
+interface SpecialWorkspace {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+  count: number;
+  desc: string;
+  accent: string;
+}
+
+/** One card per "-agent-special" workspace. Accent colours are pulled straight from
+ * that agent's own entry in src/lib/platforms.ts, so a workspace card and its matching
+ * tile in the Agent Directory below always share the same colour. */
+const SPECIAL_WORKSPACES: SpecialWorkspace[] = [
+  { href: "/seo-agent-special", icon: Search, label: "SEO Agent", count: 5, desc: "Real scores, site-wide issue tracking and one-click AI fixes.", accent: "#f5b942" },
+  { href: "/finance-agent-special", icon: Zap, label: "Finance Agent", count: 5, desc: "Live revenue, cash-flow breakdowns and downloadable reports.", accent: "#fb923c" },
+  { href: "/analytics-agent-special", icon: LineChart, label: "Analytics Agent", count: 4, desc: "Users, providers and bookings, broken down by city and category.", accent: "#38bdf8" },
+  { href: "/content-agent-special", icon: FileText, label: "Content Agent", count: 5, desc: "Blog performance, engagement and AI content recommendations.", accent: "#3b82f6" },
+  { href: "/marketing-agent-special", icon: Megaphone, label: "Marketing Agent", count: 4, desc: "Campaign performance, audience segments and broadcast reach.", accent: "#d946ef" },
+  { href: "/master-agent-special", icon: BrainCircuit, label: "Master AI", count: 5, desc: "Fleet-wide view of every agent — activity, spend and health.", accent: "#facc15" },
+  { href: "/ops-agent-special", icon: ClipboardList, label: "Ops Agent", count: 5, desc: "The daily queue — verifications, incidents and open work.", accent: "#f43f5e" },
+  { href: "/owner-chat-agent-special", icon: Bot, label: "Owner Chat", count: 5, desc: "What this agent can read, and the audited writes it holds.", accent: "#8b5cf6" },
+  { href: "/profile-agent-special", icon: UserCircle, label: "Profile Agent", count: 4, desc: "Profile strength, completeness and improvement suggestions.", accent: "#0ea5e9" },
+  { href: "/sitechat-agent-special", icon: MessagesSquare, label: "Site Chat Agent", count: 5, desc: "Customer-facing chat volume, quality and usage.", accent: "#10b981" },
+  { href: "/support-agent-special", icon: LifeBuoy, label: "Support Agent", count: 5, desc: "Tickets, escalations and resolution performance.", accent: "#06b6d4" },
+  { href: "/wallet-agent-special", icon: Wallet, label: "Payment & Wallet", count: 5, desc: "Wallet economy, top-up requests and the ledger.", accent: "#22d3a3" },
+];
 
 type AgentIconProps = {
   icon?: unknown;
@@ -661,125 +695,106 @@ export default function HubPage() {
 
         .hub-special-grid {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 18px;
+          grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+          gap: 12px;
           margin-bottom: 20px;
         }
 
         .hub-special-card {
           position: relative;
-          display: block;
-          min-height: 188px;
+          display: flex;
+          flex-direction: column;
+          min-height: 150px;
           overflow: hidden;
-          padding: 23px;
+          padding: 17px;
           border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 21px;
+          border-radius: 18px;
           text-decoration: none;
           color: inherit;
           background:
             radial-gradient(
               circle at 90% 0%,
-              rgba(124, 58, 237, 0.2),
-              transparent 35%
+              color-mix(in srgb, var(--accent) 20%, transparent),
+              transparent 40%
             ),
             linear-gradient(
               135deg,
-              rgba(24, 19, 50, 0.95),
+              rgba(20, 16, 42, 0.95),
               rgba(11, 16, 29, 0.97)
             );
           transition:
-            transform 0.3s ease,
-            border-color 0.3s ease,
-            box-shadow 0.3s ease;
-        }
-
-        .hub-special-card.finance {
-          background:
-            radial-gradient(
-              circle at 90% 0%,
-              rgba(59, 130, 246, 0.18),
-              transparent 35%
-            ),
-            linear-gradient(
-              135deg,
-              rgba(13, 28, 51, 0.96),
-              rgba(11, 16, 29, 0.97)
-            );
+            transform 0.25s ease,
+            border-color 0.25s ease,
+            box-shadow 0.25s ease;
         }
 
         .hub-special-card:hover {
-          transform: translateY(-4px);
-          border-color: rgba(139, 92, 246, 0.35);
-          box-shadow: 0 24px 55px rgba(0, 0, 0, 0.22);
+          transform: translateY(-3px);
+          border-color: color-mix(in srgb, var(--accent) 42%, rgba(255, 255, 255, 0.1));
+          box-shadow: 0 20px 45px rgba(0, 0, 0, 0.22);
         }
 
         .hub-special-glow {
           position: absolute;
-          width: 170px;
-          height: 170px;
-          right: -55px;
-          bottom: -75px;
+          width: 130px;
+          height: 130px;
+          right: -45px;
+          bottom: -60px;
           border-radius: 50%;
-          border: 1px solid rgba(167, 139, 250, 0.14);
-          box-shadow:
-            0 0 0 35px rgba(124, 58, 237, 0.025),
-            0 0 0 70px rgba(124, 58, 237, 0.016);
+          border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+          box-shadow: 0 0 0 28px color-mix(in srgb, var(--accent) 3%, transparent);
+          pointer-events: none;
         }
 
         .hub-special-top {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 12px;
+          gap: 10px;
           position: relative;
           z-index: 1;
         }
 
         .hub-special-icon {
-          width: 46px;
-          height: 46px;
+          width: 38px;
+          height: 38px;
           display: grid;
           place-items: center;
-          border-radius: 15px;
-          color: #c4b5fd;
-          background: rgba(124, 58, 237, 0.13);
-          border: 1px solid rgba(167, 139, 250, 0.17);
-        }
-
-        .hub-special-card.finance .hub-special-icon {
-          color: #8ab8ff;
-          background: rgba(59, 130, 246, 0.1);
-          border-color: rgba(96, 165, 250, 0.16);
+          border-radius: 12px;
+          color: var(--accent);
+          background: color-mix(in srgb, var(--accent) 16%, transparent);
+          border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
         }
 
         .hub-special-pill {
-          padding: 6px 9px;
+          padding: 5px 8px;
           border-radius: 999px;
           color: #b9c3d8;
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.06);
-          font-size: 10px;
+          font-size: 9.5px;
           font-weight: 750;
+          white-space: nowrap;
         }
 
         .hub-special-card h2 {
           position: relative;
           z-index: 1;
-          margin: 20px 0 7px;
+          margin: 14px 0 5px;
           color: #f4f6ff;
-          font-size: 19px;
+          font-size: 14.5px;
           font-weight: 780;
-          letter-spacing: -0.025em;
+          letter-spacing: -0.01em;
         }
 
         .hub-special-card p {
           position: relative;
           z-index: 1;
-          max-width: 430px;
           margin: 0;
           color: #8490a8;
-          font-size: 12px;
-          line-height: 1.65;
+          font-size: 11px;
+          line-height: 1.55;
+          flex: 1;
         }
 
         .hub-special-bottom {
@@ -787,10 +802,10 @@ export default function HubPage() {
           z-index: 1;
           display: flex;
           align-items: center;
-          gap: 8px;
-          margin-top: 18px;
-          color: #c7b9ff;
-          font-size: 11px;
+          gap: 6px;
+          margin-top: 12px;
+          color: var(--accent);
+          font-size: 10.5px;
           font-weight: 750;
         }
 
@@ -1362,56 +1377,34 @@ export default function HubPage() {
           </label>
         </section>
 
-        {/* SPECIAL PAGES */}
+        {/* SPECIAL WORKSPACES — one pixel-perfect experience per agent, both platforms */}
         <section className="hub-special-grid">
-          <Link href="/seo-agent-special" className="hub-special-card">
-            <div className="hub-special-glow" />
+          {SPECIAL_WORKSPACES.map((w) => (
+            <Link
+              key={w.href}
+              href={w.href}
+              className="hub-special-card"
+              style={{ ["--accent" as string]: w.accent }}
+            >
+              <div className="hub-special-glow" />
 
-            <div className="hub-special-top">
-              <div className="hub-special-icon">
-                <Globe2 size={22} />
+              <div className="hub-special-top">
+                <div className="hub-special-icon">
+                  <w.icon size={19} />
+                </div>
+
+                <span className="hub-special-pill">{w.count} pages</span>
               </div>
 
-              <span className="hub-special-pill">5 experiences</span>
-            </div>
+              <h2>{w.label}</h2>
 
-            <h2>SEO Agent Special</h2>
+              <p>{w.desc}</p>
 
-            <p>
-              A complete collection of premium SEO intelligence interfaces,
-              analytics, optimization workflows, recommendations and AI tools.
-            </p>
-
-            <div className="hub-special-bottom">
-              Open workspace <ArrowRight size={13} />
-            </div>
-          </Link>
-
-          <Link
-            href="/finance-agent-special"
-            className="hub-special-card finance"
-          >
-            <div className="hub-special-glow" />
-
-            <div className="hub-special-top">
-              <div className="hub-special-icon">
-                <Zap size={22} />
+              <div className="hub-special-bottom">
+                Open workspace <ArrowRight size={12} />
               </div>
-
-              <span className="hub-special-pill">4 experiences</span>
-            </div>
-
-            <h2>Finance Agent Special</h2>
-
-            <p>
-              Premium financial intelligence dashboards for revenue,
-              forecasting, expenses, transactions and automated insights.
-            </p>
-
-            <div className="hub-special-bottom">
-              Open workspace <ArrowRight size={13} />
-            </div>
-          </Link>
+            </Link>
+          ))}
         </section>
 
         {/* PLATFORMS */}
