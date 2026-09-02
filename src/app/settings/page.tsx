@@ -1,24 +1,107 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Bell,
   Shield,
-  Mail,
   Monitor,
-  Moon,
-  Globe2,
-  Database,
   Lock,
-  Save,
-  Check,
   User,
   RefreshCw,
   CircleHelp,
   Laptop,
+  LogOut,
+  Plug,
 } from "lucide-react";
 
 import { AppShell } from "@/components/dashboard/AppShell";
+import { PLATFORMS } from "@/lib/platforms";
+import { clearTokens, useIsConnected } from "@/lib/api";
+
+/* -------------------------------------------------------------------------- */
+/*                          LOCAL, GENUINELY REAL PREFS                       */
+/* -------------------------------------------------------------------------- */
+
+// There is no backend for this console's own preferences (only /api/login and
+// /api/logout exist server-side — see src/app/api/*). Every toggle below either
+// persists a real localStorage preference that actually does something when
+// flipped, or was removed rather than left as a fake, inert switch.
+const LS_DESKTOP_NOTIFICATIONS = "cc_settings_desktop_notifications";
+const LS_HEALTH_AUTO_REFRESH = "cc_settings_health_auto_refresh";
+const LS_HEALTH_REFRESH_INTERVAL = "cc_settings_health_refresh_interval";
+
+function readBool(key: string): boolean {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(key) === "1";
+}
+function writeBool(key: string, value: boolean) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(key, value ? "1" : "0");
+}
+
+/* -------------------------------------------------------------------------- */
+/*                        REAL PLATFORM HEALTH CHECKS                         */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * GhrFix's `/health/ready` and ShadiLife's `/health` both live at their API's
+ * root origin, not under `/api` (confirmed against both backends' source —
+ * ShadiLife: `app.get("/health", ...)` in src/app.ts, mounted before the
+ * `/api` routers; GhrFix mirrors the same convention). PLATFORMS.*.apiBase
+ * already includes the `/api` suffix, so it has to be stripped back off here.
+ */
+function originOf(apiBase: string): string {
+  return apiBase.replace(/\/api\/?$/, "");
+}
+
+interface GhrfixHealth {
+  status: string;
+  checks: { database: "ok" | "down"; redis: "ok" | "down" };
+  configured: { email: boolean; storage: boolean; ai: boolean };
+}
+
+/** No auth required — this is GhrFix's public readiness probe. */
+async function fetchGhrfixHealth(): Promise<GhrfixHealth> {
+  let res: Response;
+  try {
+    res = await fetch(`${originOf(PLATFORMS.ghrfix.apiBase)}/health/ready`);
+  } catch {
+    throw new Error("GhrFix is unreachable. Is its backend running?");
+  }
+  const json = await res.json().catch(() => null);
+  if (!res.ok || !json?.data) throw new Error(`GhrFix's health endpoint returned an error (${res.status}).`);
+  return json.data as GhrfixHealth;
+}
+
+/**
+ * ShadiLife's backend has no `/health/ready` equivalent — reading its source
+ * turns up only a bare `app.get("/health", (_req, res) => res.json({ ok: true }))`,
+ * with no database/redis breakdown and (confirmed by grepping the backend)
+ * no Redis dependency at all. Shown honestly below as a reachability check,
+ * not pretended to be as detailed as GhrFix's.
+ */
+async function fetchShadiLifeHealth(): Promise<{ ok: boolean }> {
+  let res: Response;
+  try {
+    res = await fetch(`${originOf(PLATFORMS.shadilife.apiBase)}/health`);
+  } catch {
+    throw new Error("ShadiLife is unreachable. Is its backend running?");
+  }
+  const json = await res.json().catch(() => null);
+  if (!res.ok || typeof json?.ok !== "boolean") throw new Error(`ShadiLife's health endpoint returned an error (${res.status}).`);
+  return json as { ok: boolean };
+}
+
+interface HealthState<T> {
+  loading: boolean;
+  error: string | null;
+  data: T | null;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                TOGGLE ROW                                  */
+/* -------------------------------------------------------------------------- */
 
 type ToggleProps = {
   checked: boolean;
@@ -27,6 +110,7 @@ type ToggleProps = {
   description: string;
   icon: React.ElementType;
   iconColor: string;
+  disabled?: boolean;
 };
 
 function SettingToggle({
@@ -36,6 +120,7 @@ function SettingToggle({
   description,
   icon: Icon,
   iconColor,
+  disabled,
 }: ToggleProps) {
   return (
     <div className="settings-row">
@@ -59,6 +144,7 @@ function SettingToggle({
         type="button"
         aria-label={`Toggle ${label}`}
         onClick={onChange}
+        disabled={disabled}
         className={`settings-toggle ${checked ? "is-on" : ""}`}
       >
         <span className="settings-toggle-thumb" />
@@ -67,42 +153,188 @@ function SettingToggle({
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/*                              CONNECTION PILL                               */
+/* -------------------------------------------------------------------------- */
+
+/** Reflects real stored-token state via useIsConnected — never fabricated. */
+function ConnectionPill({ connected }: { connected: boolean }) {
+  const color = connected ? "#4ade80" : "#8296ac";
+  return (
+    <span className="settings-status-active" style={{ color }}>
+      <span
+        style={{
+          background: color,
+          boxShadow: connected ? "0 0 10px rgba(34, 197, 94, 0.8)" : "none",
+        }}
+      />
+      {connected ? "Connected" : "Not connected"}
+    </span>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                 MAIN PAGE                                  */
+/* -------------------------------------------------------------------------- */
+
 export default function SettingsPage() {
-  const [settings, setSettings] = useState({
-    dashboardNotifications: true,
-    emailReports: true,
-    securityAlerts: true,
-    desktopNotifications: false,
+  // Real, live connection state — flips the instant a session connects,
+  // disconnects, or expires (see useIsConnected in src/lib/api.ts).
+  const ghrfixConnected = useIsConnected("ghrfix");
+  const shadilifeConnected = useIsConnected("shadilife");
 
-    autoRefresh: true,
-    darkMode: true,
-    publicAnalytics: false,
-    dataBackup: true,
+  /* ---- Real desktop notification permission (Web Notifications API) ---- */
+  const [desktopNotifications, setDesktopNotifications] = useState(false);
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission | "unsupported">("default");
 
-    twoFactor: true,
-    loginAlerts: true,
-    systemUpdates: true,
-    maintenanceAlerts: false,
-  });
+  useEffect(() => {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      setNotifPermission("unsupported");
+      return;
+    }
+    setNotifPermission(Notification.permission);
+    // The browser is the source of truth — only trust our stored "on" flag
+    // when permission is actually still granted.
+    setDesktopNotifications(Notification.permission === "granted" && readBool(LS_DESKTOP_NOTIFICATIONS));
+  }, []);
 
-  const [saved, setSaved] = useState(false);
+  async function toggleDesktopNotifications() {
+    if (notifPermission === "unsupported" || notifPermission === "denied") return;
 
-  function toggle(key: keyof typeof settings) {
-    setSettings((previous) => ({
-      ...previous,
-      [key]: !previous[key],
-    }));
+    if (desktopNotifications) {
+      setDesktopNotifications(false);
+      writeBool(LS_DESKTOP_NOTIFICATIONS, false);
+      return;
+    }
 
-    setSaved(false);
+    const permission = await Notification.requestPermission();
+    setNotifPermission(permission);
+
+    if (permission === "granted") {
+      setDesktopNotifications(true);
+      writeBool(LS_DESKTOP_NOTIFICATIONS, true);
+      new Notification("AI Command Center", {
+        body: "Desktop notifications are now enabled for this browser.",
+      });
+    } else {
+      setDesktopNotifications(false);
+      writeBool(LS_DESKTOP_NOTIFICATIONS, false);
+    }
   }
 
-  function handleSave() {
-    setSaved(true);
+  /* ---- Real health-check auto-refresh preference ---- */
+  const [healthAutoRefresh, setHealthAutoRefreshState] = useState(false);
+  const [healthInterval, setHealthIntervalState] = useState(60);
 
-    setTimeout(() => {
-      setSaved(false);
-    }, 2500);
+  useEffect(() => {
+    setHealthAutoRefreshState(readBool(LS_HEALTH_AUTO_REFRESH));
+    const stored = window.localStorage.getItem(LS_HEALTH_REFRESH_INTERVAL);
+    if (stored && !Number.isNaN(Number(stored))) setHealthIntervalState(Number(stored));
+  }, []);
+
+  function toggleHealthAutoRefresh() {
+    setHealthAutoRefreshState((prev) => {
+      const next = !prev;
+      writeBool(LS_HEALTH_AUTO_REFRESH, next);
+      return next;
+    });
   }
+
+  function changeHealthInterval(seconds: number) {
+    setHealthIntervalState(seconds);
+    if (typeof window !== "undefined") window.localStorage.setItem(LS_HEALTH_REFRESH_INTERVAL, String(seconds));
+  }
+
+  /* ---- Real platform health, pulled from each backend's own endpoint ---- */
+  const [ghrfixHealth, setGhrfixHealth] = useState<HealthState<GhrfixHealth>>({ loading: true, error: null, data: null });
+  const [shadilifeHealth, setShadilifeHealth] = useState<HealthState<{ ok: boolean }>>({ loading: true, error: null, data: null });
+  const [healthCheckedAt, setHealthCheckedAt] = useState<Date | null>(null);
+
+  const runHealthChecks = useCallback(() => {
+    setGhrfixHealth((s) => ({ ...s, loading: true }));
+    setShadilifeHealth((s) => ({ ...s, loading: true }));
+
+    fetchGhrfixHealth()
+      .then((data) => setGhrfixHealth({ loading: false, error: null, data }))
+      .catch((err: unknown) =>
+        setGhrfixHealth({ loading: false, error: err instanceof Error ? err.message : "GhrFix is unreachable.", data: null }),
+      );
+
+    fetchShadiLifeHealth()
+      .then((data) => setShadilifeHealth({ loading: false, error: null, data }))
+      .catch((err: unknown) =>
+        setShadilifeHealth({ loading: false, error: err instanceof Error ? err.message : "ShadiLife is unreachable.", data: null }),
+      );
+
+    setHealthCheckedAt(new Date());
+  }, []);
+
+  useEffect(() => {
+    runHealthChecks();
+    // Only ever run once on mount — auto-refresh is handled by the interval
+    // effect below so this doesn't need runHealthChecks in its deps.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!healthAutoRefresh) return;
+    const id = setInterval(runHealthChecks, healthInterval * 1000);
+    return () => clearInterval(id);
+  }, [healthAutoRefresh, healthInterval, runHealthChecks]);
+
+  /* ---- Sign out of the command center's own shared login (real, working /api/logout) ---- */
+  const [signingOut, setSigningOut] = useState(false);
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    try {
+      await fetch("/api/logout", { method: "POST" });
+    } finally {
+      window.location.href = "/login";
+    }
+  }
+
+  /* ---- Derived, honest health summary — nothing here is invented ---- */
+  const ghrfixReady = ghrfixHealth.data?.status === "ready";
+  const shadilifeReachable = shadilifeHealth.data?.ok === true;
+  const bothChecked = !ghrfixHealth.loading && !shadilifeHealth.loading;
+
+  const overall: "loading" | "ok" | "degraded" | "down" = !bothChecked
+    ? "loading"
+    : ghrfixReady && shadilifeReachable
+      ? "ok"
+      : ghrfixReady || shadilifeReachable
+        ? "degraded"
+        : "down";
+
+  const overallColor =
+    overall === "ok" ? "#34d399" : overall === "degraded" ? "#f59e0b" : overall === "down" ? "#f87171" : "#60a5fa";
+
+  const overallLabel =
+    overall === "ok"
+      ? "ALL SYSTEMS OPERATIONAL"
+      : overall === "degraded"
+        ? "PARTIAL OUTAGE"
+        : overall === "down"
+          ? "SYSTEMS UNREACHABLE"
+          : "CHECKING…";
+
+  const overallHeadline =
+    overall === "ok"
+      ? "Both platforms are healthy."
+      : overall === "degraded"
+        ? "One platform needs attention."
+        : overall === "down"
+          ? "Both platforms are unreachable."
+          : "Checking platform health…";
+
+  const ghrfixMissingConfig = ghrfixHealth.data
+    ? Object.entries(ghrfixHealth.data.configured)
+        .filter(([, configured]) => !configured)
+        .map(([key]) => key)
+    : [];
+
+  const anyHealthLoading = ghrfixHealth.loading || shadilifeHealth.loading;
 
   return (
     <AppShell>
@@ -120,30 +352,10 @@ export default function SettingsPage() {
               <h1>Settings</h1>
 
               <p>
-                Manage your dashboard preferences, notifications, security,
-                integrations, and system behavior.
+                Manage notifications, security, and system behavior for the AI
+                Command Center.
               </p>
             </div>
-
-            <button
-              type="button"
-              className={`settings-save-button ${
-                saved ? "is-saved" : ""
-              }`}
-              onClick={handleSave}
-            >
-              {saved ? (
-                <>
-                  <Check size={18} />
-                  Changes Saved
-                </>
-              ) : (
-                <>
-                  <Save size={18} />
-                  Save Changes
-                </>
-              )}
-            </button>
           </section>
 
           <div className="settings-layout">
@@ -160,60 +372,46 @@ export default function SettingsPage() {
 
                   <div>
                     <h2>Account</h2>
-                    <p>Manage your administrator profile and account preferences.</p>
+                    <p>
+                      This command center uses a single shared administrator
+                      login, separate from each platform&apos;s own connection
+                      below.
+                    </p>
                   </div>
                 </div>
 
                 <div className="settings-card-body">
                   <div className="settings-profile">
                     <div className="settings-avatar">
-                      <span>GA</span>
+                      <User size={20} />
                     </div>
 
                     <div className="settings-profile-info">
                       <div className="settings-profile-name">
-                        GhrFix Administrator
+                        Command Center Administrator
                       </div>
 
                       <div className="settings-profile-email">
-                        admin@ghrfix.com
+                        Single shared login &mdash; no per-user accounts exist
                       </div>
                     </div>
-
-                    <button
-                      type="button"
-                      className="settings-secondary-button"
-                    >
-                      Edit Profile
-                    </button>
                   </div>
 
                   <div className="settings-divider" />
 
                   <div className="settings-info-grid">
                     <div className="settings-info-box">
-                      <span className="settings-info-label">ROLE</span>
-                      <span className="settings-info-value">Super Admin</span>
+                      <span className="settings-info-label">
+                        GHRFIX SESSION
+                      </span>
+                      <ConnectionPill connected={ghrfixConnected} />
                     </div>
 
                     <div className="settings-info-box">
                       <span className="settings-info-label">
-                        LAST LOGIN
+                        SHADILIFE SESSION
                       </span>
-                      <span className="settings-info-value">
-                        Today, 10:42 AM
-                      </span>
-                    </div>
-
-                    <div className="settings-info-box">
-                      <span className="settings-info-label">
-                        ACCOUNT STATUS
-                      </span>
-
-                      <span className="settings-status-active">
-                        <span />
-                        Active
-                      </span>
+                      <ConnectionPill connected={shadilifeConnected} />
                     </div>
                   </div>
                 </div>
@@ -230,47 +428,27 @@ export default function SettingsPage() {
                   <div>
                     <h2>Notifications</h2>
                     <p>
-                      Choose how the platform should notify you about important
-                      activity.
+                      Control how this browser can notify you while using the
+                      command center.
                     </p>
                   </div>
                 </div>
 
                 <div className="settings-card-body settings-list">
                   <SettingToggle
-                    checked={settings.dashboardNotifications}
-                    onChange={() => toggle("dashboardNotifications")}
-                    label="Dashboard Notifications"
-                    description="Receive notifications for important platform activity."
-                    icon={Bell}
-                    iconColor="#f59e0b"
-                  />
-
-                  <SettingToggle
-                    checked={settings.emailReports}
-                    onChange={() => toggle("emailReports")}
-                    label="Email Reports"
-                    description="Receive scheduled reports and performance summaries."
-                    icon={Mail}
-                    iconColor="#38bdf8"
-                  />
-
-                  <SettingToggle
-                    checked={settings.desktopNotifications}
-                    onChange={() => toggle("desktopNotifications")}
-                    label="Desktop Notifications"
-                    description="Show notifications while the command center is open."
+                    checked={desktopNotifications}
+                    onChange={toggleDesktopNotifications}
+                    label="Browser Notification Permission"
+                    description={
+                      notifPermission === "unsupported"
+                        ? "This browser doesn't support the Notifications API."
+                        : notifPermission === "denied"
+                          ? "Blocked in your browser's site settings — allow notifications for this site to enable it here."
+                          : "Grants this browser permission to show desktop alerts, and sends one confirmation notification immediately so you can verify it works."
+                    }
                     icon={Monitor}
                     iconColor="#8b5cf6"
-                  />
-
-                  <SettingToggle
-                    checked={settings.maintenanceAlerts}
-                    onChange={() => toggle("maintenanceAlerts")}
-                    label="Maintenance Alerts"
-                    description="Get notified before scheduled system maintenance."
-                    icon={CircleHelp}
-                    iconColor="#f97316"
+                    disabled={notifPermission === "unsupported" || notifPermission === "denied"}
                   />
                 </div>
               </section>
@@ -285,28 +463,87 @@ export default function SettingsPage() {
 
                   <div>
                     <h2>Security</h2>
-                    <p>Control security preferences for your administrator account.</p>
+                    <p>
+                      Manage each platform&apos;s connection, and sign out of
+                      this shared login.
+                    </p>
                   </div>
                 </div>
 
                 <div className="settings-card-body settings-list">
-                  <SettingToggle
-                    checked={settings.twoFactor}
-                    onChange={() => toggle("twoFactor")}
-                    label="Two-Factor Authentication"
-                    description="Require additional verification when signing in."
-                    icon={Lock}
-                    iconColor="#22c55e"
-                  />
+                  <div className="settings-action-row">
+                    <div
+                      className="settings-row-icon"
+                      style={{
+                        color: PLATFORMS.ghrfix.color,
+                        background: `${PLATFORMS.ghrfix.color}14`,
+                        borderColor: `${PLATFORMS.ghrfix.color}24`,
+                      }}
+                    >
+                      <Plug size={19} />
+                    </div>
 
-                  <SettingToggle
-                    checked={settings.loginAlerts}
-                    onChange={() => toggle("loginAlerts")}
-                    label="Login Alerts"
-                    description="Receive an alert when your account is accessed."
-                    icon={Shield}
-                    iconColor="#38bdf8"
-                  />
+                    <div className="settings-row-content">
+                      <div className="settings-row-title">GhrFix</div>
+
+                      <div className="settings-row-description">
+                        {ghrfixConnected
+                          ? "Connected — agents can call GhrFix's API on your behalf."
+                          : "Not connected — GhrFix agents can't run until you connect."}
+                      </div>
+                    </div>
+
+                    {ghrfixConnected ? (
+                      <button
+                        type="button"
+                        className="settings-secondary-button"
+                        onClick={() => clearTokens(PLATFORMS.ghrfix.tokenNs)}
+                      >
+                        Disconnect
+                      </button>
+                    ) : (
+                      <Link href="/connect" className="settings-secondary-button">
+                        Reconnect
+                      </Link>
+                    )}
+                  </div>
+
+                  <div className="settings-action-row">
+                    <div
+                      className="settings-row-icon"
+                      style={{
+                        color: PLATFORMS.shadilife.color,
+                        background: `${PLATFORMS.shadilife.color}14`,
+                        borderColor: `${PLATFORMS.shadilife.color}24`,
+                      }}
+                    >
+                      <Plug size={19} />
+                    </div>
+
+                    <div className="settings-row-content">
+                      <div className="settings-row-title">ShadiLife</div>
+
+                      <div className="settings-row-description">
+                        {shadilifeConnected
+                          ? "Connected — agents can call ShadiLife's API on your behalf."
+                          : "Not connected — ShadiLife agents can't run until you connect."}
+                      </div>
+                    </div>
+
+                    {shadilifeConnected ? (
+                      <button
+                        type="button"
+                        className="settings-secondary-button"
+                        onClick={() => clearTokens(PLATFORMS.shadilife.tokenNs)}
+                      >
+                        Disconnect
+                      </button>
+                    ) : (
+                      <Link href="/connect" className="settings-secondary-button">
+                        Reconnect
+                      </Link>
+                    )}
+                  </div>
 
                   <div className="settings-action-row">
                     <div className="settings-row-icon static-icon">
@@ -314,18 +551,41 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="settings-row-content">
-                      <div className="settings-row-title">Password</div>
+                      <div className="settings-row-title">
+                        Command Center Password
+                      </div>
 
                       <div className="settings-row-description">
-                        Last changed approximately 32 days ago.
+                        Set via the server&apos;s COMMAND_CENTER_PASSWORD
+                        environment variable &mdash; there&apos;s no
+                        self-service change from this UI.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="settings-action-row">
+                    <div className="settings-row-icon static-icon">
+                      <LogOut size={19} />
+                    </div>
+
+                    <div className="settings-row-content">
+                      <div className="settings-row-title">
+                        This Browser&apos;s Session
+                      </div>
+
+                      <div className="settings-row-description">
+                        Sign out of the shared administrator login on this
+                        device.
                       </div>
                     </div>
 
                     <button
                       type="button"
                       className="settings-secondary-button"
+                      onClick={handleSignOut}
+                      disabled={signingOut}
                     >
-                      Change Password
+                      {signingOut ? "Signing out…" : "Sign Out"}
                     </button>
                   </div>
                 </div>
@@ -341,55 +601,49 @@ export default function SettingsPage() {
 
                   <div>
                     <h2>System Preferences</h2>
-                    <p>Customize how your command center behaves.</p>
+                    <p>Control the live health checks shown on this page.</p>
                   </div>
                 </div>
 
                 <div className="settings-card-body settings-list">
                   <SettingToggle
-                    checked={settings.autoRefresh}
-                    onChange={() => toggle("autoRefresh")}
-                    label="Automatic Dashboard Refresh"
-                    description="Automatically refresh dashboard data in the background."
+                    checked={healthAutoRefresh}
+                    onChange={toggleHealthAutoRefresh}
+                    label="Auto-Refresh Platform Health"
+                    description={`Automatically re-run the GhrFix and ShadiLife health checks every ${
+                      healthInterval < 60 ? `${healthInterval}s` : `${healthInterval / 60} min`
+                    } while this page stays open.`}
                     icon={RefreshCw}
                     iconColor="#38bdf8"
                   />
 
-                  <SettingToggle
-                    checked={settings.darkMode}
-                    onChange={() => toggle("darkMode")}
-                    label="Dark Interface"
-                    description="Use the dark command center appearance."
-                    icon={Moon}
-                    iconColor="#8b5cf6"
-                  />
+                  <div className="settings-action-row">
+                    <div className="settings-row-icon static-icon">
+                      <Laptop size={19} />
+                    </div>
 
-                  <SettingToggle
-                    checked={settings.publicAnalytics}
-                    onChange={() => toggle("publicAnalytics")}
-                    label="Anonymous Usage Analytics"
-                    description="Help improve the platform with anonymous usage data."
-                    icon={Globe2}
-                    iconColor="#ec4899"
-                  />
+                    <div className="settings-row-content">
+                      <div className="settings-row-title">
+                        Refresh Interval
+                      </div>
 
-                  <SettingToggle
-                    checked={settings.systemUpdates}
-                    onChange={() => toggle("systemUpdates")}
-                    label="System Update Notifications"
-                    description="Receive information about important platform updates."
-                    icon={Laptop}
-                    iconColor="#22c55e"
-                  />
+                      <div className="settings-row-description">
+                        How often auto-refresh re-checks platform health.
+                      </div>
+                    </div>
 
-                  <SettingToggle
-                    checked={settings.dataBackup}
-                    onChange={() => toggle("dataBackup")}
-                    label="Automatic Data Backup"
-                    description="Keep important platform configuration data protected."
-                    icon={Database}
-                    iconColor="#f59e0b"
-                  />
+                    <select
+                      className="settings-select"
+                      value={healthInterval}
+                      disabled={!healthAutoRefresh}
+                      onChange={(e) => changeHealthInterval(Number(e.target.value))}
+                    >
+                      <option value={15}>Every 15s</option>
+                      <option value={30}>Every 30s</option>
+                      <option value={60}>Every 1 min</option>
+                      <option value={300}>Every 5 min</option>
+                    </select>
+                  </div>
                 </div>
               </section>
             </div>
@@ -397,53 +651,120 @@ export default function SettingsPage() {
             {/* RIGHT COLUMN */}
 
             <aside className="settings-side-column">
-              <section className="settings-health-card">
+              <section
+                className="settings-health-card"
+                style={{ borderColor: `${overallColor}38` }}
+              >
                 <div className="settings-health-top">
-                  <div className="settings-health-icon">
+                  <div
+                    className="settings-health-icon"
+                    style={{
+                      color: overallColor,
+                      background: `${overallColor}1A`,
+                      borderColor: `${overallColor}30`,
+                    }}
+                  >
                     <Shield size={25} />
                   </div>
 
-                  <div className="settings-health-label">
-                    <span />
-                    SYSTEM HEALTHY
+                  <div className="settings-health-label" style={{ color: overallColor }}>
+                    <span
+                      style={{
+                        background: overallColor,
+                        boxShadow: `0 0 12px ${overallColor}CC`,
+                      }}
+                    />
+                    {overallLabel}
                   </div>
                 </div>
 
-                <h3>Everything is running smoothly.</h3>
+                <h3>{overallHeadline}</h3>
 
                 <p>
-                  Your command center is configured correctly and all core
-                  services are currently operational.
+                  Live status pulled from each platform&apos;s own health
+                  endpoint &mdash; not a hardcoded claim.
                 </p>
+
+                <div className="settings-health-meta">
+                  <span>
+                    {healthCheckedAt ? `Checked ${healthCheckedAt.toLocaleTimeString()}` : "Checking…"}
+                  </span>
+
+                  <button
+                    type="button"
+                    className="settings-health-refresh"
+                    onClick={runHealthChecks}
+                    disabled={anyHealthLoading}
+                  >
+                    <RefreshCw size={12} className={anyHealthLoading ? "spin" : undefined} />
+                    Refresh
+                  </button>
+                </div>
 
                 <div className="settings-health-divider" />
 
                 <div className="settings-service-list">
-                  <div className="settings-service">
-                    <span>Platform Services</span>
+                  <div>
+                    <div className="settings-service">
+                      <span>GhrFix</span>
 
-                    <strong>
-                      <i />
-                      Operational
-                    </strong>
+                      <strong
+                        style={{
+                          color: ghrfixHealth.loading ? "#8296ac" : ghrfixReady ? "#78d7a4" : "#f87171",
+                        }}
+                      >
+                        <i
+                          style={{
+                            background: ghrfixHealth.loading ? "#64748b" : ghrfixReady ? "#34d399" : "#f87171",
+                          }}
+                        />
+                        {ghrfixHealth.loading
+                          ? "Checking…"
+                          : ghrfixHealth.data
+                            ? ghrfixReady
+                              ? "Ready"
+                              : "Not ready"
+                            : "Unreachable"}
+                      </strong>
+                    </div>
+
+                    <div className="settings-service-detail">
+                      {ghrfixHealth.error
+                        ? ghrfixHealth.error
+                        : ghrfixHealth.data
+                          ? `Database ${ghrfixHealth.data.checks.database === "ok" ? "OK" : "down"} · Redis ${
+                              ghrfixHealth.data.checks.redis === "ok" ? "OK" : "down"
+                            }${
+                              ghrfixMissingConfig.length > 0
+                                ? ` · Not configured: ${ghrfixMissingConfig.join(", ")}`
+                                : " · Email, storage, AI all configured"
+                            }`
+                          : "Waiting for a response…"}
+                    </div>
                   </div>
 
-                  <div className="settings-service">
-                    <span>AI Services</span>
+                  <div>
+                    <div className="settings-service">
+                      <span>ShadiLife</span>
 
-                    <strong>
-                      <i />
-                      Operational
-                    </strong>
-                  </div>
+                      <strong
+                        style={{
+                          color: shadilifeHealth.loading ? "#8296ac" : shadilifeReachable ? "#78d7a4" : "#f87171",
+                        }}
+                      >
+                        <i
+                          style={{
+                            background: shadilifeHealth.loading ? "#64748b" : shadilifeReachable ? "#34d399" : "#f87171",
+                          }}
+                        />
+                        {shadilifeHealth.loading ? "Checking…" : shadilifeHealth.data ? "Reachable" : "Unreachable"}
+                      </strong>
+                    </div>
 
-                  <div className="settings-service">
-                    <span>Data Systems</span>
-
-                    <strong>
-                      <i />
-                      Operational
-                    </strong>
+                    <div className="settings-service-detail">
+                      {shadilifeHealth.error ??
+                        "Reachability only — this platform doesn't expose a database/redis breakdown here."}
+                    </div>
                   </div>
                 </div>
               </section>
@@ -457,11 +778,17 @@ export default function SettingsPage() {
                   <h3>Need help?</h3>
 
                   <p>
-                    Contact your system administrator if you need assistance
-                    with these settings.
+                    This command center&apos;s source and configuration live
+                    in its GitHub repository.
                   </p>
 
-                  <button type="button">Contact Support →</button>
+                  <a
+                    href="https://github.com/HussnainFida3/ai"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View Repository &rarr;
+                  </a>
                 </div>
               </section>
             </aside>
@@ -533,44 +860,6 @@ export default function SettingsPage() {
             color: #8fa2bd;
             font-size: 15px;
             line-height: 1.65;
-          }
-
-          .settings-save-button {
-            flex: 0 0 auto;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 9px;
-            min-width: 154px;
-            height: 48px;
-            padding: 0 20px;
-            border: 1px solid rgba(96, 165, 250, 0.4);
-            border-radius: 13px;
-            color: white;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            background:
-              linear-gradient(135deg, #0ea5e9, #2563eb 55%, #4f46e5);
-            box-shadow:
-              0 12px 28px rgba(37, 99, 235, 0.2),
-              inset 0 1px rgba(255, 255, 255, 0.12);
-            transition:
-              transform 0.2s ease,
-              box-shadow 0.2s ease,
-              opacity 0.2s ease;
-          }
-
-          .settings-save-button:hover {
-            transform: translateY(-2px);
-            box-shadow:
-              0 18px 35px rgba(37, 99, 235, 0.3),
-              inset 0 1px rgba(255, 255, 255, 0.14);
-          }
-
-          .settings-save-button.is-saved {
-            background: linear-gradient(135deg, #059669, #16a34a);
-            border-color: rgba(34, 197, 94, 0.45);
           }
 
           /* LAYOUT */
@@ -727,6 +1016,9 @@ export default function SettingsPage() {
           .settings-secondary-button {
             margin-left: auto;
             flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             min-height: 36px;
             padding: 0 14px;
             border-radius: 10px;
@@ -735,6 +1027,7 @@ export default function SettingsPage() {
             color: #b9c8da;
             font-size: 12px;
             font-weight: 650;
+            text-decoration: none;
             cursor: pointer;
             transition:
               border-color 0.2s ease,
@@ -748,6 +1041,29 @@ export default function SettingsPage() {
             background: rgba(37, 99, 235, 0.1);
           }
 
+          .settings-secondary-button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+          }
+
+          .settings-select {
+            flex: 0 0 auto;
+            min-height: 36px;
+            padding: 0 10px;
+            border-radius: 10px;
+            border: 1px solid #2b405c;
+            background: rgba(30, 41, 59, 0.7);
+            color: #d9e4f2;
+            font-size: 12px;
+            font-weight: 650;
+            cursor: pointer;
+          }
+
+          .settings-select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+
           .settings-divider {
             height: 1px;
             width: 100%;
@@ -756,7 +1072,7 @@ export default function SettingsPage() {
 
           .settings-info-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px;
             padding: 18px 0;
           }
@@ -776,16 +1092,6 @@ export default function SettingsPage() {
             letter-spacing: 0.1em;
             font-weight: 800;
             margin-bottom: 8px;
-          }
-
-          .settings-info-value {
-            display: block;
-            color: #d9e4f2;
-            font-size: 12px;
-            font-weight: 650;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
           }
 
           .settings-status-active {
@@ -884,6 +1190,11 @@ export default function SettingsPage() {
             border-color: #3b82f6;
           }
 
+          .settings-toggle:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+
           .settings-toggle-thumb {
             display: block;
             width: 17px;
@@ -916,6 +1227,7 @@ export default function SettingsPage() {
                 rgba(14, 37, 34, 0.98),
                 rgba(13, 29, 30, 0.98)
               );
+            transition: border-color 0.3s ease;
           }
 
           .settings-health-top {
@@ -935,6 +1247,10 @@ export default function SettingsPage() {
             color: #34d399;
             background: rgba(16, 185, 129, 0.1);
             border: 1px solid rgba(52, 211, 153, 0.18);
+            transition:
+              color 0.3s ease,
+              background 0.3s ease,
+              border-color 0.3s ease;
           }
 
           .settings-health-label {
@@ -945,6 +1261,7 @@ export default function SettingsPage() {
             font-size: 10px;
             font-weight: 800;
             letter-spacing: 0.14em;
+            transition: color 0.3s ease;
           }
 
           .settings-health-label span {
@@ -968,6 +1285,39 @@ export default function SettingsPage() {
             color: #8da89e;
             font-size: 13px;
             line-height: 1.7;
+          }
+
+          .settings-health-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 14px;
+            color: #6b8578;
+            font-size: 10.5px;
+          }
+
+          .settings-health-refresh {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 9px;
+            border-radius: 8px;
+            border: 1px solid rgba(52, 211, 153, 0.22);
+            background: rgba(52, 211, 153, 0.08);
+            color: #6ee7b7;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s ease;
+          }
+
+          .settings-health-refresh:hover:not(:disabled) {
+            background: rgba(52, 211, 153, 0.14);
+          }
+
+          .settings-health-refresh:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
           }
 
           .settings-health-divider {
@@ -998,7 +1348,6 @@ export default function SettingsPage() {
             display: inline-flex;
             align-items: center;
             gap: 7px;
-            color: #78d7a4;
             font-size: 12px;
           }
 
@@ -1006,7 +1355,13 @@ export default function SettingsPage() {
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: #34d399;
+          }
+
+          .settings-service-detail {
+            margin-top: 6px;
+            color: #6b8578;
+            font-size: 10px;
+            line-height: 1.5;
           }
 
           /* HELP */
@@ -1052,15 +1407,38 @@ export default function SettingsPage() {
             line-height: 1.6;
           }
 
-          .settings-help-card button {
+          .settings-help-card button,
+          .settings-help-card a {
             margin-top: 12px;
+            display: inline-block;
             padding: 0;
             border: 0;
             background: transparent;
             color: #60a5fa;
             font-size: 12px;
             font-weight: 700;
+            text-decoration: none;
             cursor: pointer;
+          }
+
+          .settings-help-card a:hover {
+            text-decoration: underline;
+          }
+
+          /* ANIMATION */
+
+          .spin {
+            animation: settings-spin 0.8s linear infinite;
+          }
+
+          @keyframes settings-spin {
+            from {
+              transform: rotate(0deg);
+            }
+
+            to {
+              transform: rotate(360deg);
+            }
           }
 
           /* RESPONSIVE */
@@ -1091,10 +1469,6 @@ export default function SettingsPage() {
 
             .settings-header {
               flex-direction: column;
-            }
-
-            .settings-save-button {
-              width: 100%;
             }
 
             .settings-card-header,
@@ -1139,11 +1513,6 @@ export default function SettingsPage() {
 
             .settings-profile-info {
               flex: 1;
-            }
-
-            .settings-profile .settings-secondary-button {
-              width: 100%;
-              margin-left: 0;
             }
 
             .settings-action-row {
