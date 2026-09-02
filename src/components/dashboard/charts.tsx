@@ -35,28 +35,23 @@ export function Donut({ data, size = 148, thickness = 20 }: { data: DonutSlice[]
   );
 }
 
-const TASKS_PERFORMANCE = [
-  { t: "12 AM", tasks: 112, success: 82 },
-  { t: "1:30 AM", tasks: 95, success: 85 },
-  { t: "3 AM", tasks: 150, success: 88 },
-  { t: "4:30 AM", tasks: 210, success: 90 },
-  { t: "6 AM", tasks: 240, success: 92 },
-  { t: "7:30 AM", tasks: 195, success: 90 },
-  { t: "9 AM", tasks: 290, success: 93 },
-  { t: "10:30 AM", tasks: 250, success: 91 },
-  { t: "12 PM", tasks: 180, success: 94 },
-  { t: "1:30 PM", tasks: 150, success: 96 },
-  { t: "3 PM", tasks: 220, success: 95 },
-  { t: "4:30 PM", tasks: 285, success: 97 },
-  { t: "6 PM", tasks: 295, success: 96 },
-  { t: "7:30 PM", tasks: 230, success: 98 },
-  { t: "9 PM", tasks: 155, success: 97 },
-];
+export interface CallVolumePoint {
+  /** Real calendar-date label, e.g. "3 Sep" — never a fabricated time-of-day bucket. */
+  label: string;
+  calls: number;
+  costUsd: number;
+}
 
-export function TasksPerformanceChart() {
+/**
+ * Real daily AI call volume + spend, dual-axis. Callers pass real data (see
+ * src/lib/credit-usage-data.ts's `dailyTrend`, sourced from GhrFix's GET
+ * /ai-agents/master/trend) — this component no longer carries any hardcoded
+ * series of its own.
+ */
+export function TasksPerformanceChart({ data }: { data: CallVolumePoint[] }) {
   return (
     <ResponsiveContainer width="100%" height={260}>
-      <AreaChart data={TASKS_PERFORMANCE} margin={{ top: 4, right: 8, left: -18, bottom: 0 }}>
+      <AreaChart data={data} margin={{ top: 4, right: 8, left: -18, bottom: 0 }}>
         <defs>
           <linearGradient id="tasksFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.35} />
@@ -65,26 +60,23 @@ export function TasksPerformanceChart() {
         </defs>
         <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
         <XAxis
-          dataKey="t"
-          ticks={["12 AM", "3 AM", "6 AM", "9 AM", "12 PM", "3 PM", "6 PM", "9 PM"]}
+          dataKey="label"
           tick={{ fill: "#5b6780", fontSize: 11 }}
           axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
           tickLine={false}
+          minTickGap={20}
         />
         <YAxis
-          yAxisId="tasks"
-          domain={[0, 400]}
-          ticks={[0, 100, 200, 300, 400]}
+          yAxisId="calls"
+          allowDecimals={false}
           tick={{ fill: "#5b6780", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
         />
         <YAxis
-          yAxisId="success"
+          yAxisId="cost"
           orientation="right"
-          domain={[70, 100]}
-          ticks={[70, 80, 90, 100]}
-          tickFormatter={(v) => `${v}%`}
+          tickFormatter={(v) => `$${v}`}
           tick={{ fill: "#5b6780", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
@@ -92,25 +84,26 @@ export function TasksPerformanceChart() {
         <Tooltip
           contentStyle={{ background: "#0d1526", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, fontSize: 12 }}
           labelStyle={{ color: "#94a3b8" }}
+          formatter={(value, name) => (name === "Spend (USD)" ? [`$${Number(value).toFixed(2)}`, name] : [value, name])}
         />
         <Area
-          yAxisId="tasks"
+          yAxisId="calls"
           type="monotone"
-          dataKey="tasks"
+          dataKey="calls"
           stroke="#22d3ee"
           strokeWidth={2}
           fill="url(#tasksFill)"
           dot={false}
-          name="Tasks"
+          name="AI Calls"
         />
         <Line
-          yAxisId="success"
+          yAxisId="cost"
           type="monotone"
-          dataKey="success"
+          dataKey="costUsd"
           stroke="#a855f7"
           strokeWidth={2}
           dot={false}
-          name="Success Rate"
+          name="Spend (USD)"
         />
       </AreaChart>
     </ResponsiveContainer>

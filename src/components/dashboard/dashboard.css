@@ -397,7 +397,23 @@
   color: var(--dc-purple);
   background: none;
   border: none;
+  text-decoration: none;
   cursor: pointer;
+}
+
+.dc-empty-note {
+  padding: 24px 4px;
+  text-align: center;
+  color: var(--dc-ink-faint);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.dc-foot-note {
+  margin: 8px 0 0;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--dc-ink-faint);
 }
 
 .dc-select {
@@ -414,7 +430,7 @@
 
 .dc-stats {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
 
@@ -505,7 +521,7 @@
 
 .dc-row-3 {
   display: grid;
-  grid-template-columns: 1.9fr 1fr;
+  grid-template-columns: 1fr;
   gap: 16px;
   align-items: stretch;
 }
@@ -699,46 +715,11 @@
   background: var(--dc-green-soft);
 }
 
-/* System performance + quick actions */
-
-.dc-perf-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-}
-
-.dc-perf-tile {
-  background: var(--dc-card-bg-soft);
-  border: 1px solid var(--dc-border-soft);
-  border-radius: 12px;
-  padding: 14px 16px;
-}
-
-.dc-perf-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 11.5px;
-  color: var(--dc-ink-faint);
-  font-weight: 600;
-}
-
-.dc-perf-value {
-  font-family: var(--font-sora), sans-serif;
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--dc-ink);
-  margin-top: 6px;
-}
-
-.dc-perf-sparkline {
-  margin-top: 10px;
-  height: 32px;
-}
+/* Quick actions */
 
 .dc-quick-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
 }
 
@@ -754,6 +735,7 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
   transition: background 0.12s ease;
   white-space: nowrap;
 }
@@ -790,9 +772,11 @@
     grid-template-columns: repeat(3, 1fr);
   }
   .dc-row-1,
-  .dc-row-2,
-  .dc-row-3 {
+  .dc-row-2 {
     grid-template-columns: 1fr 1fr;
+  }
+  .dc-quick-actions {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -804,7 +788,6 @@
   .dc-row-1,
   .dc-row-2,
   .dc-row-3,
-  .dc-perf-grid,
   .dc-quick-actions {
     grid-template-columns: 1fr;
   }
