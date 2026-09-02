@@ -666,6 +666,11 @@ export function platformLabel(platform: PlatformKey): string {
   return PLATFORMS[platform].label;
 }
 
+/** The platform's real brand-mark image (Cloudinary) — always use in an <img>, never a CSS background. */
+export function platformLogoUrl(platform: PlatformKey): string {
+  return PLATFORMS[platform].logoUrl;
+}
+
 /* ══════════════════════════════════════════════════════════════════════
    Content Agent — normalized blog library.
 

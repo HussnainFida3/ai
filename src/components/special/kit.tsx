@@ -22,7 +22,7 @@ import type { ReactNode } from "react";
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { platformLabel } from "@/lib/agent-data";
+import { platformLabel, platformLogoUrl } from "@/lib/agent-data";
 import type { PlatformKey } from "@/lib/platforms";
 
 /* ── Series colors ────────────────────────────────────────────────────
@@ -391,6 +391,7 @@ export function SpecialShell({
 }) {
   const pathname = usePathname();
   const label = platformLabel(platform);
+  const logoUrl = platformLogoUrl(platform);
 
   return (
     <div className="cs-app">
@@ -398,9 +399,7 @@ export function SpecialShell({
 
       <aside className="cs-sidebar">
         <div className="cs-brand">
-          <span className="cs-brand-mark" style={{ background: platform === "ghrfix" ? "#7c3aed" : "#d61d8c" }}>
-            {label.slice(0, 1)}
-          </span>
+          <img className="cs-brand-mark" src={logoUrl} alt={`${label} logo`} style={{ objectFit: "contain" }} />
           <div>
             <div className="cs-brand-name">{label}</div>
             <div className="cs-brand-tag">{tagline}</div>
@@ -488,7 +487,7 @@ const CSS = `
 /* Sidebar */
 .cs-sidebar{position:fixed;left:0;top:0;bottom:0;width:232px;background:#fff;border-right:1px solid var(--cs-line);padding:20px 14px;display:flex;flex-direction:column;z-index:10;overflow-y:auto}
 .cs-brand{display:flex;align-items:center;gap:10px;padding:0 4px}
-.cs-brand-mark{width:36px;height:36px;border-radius:11px;color:#fff;display:grid;place-items:center;font-size:16px;font-weight:800;flex:0 0 auto}
+.cs-brand-mark{width:36px;height:36px;border-radius:11px;object-fit:contain;flex:0 0 auto}
 .cs-brand-name{font-size:15px;font-weight:780;letter-spacing:-.3px}
 .cs-brand-tag{font-size:10px;color:var(--cs-muted);margin-top:1px}
 .cs-back{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:var(--cs-muted);padding:8px 10px;border-radius:8px;margin:14px 0 6px}

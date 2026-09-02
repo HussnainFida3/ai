@@ -8,14 +8,28 @@
  * search and pagination all run over the rows the backend actually returned —
  * the page states how many that is rather than implying it has the whole book.
  *
- * The Approve / Reject controls are DELIBERATELY INERT. Approving a top-up is
- * a real, audited write that credits coins to a user
- * (POST /topups/:id/approve|reject); this workspace never calls it.
+ * The Approve / Reject controls are REAL, audited writes — POST
+ * /topups/:id/approve and /topups/:id/reject (src/lib/wallet-data.ts:
+ * `approveTopUp` / `rejectTopUp`) — GhrFix only, since ShadiLife registers no
+ * payment-wallet agent at all (the whole page renders the unsupported state
+ * there instead of this one). Each fires only after an explicit
+ * `window.confirm`, credits or denies real coins immediately on success, and
+ * is permanently recorded in GhrFix's own audit log.
  */
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useWalletSnapshot, coins, formatAge, dateTime, type TopUpRequest, type WalletSnapshot } from "@/lib/wallet-data";
+import {
+  useWalletSnapshot,
+  approveTopUp,
+  rejectTopUp,
+  coins,
+  formatAge,
+  dateTime,
+  type TopUpRequest,
+  type WalletSnapshot,
+} from "@/lib/wallet-data";
+import { ApiError } from "@/lib/api";
 import { usePlatformParam, platformLabel } from "@/lib/agent-data";
 import {
   BarRows,
@@ -53,6 +67,48 @@ export default function WalletTopUpsPage({ params }: { params: Promise<{ platfor
   const [ageFilter, setAgeFilter] = useState("Any age");
   const [page, setPage] = useState(1);
 
+  const [busy, setBusy] = useState<{ id: string; action: "approve" | "reject" } | null>(null);
+  const [toast, setToast] = useState<{ text: string; tone: "success" | "error" } | null>(null);
+
+  function notify(text: string, tone: "success" | "error" = "success") {
+    setToast({ text, tone });
+    window.setTimeout(() => setToast((cur) => (cur?.text === text ? null : cur)), 3200);
+  }
+
+  async function handleApprove(t: TopUpRequest) {
+    const sure = window.confirm(
+      `Approve this ${coins(t.amount)} top-up for ${t.requester}?\n\nThis credits real coins to their wallet immediately and is permanently audit-logged.`,
+    );
+    if (!sure) return;
+    setBusy({ id: t.id, action: "approve" });
+    try {
+      const result = await approveTopUp(t.id);
+      w.applyTopUpDecision(result);
+      notify(`Approved — ${coins(t.amount)} credited to ${t.requester}.`);
+    } catch (err) {
+      notify(err instanceof ApiError ? err.message : "Could not approve this top-up.", "error");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleReject(t: TopUpRequest) {
+    const sure = window.confirm(
+      `Reject this ${coins(t.amount)} top-up for ${t.requester}?\n\nThis is a final, audited decision — the requester is notified and no coins are credited.`,
+    );
+    if (!sure) return;
+    setBusy({ id: t.id, action: "reject" });
+    try {
+      const result = await rejectTopUp(t.id);
+      w.applyTopUpDecision(result);
+      notify(`Rejected the top-up from ${t.requester}.`);
+    } catch (err) {
+      notify(err instanceof ApiError ? err.message : "Could not reject this top-up.", "error");
+    } finally {
+      setBusy(null);
+    }
+  }
+
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
     return w.topups.filter((t) => {
@@ -84,6 +140,7 @@ export default function WalletTopUpsPage({ params }: { params: Promise<{ platfor
   const matchedAmount = rows.reduce<number | null>((acc, t) => (t.amount === null ? acc : (acc ?? 0) + t.amount), null);
 
   return (
+    <>
     <SpecialShell
       platform={platform}
       agentLabel="Payment & Wallet Agent"
@@ -91,7 +148,7 @@ export default function WalletTopUpsPage({ params }: { params: Promise<{ platfor
       basePath="/wallet-agent-special"
       nav={NAV}
       headerIcon="posts"
-      assistantBlurb="I can read every top-up request the backend returns. Approving one is a real write — not from here."
+      assistantBlurb="I can read every top-up request the backend returns. Use Approve or Reject on a row to act for real."
       title="Top-Ups"
       subtitle={`Manual bank transfers awaiting review on ${label}`}
       actions={
@@ -112,9 +169,9 @@ export default function WalletTopUpsPage({ params }: { params: Promise<{ platfor
           <div className="cs-wallet-banner">
             <Icon name="alert" size={15} />
             <span>
-              <b>Actions are not wired up here.</b> Approving or rejecting a top-up credits or denies real coins and
-              writes to the audit log. Those endpoints are never called from this workspace, so the buttons below are
-              disabled by design.
+              <b>Approve and Reject are live.</b> Approving a request immediately credits real coins to the
+              requester&apos;s wallet; rejecting is a final decision the requester is notified of. Both call GhrFix&apos;s
+              real backend and are permanently written to the audit log — always confirm before acting.
             </span>
           </div>
 
@@ -280,11 +337,27 @@ export default function WalletTopUpsPage({ params }: { params: Promise<{ platfor
                       <td className="cs-num" style={{ color: "#69738c", whiteSpace: "nowrap" }}>{dateTime(t.createdAt)}</td>
                       <td style={{ paddingRight: 19, whiteSpace: "nowrap" }}>
                         <span className="cs-wallet-actions">
-                          <button type="button" className="cs-btn" disabled title="Not wired up — approving credits real coins" aria-label={`Approve ${t.requester}'s top-up (disabled)`}>
-                            <Icon name="check" size={13} />Approve
+                          <button
+                            type="button"
+                            className="cs-btn"
+                            disabled={t.status !== "PENDING" || busy?.id === t.id}
+                            title={t.status !== "PENDING" ? "Already reviewed — only pending requests can be approved" : undefined}
+                            aria-label={`Approve ${t.requester}'s top-up`}
+                            onClick={() => handleApprove(t)}
+                          >
+                            <Icon name="check" size={13} />
+                            {busy?.id === t.id && busy.action === "approve" ? "Approving…" : "Approve"}
                           </button>
-                          <button type="button" className="cs-btn" disabled title="Not wired up — rejecting is an audited write" aria-label={`Reject ${t.requester}'s top-up (disabled)`}>
-                            <Icon name="alert" size={13} />Reject
+                          <button
+                            type="button"
+                            className="cs-btn"
+                            disabled={t.status !== "PENDING" || busy?.id === t.id}
+                            title={t.status !== "PENDING" ? "Already reviewed — only pending requests can be rejected" : undefined}
+                            aria-label={`Reject ${t.requester}'s top-up`}
+                            onClick={() => handleReject(t)}
+                          >
+                            <Icon name="alert" size={13} />
+                            {busy?.id === t.id && busy.action === "reject" ? "Rejecting…" : "Reject"}
                           </button>
                         </span>
                       </td>
@@ -312,6 +385,13 @@ export default function WalletTopUpsPage({ params }: { params: Promise<{ platfor
         </>
       )}
     </SpecialShell>
+    {toast && (
+      <div className={`cs-toast${toast.tone === "error" ? " cs-toast-error" : ""}`} role="status" aria-live="polite">
+        <Icon name={toast.tone === "error" ? "alert" : "check"} size={14} />
+        {toast.text}
+      </div>
+    )}
+    </>
   );
 }
 
@@ -354,4 +434,8 @@ const TOPUP_CSS = `
 .cs-wallet-unsupported{display:flex;gap:13px;align-items:flex-start}
 .cs-wallet-unsupported>span{width:34px;height:34px;border-radius:10px;flex:0 0 auto;display:grid;place-items:center;background:#fff6e6;color:#c9860f}
 .cs-wallet-unsupported p{margin:0 0 10px;font-size:12px;line-height:20px;color:#4c5470;max-width:640px}
+.cs-toast{position:fixed;right:22px;bottom:22px;max-width:360px;background:#11162f;color:#fff;border-radius:10px;padding:12px 16px;font-size:12px;line-height:18px;box-shadow:0 14px 32px rgba(20,22,50,.28);z-index:80;display:flex;align-items:flex-start;gap:9px}
+.cs-toast svg{flex:0 0 auto;margin-top:1px;color:#5eead4}
+.cs-toast-error{background:#3d1420}
+.cs-toast-error svg{color:#ff8a93}
 `;

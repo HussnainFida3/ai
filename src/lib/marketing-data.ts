@@ -16,15 +16,26 @@
  *
  * ShadiLife has NO read endpoint that lists campaigns or promo codes: its
  * campaign data only comes back from `draft-campaign` / `send-campaign`,
- * which are AI calls and real writes. This dashboard is read-only, so those
- * are deliberately never called and the campaign fields stay empty with
- * `capabilities.promoCodes` / `.broadcasts` false — the pages say "not
- * exposed" rather than rendering a zero that would read as a measurement.
+ * which are AI calls and real writes. The dashboard reads never fire those on
+ * mount, so the campaign fields stay empty with `capabilities.promoCodes` /
+ * `.broadcasts` false — the pages say "not exposed" rather than rendering a
+ * zero that would read as a measurement.
  *
  * Every field a platform genuinely lacks is `null`, never a faked 0.
+ *
+ * WRITES, wired from the Campaigns page only (never auto-fired):
+ *   GhrFix     POST /ai-agents/marketing/promo      — createPromoCode()
+ *              POST /ai-agents/marketing/broadcast  — sendGhrfixBroadcast()
+ *   ShadiLife  POST /ai-agents/marketing/send-campaign — sendShadiLifeCampaign()
+ *              (no promo-code system anywhere on ShadiLife's backend — grepped
+ *              the whole repo for PromoCode/promo_code and found nothing, so
+ *              promo creation stays GhrFix-only, disabled with an honest note)
+ * `addPromo`/`addBroadcast` let the Campaigns page splice a just-created real
+ * row into `raw` right after a successful write, so every derived stat/chart
+ * updates without a refetch.
  */
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiFetch, ApiError } from "./api";
 import type { PlatformKey } from "./platforms";
 
@@ -164,6 +175,11 @@ export interface MarketingSnapshot {
 
   loading: boolean;
   error: string | null;
+
+  /** Splice a just-created promo code into the live list (GhrFix only). */
+  addPromo: (promo: MarketingPromo) => void;
+  /** Splice a just-sent broadcast into the live log (GhrFix only — ShadiLife has no broadcast log to splice into). */
+  addBroadcast: (broadcast: MarketingBroadcast) => void;
 }
 
 /* ── Raw backend shapes ─────────────────────────────────────────────── */
@@ -306,6 +322,95 @@ function bucketByMonth(dates: Array<string | null>, keys: ReturnType<typeof mont
   return keys.map((k) => counts.get(k.key) ?? 0);
 }
 
+/* ── Real writes ────────────────────────────────────────────────────── */
+
+/** Mirrors GhrFix's createPromoSchema (promo.schema.ts) closely enough to build a valid request body. */
+export interface CreatePromoInput {
+  code: string;
+  type: PromoType;
+  value: number;
+  minOrder?: number;
+  maxDiscount?: number;
+  usageLimit?: number;
+  perUserLimit?: number;
+  /** ISO date string, e.g. from an <input type="date">. */
+  validFrom?: string;
+  validTo?: string;
+  isActive?: boolean;
+}
+
+/**
+ * Real, audited write: POST /ai-agents/marketing/promo. GhrFix only — there is
+ * no promo-code concept anywhere on ShadiLife's backend (confirmed by
+ * grepping the whole repo for PromoCode/promo_code — no matches outside
+ * GhrFix). Returns the created code, normalized the same way the read path
+ * does, ready to prepend via `addPromo`.
+ */
+export async function createPromoCode(input: CreatePromoInput): Promise<MarketingPromo> {
+  const { data } = await apiFetch<RawPromo>("ghrfix", "/ai-agents/marketing/promo", { method: "POST", body: input });
+  return toPromo(data, 0);
+}
+
+export interface SendGhrfixBroadcastInput {
+  title: string;
+  body: string;
+  audience: BroadcastAudience;
+}
+
+/** Real, audited write: POST /ai-agents/marketing/broadcast. GhrFix only. */
+export async function sendGhrfixBroadcast(input: SendGhrfixBroadcastInput): Promise<MarketingBroadcast> {
+  const { data } = await apiFetch<RawBroadcast>("ghrfix", "/ai-agents/marketing/broadcast", { method: "POST", body: input });
+  return toBroadcast(data, 0);
+}
+
+export const SHADILIFE_CAMPAIGN_CHANNELS = ["EMAIL", "NOTIFICATION", "BOTH"] as const;
+export type ShadiLifeCampaignChannel = (typeof SHADILIFE_CAMPAIGN_CHANNELS)[number];
+
+export interface SendShadiLifeCampaignInput {
+  title: string;
+  body: string;
+  /** One of the names GET /ai-agents/marketing/segments returned. */
+  segment: string;
+  channel: ShadiLifeCampaignChannel;
+}
+
+export interface ShadiLifeCampaignResult {
+  id: string;
+  title: string;
+  segment: string;
+  status: string;
+  /** How many recipients were actually reached — real count from sendCampaignNow, not an estimate. */
+  sentCount: number;
+  sentAt: string | null;
+}
+
+/**
+ * Real send: POST /ai-agents/marketing/send-campaign. ShadiLife's equivalent
+ * of GhrFix's broadcast — this platform has no promo-code system, but it does
+ * have a real on-site/email campaign send. There is no read endpoint that
+ * lists past sends (confirmed in the file banner above), so the result is
+ * shown as a one-off confirmation rather than spliced into a list that does
+ * not exist for this platform.
+ */
+export async function sendShadiLifeCampaign(input: SendShadiLifeCampaignInput): Promise<ShadiLifeCampaignResult> {
+  const { data } = await apiFetch<{
+    id?: string;
+    title?: string;
+    segment?: string;
+    status?: string;
+    sentCount?: number;
+    sentAt?: string | null;
+  }>("shadilife", "/ai-agents/marketing/send-campaign", { method: "POST", body: input });
+  return {
+    id: asText(data.id) || "campaign",
+    title: asText(data.title) || input.title,
+    segment: asText(data.segment) || input.segment,
+    status: asText(data.status) || "SENT",
+    sentCount: asNum(data.sentCount) ?? 0,
+    sentAt: asText(data.sentAt) || null,
+  };
+}
+
 /* ── Hook ───────────────────────────────────────────────────────────── */
 
 interface Loaded {
@@ -361,6 +466,19 @@ export function useMarketingSnapshot(platform: PlatformKey): MarketingSnapshot {
       cancelled = true;
     };
   }, [platform]);
+
+  /** GhrFix only — the campaigns page never renders the promo form for ShadiLife. */
+  const addPromo = useCallback((promo: MarketingPromo) => {
+    setRaw((prev) => ({ ...prev, promos: [promo, ...prev.promos] }));
+  }, []);
+  /** GhrFix only — ShadiLife has no broadcast log to splice into. */
+  const addBroadcast = useCallback((broadcast: MarketingBroadcast) => {
+    setRaw((prev) => ({
+      ...prev,
+      broadcasts: [broadcast, ...prev.broadcasts],
+      broadcastsLoggedTotal: prev.broadcastsLoggedTotal !== null ? prev.broadcastsLoggedTotal + 1 : prev.broadcastsLoggedTotal,
+    }));
+  }, []);
 
   const caps = CAPS[platform];
   const { promos, broadcasts, events } = raw;
@@ -465,6 +583,9 @@ export function useMarketingSnapshot(platform: PlatformKey): MarketingSnapshot {
     monthly,
     loading,
     error,
+
+    addPromo,
+    addBroadcast,
   };
 }
 

@@ -10,14 +10,29 @@
  * the one real campaign record it does have — this agent's own rows in the
  * shared audit feed.
  *
- * Read-only: the "New promo code" and "New broadcast" controls are inert on
- * purpose. Creating and sending are real audited writes and are not wired up
- * from this workspace.
+ * "New promo code" and "New broadcast" / "New campaign" are wired to real,
+ * audited writes:
+ *   GhrFix     POST /ai-agents/marketing/promo      (createPromoCode)
+ *              POST /ai-agents/marketing/broadcast  (sendGhrfixBroadcast)
+ *   ShadiLife  POST /ai-agents/marketing/send-campaign (sendShadiLifeCampaign)
+ *              — no promo-code system exists anywhere on ShadiLife's backend
+ *              (grepped the whole repo), so that control stays disabled there
+ *              with an honest note instead of faking parity with GhrFix.
  */
 
 import { useMemo, useState } from "react";
 import { usePlatformParam, platformLabel } from "@/lib/agent-data";
-import { useMarketingSnapshot, AUDIENCE_LABEL } from "@/lib/marketing-data";
+import {
+  useMarketingSnapshot,
+  AUDIENCE_LABEL,
+  createPromoCode,
+  sendGhrfixBroadcast,
+  sendShadiLifeCampaign,
+  SHADILIFE_CAMPAIGN_CHANNELS,
+  type BroadcastAudience,
+  type PromoType,
+  type ShadiLifeCampaignChannel,
+} from "@/lib/marketing-data";
 import {
   BarRows,
   Card,
@@ -59,6 +74,121 @@ export default function MarketingCampaignsPage({ params }: { params: Promise<{ p
   const [typeFilter, setTypeFilter] = useState("All types");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+
+  const [toast, setToast] = useState("");
+  const notify = (text: string) => {
+    setToast(text);
+    window.setTimeout(() => setToast(""), 3600);
+  };
+
+  /* ── New promo code (GhrFix only) ──────────────────────────────────── */
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [promoSubmitting, setPromoSubmitting] = useState(false);
+  const [promoForm, setPromoForm] = useState({
+    code: "",
+    type: "FLAT" as PromoType,
+    value: "",
+    minOrder: "",
+    maxDiscount: "",
+    usageLimit: "",
+    perUserLimit: "1",
+    validTo: "",
+  });
+
+  async function submitPromo() {
+    const code = promoForm.code.trim().toUpperCase();
+    const value = Number(promoForm.value);
+    if (!/^[A-Z0-9]{3,30}$/.test(code)) {
+      notify("Code must be 3-30 uppercase letters/numbers.");
+      return;
+    }
+    if (!Number.isFinite(value) || value <= 0) {
+      notify("Value must be a positive number.");
+      return;
+    }
+    const summary =
+      promoForm.type === "PERCENT" ? `${value}% off` : `Rs ${value.toLocaleString()} off`;
+    if (!window.confirm(`Create promo code "${code}" (${summary}) on GhrFix? It goes live immediately and is real, audited, and redeemable right away.`)) return;
+
+    setPromoSubmitting(true);
+    try {
+      const created = await createPromoCode({
+        code,
+        type: promoForm.type,
+        value,
+        minOrder: promoForm.minOrder ? Number(promoForm.minOrder) : undefined,
+        maxDiscount: promoForm.maxDiscount ? Number(promoForm.maxDiscount) : undefined,
+        usageLimit: promoForm.usageLimit ? Number(promoForm.usageLimit) : undefined,
+        perUserLimit: promoForm.perUserLimit ? Number(promoForm.perUserLimit) : undefined,
+        validTo: promoForm.validTo || undefined,
+      });
+      m.addPromo(created);
+      notify(`Promo code "${created.code}" created and is live.`);
+      setPromoOpen(false);
+      setPromoForm({ code: "", type: "FLAT", value: "", minOrder: "", maxDiscount: "", usageLimit: "", perUserLimit: "1", validTo: "" });
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Could not create the promo code.");
+    } finally {
+      setPromoSubmitting(false);
+    }
+  }
+
+  /* ── New broadcast (GhrFix) / campaign (ShadiLife) ─────────────────── */
+  const [sendOpen, setSendOpen] = useState(false);
+  const [sendSubmitting, setSendSubmitting] = useState(false);
+  const [sendForm, setSendForm] = useState({
+    title: "",
+    body: "",
+    audience: "ALL" as BroadcastAudience,
+    segment: "",
+    channel: "NOTIFICATION" as ShadiLifeCampaignChannel,
+  });
+  /* ShadiLife has no broadcast log to read back, so the last real send this
+     session is held here and shown as an explicit confirmation card instead. */
+  const [lastShadiSend, setLastShadiSend] = useState<{ title: string; segment: string; sentCount: number; status: string } | null>(null);
+
+  async function submitSend() {
+    if (!sendForm.title.trim() || !sendForm.body.trim()) {
+      notify("Title and message body are required.");
+      return;
+    }
+
+    if (platform === "ghrfix") {
+      const audienceWord = AUDIENCE_LABEL[sendForm.audience];
+      if (!window.confirm(`Send this broadcast to ${audienceWord} on GhrFix now? This is a real, audited notification send and cannot be undone.`)) return;
+      setSendSubmitting(true);
+      try {
+        const created = await sendGhrfixBroadcast({ title: sendForm.title.trim(), body: sendForm.body.trim(), audience: sendForm.audience });
+        m.addBroadcast(created);
+        notify(`Broadcast sent to ${created.recipientCount.toLocaleString()} recipient(s).`);
+        setSendOpen(false);
+        setSendForm({ title: "", body: "", audience: "ALL", segment: "", channel: "NOTIFICATION" });
+      } catch (err) {
+        notify(err instanceof Error ? err.message : "Could not send the broadcast.");
+      } finally {
+        setSendSubmitting(false);
+      }
+      return;
+    }
+
+    if (!sendForm.segment) {
+      notify("Choose a segment first.");
+      return;
+    }
+    if (!window.confirm(`Send this campaign to the "${sendForm.segment}" segment via ${sendForm.channel} on ShadiLife now? This is a real send and cannot be undone.`)) return;
+    setSendSubmitting(true);
+    try {
+      const result = await sendShadiLifeCampaign({ title: sendForm.title.trim(), body: sendForm.body.trim(), segment: sendForm.segment, channel: sendForm.channel });
+      setLastShadiSend(result);
+      notify(`Campaign sent to ${result.sentCount.toLocaleString()} recipient(s) in "${result.segment}".`);
+      setSendOpen(false);
+      setSendForm({ title: "", body: "", audience: "ALL", segment: "", channel: "NOTIFICATION" });
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Could not send the campaign.");
+    } finally {
+      setSendSubmitting(false);
+    }
+  }
 
   /* One filtered list drives the table; which rows it holds depends on what
      the platform genuinely returns. */
@@ -114,19 +244,147 @@ export default function MarketingCampaignsPage({ params }: { params: Promise<{ p
       title="Campaigns"
       subtitle={caps.promoCodes ? `Every ${label} promo code and broadcast in the live tables` : `What ${label} exposes about marketing campaigns`}
       actions={
-        <button type="button" className="cs-btn" disabled title="Creating and sending are real writes and are not wired up in this read-only workspace.">
-          <Icon name="edit" size={15} />
-          New promo code
-        </button>
+        <>
+          {platform === "ghrfix" ? (
+            <button type="button" className="cs-btn" onClick={() => setPromoOpen((v) => !v)}>
+              <Icon name="edit" size={15} />
+              {promoOpen ? "Cancel" : "New promo code"}
+            </button>
+          ) : (
+            <button type="button" className="cs-btn" disabled title="ShadiLife has no promo-code system on its backend — GhrFix only.">
+              <Icon name="edit" size={15} />
+              New promo code
+            </button>
+          )}
+          <button type="button" className="cs-btn cs-btn-primary" onClick={() => setSendOpen((v) => !v)}>
+            <Icon name="send" size={15} />
+            {sendOpen ? "Cancel" : platform === "ghrfix" ? "New broadcast" : "New campaign"}
+          </button>
+        </>
       }
     >
       {m.error && <ErrorNote error={m.error} platform={platform} />}
 
       <p className="cs-marketing-readonly">
-        <Icon name="alert" size={13} />
-        Read-only workspace — creating a promo code and sending a broadcast are real audited writes, and neither is
-        wired up here.
+        <Icon name={platform === "ghrfix" ? "check" : "alert"} size={13} />
+        {platform === "ghrfix"
+          ? "New promo code and New broadcast are real, audited writes — both go live immediately."
+          : "New campaign is a real, audited send. ShadiLife has no promo-code system on its backend, so that control stays disabled."}
       </p>
+
+      {promoOpen && platform === "ghrfix" && (
+        <Card title="New promo code" className="cs-marketing-form">
+          <div className="cs-marketing-grid">
+            <label>
+              <span>Code *</span>
+              <input value={promoForm.code} onChange={(e) => setPromoForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))} placeholder="SAVE20" maxLength={30} />
+            </label>
+            <label>
+              <span>Type *</span>
+              <select value={promoForm.type} onChange={(e) => setPromoForm((f) => ({ ...f, type: e.target.value as PromoType }))}>
+                <option value="FLAT">Flat discount</option>
+                <option value="PERCENT">Percent discount</option>
+              </select>
+            </label>
+            <label>
+              <span>Value * {promoForm.type === "PERCENT" ? "(%)" : "(Rs)"}</span>
+              <input type="number" min="0" value={promoForm.value} onChange={(e) => setPromoForm((f) => ({ ...f, value: e.target.value }))} placeholder={promoForm.type === "PERCENT" ? "20" : "500"} />
+            </label>
+            <label>
+              <span>Min order (Rs)</span>
+              <input type="number" min="0" value={promoForm.minOrder} onChange={(e) => setPromoForm((f) => ({ ...f, minOrder: e.target.value }))} placeholder="Optional" />
+            </label>
+            {promoForm.type === "PERCENT" && (
+              <label>
+                <span>Max discount (Rs)</span>
+                <input type="number" min="0" value={promoForm.maxDiscount} onChange={(e) => setPromoForm((f) => ({ ...f, maxDiscount: e.target.value }))} placeholder="Optional cap" />
+              </label>
+            )}
+            <label>
+              <span>Total usage limit</span>
+              <input type="number" min="1" value={promoForm.usageLimit} onChange={(e) => setPromoForm((f) => ({ ...f, usageLimit: e.target.value }))} placeholder="Uncapped if blank" />
+            </label>
+            <label>
+              <span>Per-user limit</span>
+              <input type="number" min="1" value={promoForm.perUserLimit} onChange={(e) => setPromoForm((f) => ({ ...f, perUserLimit: e.target.value }))} />
+            </label>
+            <label>
+              <span>Valid to</span>
+              <input type="date" value={promoForm.validTo} onChange={(e) => setPromoForm((f) => ({ ...f, validTo: e.target.value }))} />
+            </label>
+          </div>
+          <div className="cs-marketing-formactions">
+            <button type="button" className="cs-btn" onClick={() => setPromoOpen(false)} disabled={promoSubmitting}>Cancel</button>
+            <button type="button" className="cs-btn cs-btn-primary" onClick={submitPromo} disabled={promoSubmitting}>
+              {promoSubmitting ? "Creating…" : "Create promo code"}
+            </button>
+          </div>
+        </Card>
+      )}
+
+      {sendOpen && (
+        <Card title={platform === "ghrfix" ? "New broadcast" : "New campaign"} className="cs-marketing-form">
+          <div className="cs-marketing-grid">
+            <label className="cs-marketing-span2">
+              <span>Title *</span>
+              <input value={sendForm.title} onChange={(e) => setSendForm((f) => ({ ...f, title: e.target.value }))} maxLength={120} placeholder="A short, clear headline" />
+            </label>
+            <label className="cs-marketing-span2">
+              <span>Message *</span>
+              <textarea value={sendForm.body} onChange={(e) => setSendForm((f) => ({ ...f, body: e.target.value }))} maxLength={1000} rows={3} placeholder="What recipients will see" />
+            </label>
+            {platform === "ghrfix" ? (
+              <label>
+                <span>Audience *</span>
+                <select value={sendForm.audience} onChange={(e) => setSendForm((f) => ({ ...f, audience: e.target.value as BroadcastAudience }))}>
+                  <option value="ALL">Everyone</option>
+                  <option value="CUSTOMER_MODE">Customers</option>
+                  <option value="PROVIDER_MODE">Providers</option>
+                </select>
+              </label>
+            ) : (
+              <>
+                <label>
+                  <span>Segment *</span>
+                  <select value={sendForm.segment} onChange={(e) => setSendForm((f) => ({ ...f, segment: e.target.value }))}>
+                    <option value="">{m.segments.length === 0 ? "No segments loaded" : "Choose a segment…"}</option>
+                    {m.segments.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span>Channel *</span>
+                  <select value={sendForm.channel} onChange={(e) => setSendForm((f) => ({ ...f, channel: e.target.value as ShadiLifeCampaignChannel }))}>
+                    {SHADILIFE_CAMPAIGN_CHANNELS.map((c) => (
+                      <option key={c} value={c}>{c.charAt(0) + c.slice(1).toLowerCase()}</option>
+                    ))}
+                  </select>
+                </label>
+              </>
+            )}
+          </div>
+          <div className="cs-marketing-formactions">
+            <button type="button" className="cs-btn" onClick={() => setSendOpen(false)} disabled={sendSubmitting}>Cancel</button>
+            <button type="button" className="cs-btn cs-btn-primary" onClick={submitSend} disabled={sendSubmitting}>
+              {sendSubmitting ? "Sending…" : platform === "ghrfix" ? "Send broadcast" : "Send campaign"}
+            </button>
+          </div>
+        </Card>
+      )}
+
+      {platform === "shadilife" && lastShadiSend && (
+        <Card title="Last campaign sent this session">
+          <p className="cs-marketing-lastsend">
+            <b>{lastShadiSend.title}</b> — sent to <b>{lastShadiSend.sentCount.toLocaleString()}</b> recipient(s) in the
+            &quot;{lastShadiSend.segment}&quot; segment. Status: {lastShadiSend.status}.
+          </p>
+          <p className="cs-marketing-note">
+            ShadiLife exposes no endpoint that lists past sends, so this confirmation is only held for this browser session —
+            it is not a persisted campaign log.
+          </p>
+        </Card>
+      )}
 
       <div className="cs-stats">
         <StatCard
@@ -416,6 +674,8 @@ export default function MarketingCampaignsPage({ params }: { params: Promise<{ p
       )}
 
       <style>{CSS}</style>
+
+      {toast && <div className="cs-marketing-toast" role="status">{toast}</div>}
     </SpecialShell>
   );
 }
@@ -425,4 +685,13 @@ const CSS = `
 .cs-marketing-readonly{display:flex;align-items:center;gap:8px;margin:0;font-size:11.5px;color:#69738c;background:#fff;border:1px solid #eef0f5;border-radius:10px;padding:10px 13px}
 .cs-marketing-toolbar{display:flex;align-items:center;gap:12px;padding:14px 19px 0;flex-wrap:wrap}
 .cs-marketing-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 19px;border-top:1px solid #eef0f5;font-size:11.5px;color:#4c5470;flex-wrap:wrap}
+.cs-marketing-form label{display:flex;flex-direction:column;gap:5px;font-size:11.5px;color:#4c5470;font-weight:600}
+.cs-marketing-form input,.cs-marketing-form select,.cs-marketing-form textarea{height:36px;padding:0 11px;border:1px solid #dfe2ea;border-radius:8px;background:#fff;font-size:12.5px;color:#11162d;font-family:inherit}
+.cs-marketing-form textarea{height:auto;padding:9px 11px;resize:vertical}
+.cs-marketing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:13px}
+.cs-marketing-span2{grid-column:1 / -1}
+.cs-marketing-formactions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+.cs-marketing-lastsend{margin:0 0 8px;font-size:12.5px;line-height:20px;color:#11162d}
+.cs-marketing-note{margin:0;font-size:11px;line-height:18px;color:#69738c}
+.cs-marketing-toast{position:fixed;right:22px;bottom:22px;max-width:380px;background:#11162f;color:#fff;border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:18px;box-shadow:0 14px 32px rgba(20,20,45,.28);z-index:50}
 `;

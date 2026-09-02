@@ -33,10 +33,21 @@
  * does not have a concept (ShadiLife has no "emergency"), the flag says so
  * and the note names the platform — a zero would read as a measurement.
  *
- * NOTHING here writes. The ops agent does expose real writes
- * (POST /providers/:id/verify, POST /emergencies/:id/status,
- * PUT /verification/require-human-verification) and they are deliberately
- * absent from this module.
+ * WRITES — GhrFix only, both real and audited on the backend:
+ *   POST /ai-agents/ops/providers/:id/verify     — verifyProvider()
+ *   POST /ai-agents/ops/emergencies/:id/status   — updateEmergencyStatus()
+ * `applyStatusUpdate` lets a page patch the matching item's status locally
+ * right after a successful write, so every derived stat/chart recomputes
+ * without a refetch.
+ *
+ * ShadiLife has NO equivalent write on either its Ops Agent (confirmed by
+ * reading ops-agent/router.ts — health-summary, schedule-health and ask only)
+ * or its Verification Agent (confirmed by reading verification-agent/router.ts
+ * — it only records an AI suggestion and a global require-human-verification
+ * flag; the actual approve/reject decision is made by a human through the
+ * plain /admin/moderation queue, which sits outside every AI agent). So
+ * ShadiLife stays read-only here — verifyProvider/updateEmergencyStatus are
+ * never called for it, and the pages say exactly why.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -181,6 +192,9 @@ export interface OpsSnapshot {
     security: OpsSecurity | null;
   };
   runHealthCheck: () => void;
+
+  /** Patch one item's status locally right after a real write succeeds (GhrFix only). */
+  applyStatusUpdate: (id: string, patch: ItemStatusPatch) => void;
 }
 
 /* ── Small helpers ──────────────────────────────────────────────────── */
@@ -358,6 +372,54 @@ interface SlHealthSummary {
 const EMERGENCY_TONE: Record<string, OpsTone> = { OPEN: "red", ASSIGNED: "amber", RESOLVED: "green", CANCELLED: "cyan" };
 const EMERGENCY_GLYPH: Record<string, string> = { OPEN: "alert", ASSIGNED: "clock", RESOLVED: "check", CANCELLED: "eye" };
 const EMERGENCY_URGENCY: Record<string, number> = { OPEN: 3, ASSIGNED: 2, RESOLVED: 0, CANCELLED: 0 };
+
+/* ── Real writes — GhrFix only (see the file banner above) ───────────── */
+
+export type ItemStatusPatch = Pick<OpsItem, "status" | "statusLabel" | "tone" | "glyph" | "urgency">;
+
+/** What a pending-provider row should look like right after a real decision. */
+export function verificationPatchFor(status: "VERIFIED" | "REJECTED"): ItemStatusPatch {
+  return {
+    status,
+    statusLabel: status.charAt(0) + status.slice(1).toLowerCase(),
+    tone: status === "VERIFIED" ? "green" : "red",
+    glyph: status === "VERIFIED" ? "check" : "alert",
+    urgency: 0,
+  };
+}
+
+/** What an emergency row should look like right after a real status change. */
+export function emergencyPatchFor(status: "OPEN" | "ASSIGNED" | "RESOLVED" | "CANCELLED"): ItemStatusPatch {
+  return {
+    status,
+    statusLabel: status.charAt(0) + status.slice(1).toLowerCase(),
+    tone: EMERGENCY_TONE[status] ?? "amber",
+    glyph: EMERGENCY_GLYPH[status] ?? "alert",
+    urgency: EMERGENCY_URGENCY[status] ?? 2,
+  };
+}
+
+/**
+ * Real, audited write: POST /ai-agents/ops/providers/:id/verify.
+ * GhrFix only — see the file banner for why ShadiLife has no equivalent.
+ * `note` lands in the audit log (verifyProviderSchema caps it at 300 chars);
+ * it is never shown to the provider.
+ */
+export async function verifyProvider(providerId: string, status: "VERIFIED" | "REJECTED", note?: string): Promise<void> {
+  const body: Record<string, unknown> = { status };
+  if (note && note.trim()) body.note = note.trim().slice(0, 300);
+  await apiFetch("ghrfix", `/ai-agents/ops/providers/${providerId}/verify`, { method: "POST", body });
+}
+
+/**
+ * Real, audited write: POST /ai-agents/ops/emergencies/:id/status.
+ * GhrFix only — ShadiLife has no emergency concept at all. Re-assigning a
+ * provider (POST .../emergencies/:id/assign) is a separate real endpoint on
+ * the same agent, deliberately left out of this workspace's scope.
+ */
+export async function updateEmergencyStatus(emergencyId: string, status: "OPEN" | "ASSIGNED" | "RESOLVED" | "CANCELLED"): Promise<void> {
+  await apiFetch("ghrfix", `/ai-agents/ops/emergencies/${emergencyId}/status`, { method: "POST", body: { status } });
+}
 
 function providerItem(p: GhrPendingProvider, idx: number): OpsItem {
   const created = asText(p.createdAt) || null;
@@ -619,6 +681,17 @@ export function useOpsSnapshot(platform: PlatformKey): OpsSnapshot {
       cancelled = true;
     };
   }, [platform]);
+
+  /**
+   * Patches one item's status fields in `raw.items` right after a real write
+   * succeeds — no refetch. Every derived list/stat/chart is recomputed from
+   * `raw` on the next render, so this one patch is enough to update the whole
+   * page (the item leaving PENDING, the counters, the status donuts, all of
+   * it) consistently.
+   */
+  const applyStatusUpdate = useCallback((id: string, patch: ItemStatusPatch) => {
+    setRaw((prev) => ({ ...prev, items: prev.items.map((i) => (i.id === id ? { ...i, ...patch } : i)) }));
+  }, []);
 
   /* The AI-costing health check — explicitly triggered, never on mount. */
   const runHealthCheck = useCallback(() => {
@@ -969,8 +1042,9 @@ export function useOpsSnapshot(platform: PlatformKey): OpsSnapshot {
         security: healthSecurity,
       },
       runHealthCheck,
+      applyStatusUpdate,
     };
-  }, [platform, raw, loading, error, healthRan, healthLoading, healthError, healthSummary, healthSecurity, runHealthCheck]);
+  }, [platform, raw, loading, error, healthRan, healthLoading, healthError, healthSummary, healthSecurity, runHealthCheck, applyStatusUpdate]);
 }
 
 function mk(key: string, label: string, value: number | null, note: string, tone: OpsTone, icon: string): OpsMetric {

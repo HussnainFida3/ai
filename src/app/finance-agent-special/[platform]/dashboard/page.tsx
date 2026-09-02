@@ -40,7 +40,7 @@ import {
   CircleDollarSign,
   Menu,
 } from "lucide-react";
-import { usePlatformParam, useFinanceSnapshot, platformLabel } from "@/lib/agent-data";
+import { usePlatformParam, useFinanceSnapshot, platformLabel, platformLogoUrl } from "@/lib/agent-data";
 
 const FINANCE_NAV = [
   { href: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -218,30 +218,10 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           flex: 0 0 auto;
         }
 
-        .brand-mark .heart-a,
-        .brand-mark .heart-b {
-          position: absolute;
-          border: 4px solid;
-          border-radius: 15px 15px 13px 13px;
-          width: 23px;
-          height: 23px;
-          transform: rotate(-45deg);
-        }
-
-        .brand-mark .heart-a {
-          left: 2px;
-          top: 8px;
-          border-color: #e34196;
-          border-right: 0;
-          border-top: 0;
-        }
-
-        .brand-mark .heart-b {
-          right: 0;
-          top: 0;
-          border-color: #a744d2;
-          border-right: 0;
-          border-top: 0;
+        .brand-mark img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
         }
 
         .brand-name {
@@ -1638,8 +1618,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         <aside className="sidebar">
           <div className="brand">
             <div className="brand-mark">
-              <span className="heart-a" />
-              <span className="heart-b" />
+              <img src={platformLogoUrl(platform)} alt={`${platformLabel(platform)} logo`} />
             </div>
 
             <div className="brand-name">

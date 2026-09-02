@@ -39,7 +39,7 @@ import {
   ImageIcon,
   BadgeCheck,
 } from "lucide-react";
-import { usePlatformParam, agentChat, platformLabel } from "@/lib/agent-data";
+import { usePlatformParam, agentChat, platformLabel, platformLogoUrl } from "@/lib/agent-data";
 import type { ChatTurn } from "@/lib/api";
 
 const SEO_NAV = [
@@ -267,40 +267,10 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         }
 
         .brand-heart {
-          position: relative;
           width: 30px;
           height: 30px;
-          transform: rotate(-45deg);
-          border: 3px solid #b14799;
-          border-radius: 8px 5px 8px 5px;
-        }
-
-        .brand-heart:before,
-        .brand-heart:after {
-          content: "";
-          position: absolute;
-          width: 14px;
-          height: 20px;
-          border: 3px solid #b14799;
-          background: transparent;
-        }
-
-        .brand-heart:before {
-          border-radius: 20px 20px 0 0;
-          border-bottom: 0;
-          border-right: 0;
-          left: -8px;
-          top: -12px;
-          transform: rotate(45deg);
-        }
-
-        .brand-heart:after {
-          border-radius: 20px 20px 0 0;
-          border-bottom: 0;
-          border-left: 0;
-          right: -8px;
-          top: -12px;
-          transform: rotate(-45deg);
+          object-fit: contain;
+          flex: 0 0 auto;
         }
 
         .brand-text {
@@ -1614,7 +1584,7 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         {/* ================= LEFT SIDEBAR ================= */}
         <aside className="sidebar">
           <div className="brand">
-            <div className="brand-heart" />
+            <img className="brand-heart" src={platformLogoUrl(platform)} alt={`${platformLabel(platform)} logo`} />
             <div>
               <div className="brand-text">
                 {platformLabel(platform)}<span>.com</span>

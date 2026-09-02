@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   usePlatformParam,
   platformLabel,
+  platformLogoUrl,
   useFinanceSnapshot,
   useFinanceBreakdown,
   useFinanceTrend,
@@ -247,7 +248,7 @@ export default function FinanceReportsPage({ params }: { params: Promise<{ platf
       .fm-app{width:100%;min-height:1024px;background:#fbfcff;display:flex}
       .sidebar{position:fixed;left:0;top:0;bottom:0;width:223px;background:linear-gradient(180deg,#180d39 0%,#21104f 100%);color:#fff;z-index:20}
       .brand{height:83px;background:#fff;color:#ca319e;display:flex;align-items:center;padding:12px 20px 9px;gap:8px}
-      .brand svg{width:38px;height:42px;color:#cf399f}
+      .brand img{width:38px;height:42px;object-fit:contain}
       .brand-name{font-size:22px;font-weight:800;line-height:23px;letter-spacing:-.8px;background:linear-gradient(90deg,#bf2f9c,#4732e4);-webkit-background-clip:text;color:transparent}
       .brand-sub{font-size:10px;color:#bf35a0;text-align:center;margin-top:1px;letter-spacing:.05px}
       .nav{padding:22px 11px}
@@ -284,7 +285,7 @@ export default function FinanceReportsPage({ params }: { params: Promise<{ platf
 
     <aside className="sidebar">
       <div className="brand">
-        <svg viewBox="0 0 44 46" fill="none"><path d="M22 42S5 31.5 5 17.5C5 10.3 10.1 6 15.8 6c3.5 0 5.1 2 6.2 4.7C23.1 8 25 6 28.5 6 34.1 6 39 10.4 39 17.5 39 31.5 22 42 22 42Z" stroke="currentColor" strokeWidth="3"/><path d="M12 18h7l3 5 3-8 3 5h5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/><circle cx="22" cy="5" r="2.5" fill="currentColor"/></svg>
+        <img src={platformLogoUrl(platform)} alt={`${platformLabel(platform)} logo`} />
         <div><div className="brand-name">{platformLabel(platform)}.com</div><div className="brand-sub">Finance Agent Special</div></div>
       </div>
       <nav className="nav">

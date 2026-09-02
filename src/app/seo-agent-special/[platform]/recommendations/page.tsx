@@ -8,7 +8,7 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { usePlatformParam, platformLabel, useSeoAudit, improveSeoPost, categorizeReason, type SeoPostRow, type SeoIssueCategory } from "@/lib/agent-data";
+import { usePlatformParam, platformLabel, platformLogoUrl, useSeoAudit, improveSeoPost, categorizeReason, type SeoPostRow, type SeoIssueCategory } from "@/lib/agent-data";
 import type { PlatformKey } from "@/lib/platforms";
 
 type IconName =
@@ -64,7 +64,7 @@ function Icon({ name, size = 18, stroke = 1.8 }: { name: IconName; size?: number
 function Logo({ platform }: { platform: PlatformKey }) {
   return (
     <div className="brand">
-      <div className="brandMark"><Icon name="heart" size={36} stroke={2.3}/></div>
+      <div className="brandMark"><img src={platformLogoUrl(platform)} alt={`${platformLabel(platform)} logo`} /></div>
       <div>
         <div className="brandName">{platformLabel(platform)}.com</div>
         <div className="brandTag">SEO Agent Special</div>
@@ -418,7 +418,8 @@ export default function AIRecommendationsPage({ params }: { params: Promise<{ pl
         .app{width:1536px;min-width:1536px;min-height:1024px;background:#fff;display:flex;overflow:hidden}
         .sidebar{width:242px;min-width:242px;border-right:1px solid #edf0f7;background:#fff;position:relative;padding:39px 14px 28px}
         .brand{height:67px;display:flex;align-items:center;padding-left:12px;gap:8px}
-        .brandMark{color:#d83294;width:35px;display:flex;align-items:center}
+        .brandMark{width:35px;height:35px;display:flex;align-items:center}
+        .brandMark img{width:100%;height:100%;object-fit:contain}
         .brandName{font-size:23px;font-weight:800;letter-spacing:-.7px;background:linear-gradient(90deg,#3b1bc4,#d72c9c);-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}
         .brandTag{font-size:11px;color:#435174;margin-top:2px;letter-spacing:.1px}
         .nav{margin-top:19px;display:flex;flex-direction:column;gap:3px}

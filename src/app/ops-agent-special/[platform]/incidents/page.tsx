@@ -14,12 +14,18 @@
  *             is fabricated, and no zero is shown in place of one.
  *
  * The severity tiers below are derived on this page from real status and real
- * age; that derivation is stated wherever it is charted. Read-only — the
- * emergency status write is not wired here.
+ * age; that derivation is stated wherever it is charted.
+ *
+ * Resolve/Cancel are wired to the real, audited GhrFix write
+ * (POST /ai-agents/ops/emergencies/:id/status). Re-assigning a provider
+ * (the agent's other real write, .../emergencies/:id/assign) is deliberately
+ * out of scope for this page. ShadiLife has no incident/emergency concept at
+ * all, so its rows (failing/paused scheduled jobs) stay disabled here with an
+ * honest note.
  */
 
-import { useMemo } from "react";
-import { useOpsSnapshot, ageLabel, type OpsItem } from "@/lib/ops-data";
+import { useMemo, useState } from "react";
+import { useOpsSnapshot, ageLabel, updateEmergencyStatus, emergencyPatchFor, type OpsItem } from "@/lib/ops-data";
 import { usePlatformParam, platformLabel } from "@/lib/agent-data";
 import {
   BarRows,
@@ -91,6 +97,28 @@ export default function OpsIncidentsPage({ params }: { params: Promise<{ platfor
   const critical = rows.filter((r) => r.urgency >= 3).length;
   const oldest = sorted.find((r) => r.ageDays !== null);
   const security = o.health.security;
+
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [toast, setToast] = useState("");
+  const notify = (text: string) => {
+    setToast(text);
+    window.setTimeout(() => setToast(""), 3200);
+  };
+
+  async function changeStatus(id: string, title: string, status: "RESOLVED" | "CANCELLED") {
+    const verb = status === "RESOLVED" ? "Resolve" : "Cancel";
+    if (!window.confirm(`${verb} the "${title}" emergency on GhrFix? This is a real, audited status change.`)) return;
+    setBusyId(id);
+    try {
+      await updateEmergencyStatus(id, status);
+      o.applyStatusUpdate(id, emergencyPatchFor(status));
+      notify(`${verb === "Resolve" ? "Resolved" : "Cancelled"} "${title}".`);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : `Could not ${verb.toLowerCase()} this emergency.`);
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   return (
     <SpecialShell
@@ -361,10 +389,25 @@ export default function OpsIncidentsPage({ params }: { params: Promise<{ platfor
                   </td>
                   <td className="cs-num">{ageLabel(r)}</td>
                   <td style={{ paddingRight: 19 }}>
-                    <button type="button" className="cs-btn cs-ops-inert" disabled aria-label="Resolving is not available on this read-only dashboard">
-                      <Icon name="eye" size={13} />
-                      Read-only
-                    </button>
+                    {!o.incidentsSupported ? (
+                      <button type="button" className="cs-btn cs-ops-inert" disabled title="ShadiLife's Ops Agent has no incident or emergency-status endpoint.">
+                        <Icon name="eye" size={13} />
+                        No agent endpoint
+                      </button>
+                    ) : r.status === "RESOLVED" || r.status === "CANCELLED" ? (
+                      <Pill tone={r.tone}><Icon name={r.glyph} size={12} />Closed</Pill>
+                    ) : (
+                      <div className="cs-ops-actions">
+                        <button type="button" className="cs-btn" disabled={busyId === r.id} onClick={() => changeStatus(r.id, r.title, "RESOLVED")}>
+                          <Icon name="check" size={13} />
+                          {busyId === r.id ? "Working…" : "Resolve"}
+                        </button>
+                        <button type="button" className="cs-btn" disabled={busyId === r.id} onClick={() => changeStatus(r.id, r.title, "CANCELLED")}>
+                          <Icon name="alert" size={13} />
+                          Cancel
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -373,9 +416,13 @@ export default function OpsIncidentsPage({ params }: { params: Promise<{ platfor
         </div>
 
         <p className="cs-ops-readonly">
-          Resolving and re-assigning are real endpoints on this agent, and none of them are wired into this workspace.
+          {o.incidentsSupported
+            ? "Resolve and Cancel call GhrFix's real POST /ai-agents/ops/emergencies/:id/status — every change is audited. Re-assigning a provider is a separate real endpoint, deliberately out of scope for this page."
+            : "ShadiLife's Ops Agent has no incident or emergency-status endpoint, so nothing here can be actioned — see the callout above."}
         </p>
       </Card>
+
+      {toast && <div className="cs-ops-toast" role="status">{toast}</div>}
     </SpecialShell>
   );
 }
@@ -401,6 +448,8 @@ const INC_CSS = `
 .cs-ops-fact b{font-weight:730;white-space:nowrap}
 .cs-ops-toolbar{display:flex;align-items:center;gap:12px;padding:16px 19px 0;flex-wrap:wrap;justify-content:space-between}
 .cs-ops-tabletitle{margin:0;font-size:13px;font-weight:750;letter-spacing:-.2px}
-.cs-ops-inert{opacity:.55;cursor:not-allowed}
+.cs-ops-inert{opacity:.55;cursor:not-allowed;white-space:nowrap}
+.cs-ops-actions{display:flex;gap:6px;flex-wrap:wrap}
 .cs-ops-readonly{margin:0;padding:12px 19px 16px;font-size:10.5px;line-height:17px;color:#8891a8;border-top:1px solid #eef0f5}
+.cs-ops-toast{position:fixed;right:22px;bottom:22px;max-width:360px;background:#11162f;color:#fff;border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:18px;box-shadow:0 14px 32px rgba(20,20,45,.28);z-index:50}
 `;

@@ -27,10 +27,14 @@
  *       → the platform-wide credit/debit ledger, Paginated
  *       (src/components/agents/views/domain/ghrfix/finance.tsx)
  *
- * READ-ONLY, deliberately. The agent also owns three real, audited money
- * writes — POST /topups/:id/approve, POST /topups/:id/reject and
- * PATCH /settings. NONE of them are called from this file or from any page in
- * this workspace, and the affordances that would trigger them are inert.
+ * The agent also owns three real, audited money writes — POST
+ * /topups/:id/approve, POST /topups/:id/reject and PATCH /settings — which
+ * this file now exposes as `approveTopUp`, `rejectTopUp` and
+ * `updateEconomySettings` below. Each is a real write that GhrFix's own audit
+ * log records (`auditToolAction` in payment-wallet-agent/router.ts); none of
+ * them is called automatically, and every call site requires an explicit
+ * admin confirmation before firing. GhrFix Coins are the only currency these
+ * touch — no other agent, and no page on ShadiLife, gains a write from this.
  *
  * Money is never guessed. A figure the backend did not return stays `null` and
  * the pages print "—" or "Not tracked"; a zero here would read as a real
@@ -38,7 +42,7 @@
  * never render as "nothing pending, all healthy".
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiFetch, ApiError, type Paginated } from "./api";
 import { platformLabel } from "./agent-data";
 import type { PlatformKey } from "./platforms";
@@ -249,6 +253,20 @@ export interface WalletSnapshot {
   isEmpty: boolean;
   loading: boolean;
   error: string | null;
+
+  /**
+   * Patches one already-loaded top-up in place after a real approve/reject
+   * write, so every derived figure that reads from it — the status mix
+   * donut, the pending count, the approval rate — updates immediately
+   * without a full refetch. A no-op if `id` isn't among the loaded rows.
+   */
+  applyTopUpDecision: (result: TopUpDecisionResult) => void;
+  /**
+   * Replaces the economy settings in place after a real PATCH /settings
+   * write, so the fee-share ring and every config row reflect the new
+   * values immediately without a full refetch.
+   */
+  applyEconomyUpdate: (economy: EconomyConfig) => void;
 }
 
 /* ── Honest helpers ─────────────────────────────────────────────────── */
@@ -276,6 +294,19 @@ function statusOf(raw: string): TopUpStatus {
 function typeOf(raw: string): LedgerType {
   const s = raw.toUpperCase();
   return s === "CREDIT" || s === "DEBIT" ? s : "OTHER";
+}
+
+/** Shared by the initial snapshot and by `updateEconomySettings`'s own response, so both normalize identically. */
+function normalizeEconomy(raw: RawEconomy | null | undefined): EconomyConfig | null {
+  if (!raw) return null;
+  return {
+    signupTokenGrant: num(raw.signupTokenGrant),
+    acceptFeeTokens: num(raw.acceptFeeTokens),
+    bankName: raw.bankName ?? null,
+    bankAccountName: raw.bankAccountName ?? null,
+    bankAccountNumber: raw.bankAccountNumber ?? null,
+    updatedAt: raw.updatedAt ?? null,
+  };
 }
 
 export function humanReason(reason: string): string {
@@ -453,7 +484,49 @@ export function useWalletSnapshot(platform: PlatformKey): WalletSnapshot {
     };
   }, [platform]);
 
-  return useMemo(() => derive(platform, raw, loading, error), [platform, raw, loading, error]);
+  /**
+   * Patches the raw top-up list `derive` reads from, so a real approve/reject
+   * write updates every dependent figure (status mix, pending count, approval
+   * rate, average approved amount) in one pass — exactly as a refetch would,
+   * without firing one. A decision for an id that isn't loaded is a no-op.
+   */
+  const applyTopUpDecision = useCallback((result: TopUpDecisionResult) => {
+    setRaw((prev) =>
+      prev.topups
+        ? {
+            ...prev,
+            topups: prev.topups.map((t) =>
+              t.id === result.id ? { ...t, status: result.rawStatus, reviewedAt: result.reviewedAt, reviewNote: result.reviewNote } : t,
+            ),
+          }
+        : prev,
+    );
+  }, []);
+
+  /** Same idea for the economy block a real PATCH /settings write just changed. */
+  const applyEconomyUpdate = useCallback((economy: EconomyConfig) => {
+    setRaw((prev) =>
+      prev.summary
+        ? {
+            ...prev,
+            summary: {
+              ...prev.summary,
+              economy: {
+                signupTokenGrant: economy.signupTokenGrant ?? undefined,
+                acceptFeeTokens: economy.acceptFeeTokens ?? undefined,
+                bankName: economy.bankName,
+                bankAccountName: economy.bankAccountName,
+                bankAccountNumber: economy.bankAccountNumber,
+                updatedAt: economy.updatedAt ?? undefined,
+              },
+            },
+          }
+        : prev,
+    );
+  }, []);
+
+  const snapshot = useMemo(() => derive(platform, raw, loading, error), [platform, raw, loading, error]);
+  return { ...snapshot, applyTopUpDecision, applyEconomyUpdate };
 }
 
 /* ── Normalization ──────────────────────────────────────────────────── */
@@ -500,6 +573,12 @@ function unsupported(platform: PlatformKey): WalletSnapshot {
     isEmpty: false,
     loading: false,
     error: null,
+    // Real hook-level implementations replace these once `useWalletSnapshot`
+    // spreads its own state-backed versions over this object. Unreachable on
+    // ShadiLife regardless — the pages never render a control that calls
+    // either while `supported` is false.
+    applyTopUpDecision: () => {},
+    applyEconomyUpdate: () => {},
   };
 }
 
@@ -704,17 +783,7 @@ function derive(platform: PlatformKey, raw: RawState, loading: boolean, error: s
   }
 
   /* Economy ─────────────────────────────────────────────────────────── */
-  const rawEconomy = raw.summary?.economy;
-  const economy: EconomyConfig | null = rawEconomy
-    ? {
-        signupTokenGrant: num(rawEconomy.signupTokenGrant),
-        acceptFeeTokens: num(rawEconomy.acceptFeeTokens),
-        bankName: rawEconomy.bankName ?? null,
-        bankAccountName: rawEconomy.bankAccountName ?? null,
-        bankAccountNumber: rawEconomy.bankAccountNumber ?? null,
-        updatedAt: rawEconomy.updatedAt ?? null,
-      }
-    : null;
+  const economy = normalizeEconomy(raw.summary?.economy);
 
   /* Metrics ─────────────────────────────────────────────────────────── */
   const metrics: WalletMetric[] = [
@@ -744,7 +813,7 @@ function derive(platform: PlatformKey, raw: RawState, loading: boolean, error: s
     supported: true,
     unsupportedReason: "",
     domain: "GhrFix Coins — wallet totals, the top-up queue and the token economy",
-    sourceNote: `GET ${AGENT_BASE}/summary, /trend and /topups, plus the platform-wide ${ledgerSource}. Read-only: the approve, reject and PATCH /settings writes this agent owns are never called from this workspace.`,
+    sourceNote: `GET ${AGENT_BASE}/summary, /trend and /topups, plus the platform-wide ${ledgerSource}. The Top-Ups and Token Economy pages can also call this agent's real writes — POST .../topups/:id/approve|reject and PATCH .../settings — each behind an explicit confirmation and permanently audit-logged.`,
     coverageNote,
     metrics,
     float,
@@ -767,7 +836,7 @@ function derive(platform: PlatformKey, raw: RawState, loading: boolean, error: s
     debitDestinationMix,
     economy,
     economyNote: economy
-      ? `Read from \`economy\` on GET ${AGENT_BASE}/summary. Editing these values is a real, audited PATCH /settings write and is deliberately not wired up here.`
+      ? `Read from \`economy\` on GET ${AGENT_BASE}/summary. Saving new values on the Token Economy page calls the real, audited PATCH ${AGENT_BASE}/settings.`
       : `GET ${AGENT_BASE}/summary did not return the economy block, so the accept fee and signup grant cannot be shown.`,
     series,
     seriesNote,
@@ -776,5 +845,72 @@ function derive(platform: PlatformKey, raw: RawState, loading: boolean, error: s
     isEmpty,
     loading,
     error,
+    // Placeholders — `useWalletSnapshot` overwrites both with real
+    // state-backed versions before returning. Kept here only so `derive`'s
+    // return type is a complete WalletSnapshot on its own.
+    applyTopUpDecision: () => {},
+    applyEconomyUpdate: () => {},
   };
+}
+
+/* ── Real writes ────────────────────────────────────────────────────────
+   The three audited money writes this agent owns. Each hits GhrFix only —
+   there is nothing to call on ShadiLife, which is why every call site in
+   the Top-Ups and Token Economy pages sits behind `w.supported`. Every one
+   of these requires an explicit admin confirmation before it fires and is
+   recorded in GhrFix's own audit log (`auditToolAction`, payment-wallet-
+   agent/router.ts) — never invoked automatically from this file.
+   ────────────────────────────────────────────────────────────────────── */
+
+/** What a page needs after a real approve/reject write to patch its own row and hand back to `applyTopUpDecision`. */
+export interface TopUpDecisionResult {
+  id: string;
+  status: TopUpStatus;
+  rawStatus: string;
+  reviewedAt: string | null;
+  reviewNote: string | null;
+}
+
+function toDecisionResult(id: string, raw: RawTopUp): TopUpDecisionResult {
+  return {
+    id: raw.id ?? id,
+    status: statusOf(raw.status ?? ""),
+    rawStatus: raw.status ?? "UNKNOWN",
+    reviewedAt: raw.reviewedAt ?? null,
+    reviewNote: raw.reviewNote ?? null,
+  };
+}
+
+/** POST /ai-agents/payment-wallet/topups/:id/approve — credits `amount` real coins to the requester. GhrFix only. */
+export async function approveTopUp(id: string, note?: string): Promise<TopUpDecisionResult> {
+  const { data } = await apiFetch<RawTopUp>("ghrfix", `${AGENT_BASE}/topups/${id}/approve`, {
+    method: "POST",
+    body: note ? { note } : {},
+  });
+  return toDecisionResult(id, data);
+}
+
+/** POST /ai-agents/payment-wallet/topups/:id/reject — a final, audited denial. GhrFix only. */
+export async function rejectTopUp(id: string, note?: string): Promise<TopUpDecisionResult> {
+  const { data } = await apiFetch<RawTopUp>("ghrfix", `${AGENT_BASE}/topups/${id}/reject`, {
+    method: "POST",
+    body: note ? { note } : {},
+  });
+  return toDecisionResult(id, data);
+}
+
+/** Only the fields the Token Economy page actually lets an admin edit. */
+export interface EconomySettingsInput {
+  signupTokenGrant?: number;
+  acceptFeeTokens?: number;
+}
+
+/** PATCH /ai-agents/payment-wallet/settings — changes what every provider is charged, platform-wide. GhrFix only. */
+export async function updateEconomySettings(input: EconomySettingsInput): Promise<EconomyConfig> {
+  const { data } = await apiFetch<RawEconomy>("ghrfix", `${AGENT_BASE}/settings`, {
+    method: "PATCH",
+    body: input,
+  });
+  // The route always returns the full, current settings row, so this is never null.
+  return normalizeEconomy(data) as EconomyConfig;
 }

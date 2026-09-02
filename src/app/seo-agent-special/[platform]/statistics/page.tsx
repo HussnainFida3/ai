@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { usePlatformParam, platformLabel, useSeoAudit, improveSeoPost, type SeoPostRow } from "@/lib/agent-data";
+import { usePlatformParam, platformLabel, platformLogoUrl, useSeoAudit, improveSeoPost, type SeoPostRow } from "@/lib/agent-data";
 
 /**
  * ShadiLife.com — Statistics dashboard clone
@@ -241,7 +241,7 @@ export default function StatisticsPage({ params }: { params: Promise<{ platform:
         .sidebar{position:fixed;left:0;top:0;bottom:0;width:232px;background:#fff;border-right:1px solid #edf0f6;z-index:10}
         .brand{height:94px;padding:30px 20px 18px;display:flex;align-items:flex-start;gap:10px}
         .brand-mark{width:32px;height:28px;position:relative;color:#d13da0}
-        .brand-mark svg{width:32px;height:32px}
+        .brand-mark img{width:32px;height:32px;object-fit:contain}
         .brand-text{font-size:22px;line-height:22px;font-weight:800;letter-spacing:-.7px;background:linear-gradient(90deg,#bc36a0,#3e42e7);-webkit-background-clip:text;color:transparent;white-space:nowrap}
         .brand-sub{font-size:10.5px;color:#525b79;margin-top:3px;letter-spacing:.1px}
         .nav{padding:13px 17px 0}
@@ -350,10 +350,7 @@ export default function StatisticsPage({ params }: { params: Promise<{ platform:
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-mark">
-            <svg viewBox="0 0 40 36" fill="none">
-              <path d="M20 32S4 23 4 12.5C4 6.8 8.3 3 13.3 3c3.2 0 5.4 1.8 6.7 4.3C21.3 4.8 23.5 3 26.7 3 31.7 3 36 6.8 36 12.5 36 23 20 32 20 32Z" stroke="currentColor" strokeWidth="3.2" strokeLinejoin="round"/>
-              <path d="M10 13h6l3 4 3-5 3 4h5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <img src={platformLogoUrl(platform)} alt={`${platformLabel(platform)} logo`} />
           </div>
           <div>
             <div className="brand-text">{platformLabel(platform)}.com</div>

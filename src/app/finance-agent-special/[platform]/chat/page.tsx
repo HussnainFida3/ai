@@ -19,7 +19,7 @@ import {
   TrendingUp,
   WalletCards,
 } from "lucide-react";
-import { usePlatformParam, agentChat, platformLabel } from "@/lib/agent-data";
+import { usePlatformParam, agentChat, platformLabel, platformLogoUrl } from "@/lib/agent-data";
 import type { ChatTurn } from "@/lib/api";
 
 const FINANCE_NAV = [
@@ -141,7 +141,8 @@ export default function FinanceAgentChatPage({ params }: { params: Promise<{ pla
           display: flex;
           flex-direction: column;
         }
-        .fin-brand { padding: 4px 8px 26px; }
+        .fin-brand { padding: 4px 8px 26px; display: flex; align-items: center; gap: 10px; }
+        .fin-brand-mark { width: 36px; height: 36px; object-fit: contain; flex: 0 0 auto; }
         .fin-brand-text { font-size: 21px; font-weight: 800; letter-spacing: -0.8px; color: #333a76; }
         .fin-brand-text span { color: #b1499a; }
         .fin-brand-sub { margin-top: 5px; color: #727c91; font-size: 11px; font-weight: 500; }
@@ -230,10 +231,13 @@ export default function FinanceAgentChatPage({ params }: { params: Promise<{ pla
       <main className="fin-page">
         <aside className="fin-sidebar">
           <div className="fin-brand">
-            <div className="fin-brand-text">
-              {platformLabel(platform)}<span>.com</span>
+            <img className="fin-brand-mark" src={platformLogoUrl(platform)} alt={`${platformLabel(platform)} logo`} />
+            <div>
+              <div className="fin-brand-text">
+                {platformLabel(platform)}<span>.com</span>
+              </div>
+              <div className="fin-brand-sub">Finance Agent Special</div>
             </div>
-            <div className="fin-brand-sub">Finance Agent Special</div>
           </div>
 
           <nav className="fin-nav">

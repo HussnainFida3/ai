@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { usePlatformParam, useSeoSnapshot, platformLabel } from "@/lib/agent-data";
+import { usePlatformParam, useSeoSnapshot, platformLabel, platformLogoUrl } from "@/lib/agent-data";
 
 /**
  * ShadiLife.com — SEO AI Agent dashboard
@@ -178,8 +178,7 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
         .app{width:1536px;min-height:1024px;background:#f8f9fc;display:flex;overflow:hidden}
         .sidebar{width:260px;flex:0 0 260px;background:#fff;border-right:1px solid #e7e8ef;min-height:1024px;padding:33px 15px 20px;position:relative}
         .brand{height:70px;padding-left:15px;display:flex;align-items:flex-start;gap:10px}
-        .brandMark{width:39px;height:39px;border:4px solid #d94cb4;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#d94cb4;font-size:25px;font-weight:800;line-height:1;position:relative;margin-top:2px}
-        .brandMark:after{content:"";position:absolute;width:9px;height:9px;border-radius:50%;background:#d94cb4;top:9px;left:11px}
+        .brandMark{width:39px;height:39px;object-fit:contain;margin-top:2px}
         .brandName{font-size:24px;line-height:28px;font-weight:750;letter-spacing:-.8px;color:#5e35c8}
         .brandName b{color:#d34eac;font-weight:650}
         .tagline{font-size:12px;color:#3c3f62;line-height:18px}
@@ -294,7 +293,7 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
 
       <aside className="sidebar">
         <div className="brand">
-          <div className="brandMark">♥</div>
+          <img className="brandMark" src={platformLogoUrl(platform)} alt={`${platformLabel(platform)} logo`} />
           <div>
             <div className="brandName">{platformLabel(platform)}<span>.com</span></div>
             <div className="tagline">SEO Agent Special</div>

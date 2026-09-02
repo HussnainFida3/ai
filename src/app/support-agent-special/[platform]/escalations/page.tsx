@@ -10,12 +10,20 @@
  *
  * Charts: a priority donut (severity where it exists, lifecycle where it does
  * not), an age-bucket donut, ranked age and category bars, and a table of the
- * worst offenders sorted by severity then age. Read-only — no write endpoint
- * is called from this workspace.
+ * worst offenders sorted by severity then age.
+ *
+ * The Decision column on that table is wired the same way the Tickets page
+ * is: real GhrFix writes (POST /ai-agents/support/disputes or
+ * messages/:id/resolve — resolving a dispute with a note really notifies the
+ * customer), disabled on ShadiLife with an honest note (its Support Agent
+ * exposes no resolve/reply-send endpoint; the real report-resolve lives on a
+ * separate plain admin route outside any AI agent). Resolving a row here
+ * removes it from the escalated list on the next render, since it is no
+ * longer open/investigating.
  */
 
 import { useMemo, useState } from "react";
-import { useSupportSnapshot, formatAge, formatWhen, severityRank } from "@/lib/support-data";
+import { useSupportSnapshot, formatAge, formatWhen, severityRank, resolveGhrfixDispute, resolveGhrfixMessage, type DisputeResolutionStatus } from "@/lib/support-data";
 import type { SupportTicket, StatusGroup } from "@/lib/support-data";
 import { usePlatformParam, platformLabel } from "@/lib/agent-data";
 import {
@@ -72,6 +80,94 @@ export default function SupportEscalationsPage({ params }: { params: Promise<{ p
   const label = platformLabel(platform);
 
   const [sort, setSort] = useState<Sort>("severity");
+
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [toast, setToast] = useState("");
+  const notify = (text: string) => {
+    setToast(text);
+    window.setTimeout(() => setToast(""), 3600);
+  };
+
+  async function investigateDispute(id: string, title: string) {
+    if (!window.confirm(`Mark the dispute "${title}" as under investigation on GhrFix? This is a real, audited status change.`)) return;
+    setBusyId(id);
+    try {
+      await resolveGhrfixDispute(id, { status: "INVESTIGATING" });
+      s.applyGhrDisputeUpdate(id, { status: "INVESTIGATING" });
+      notify(`"${title}" is now under investigation.`);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Could not update this dispute.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function closeDispute(id: string, title: string, status: DisputeResolutionStatus) {
+    const verb = status === "RESOLVED" ? "Resolve" : "Reject";
+    const note = window.prompt(
+      `${verb} the dispute "${title}" on GhrFix? Your note is sent to the customer as the resolution message — leave blank for a generic notice, or press Cancel to abort.`,
+      "",
+    );
+    if (note === null) return;
+    setBusyId(id);
+    try {
+      await resolveGhrfixDispute(id, { status, resolutionNote: note || undefined });
+      s.applyGhrDisputeUpdate(id, { status, resolutionNote: note || null });
+      notify(`"${title}" marked ${status.toLowerCase()}${note ? " — the customer was notified with your note." : "."}`);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : `Could not ${verb.toLowerCase()} this dispute.`);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function resolveMessage(id: string, title: string) {
+    if (!window.confirm(`Mark the message "${title}" as resolved on GhrFix? This is a real, audited write.`)) return;
+    setBusyId(id);
+    try {
+      await resolveGhrfixMessage(id);
+      s.applyGhrMessageUpdate(id, { status: "RESOLVED" });
+      notify(`"${title}" marked resolved.`);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Could not resolve this message.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  /** One cell of the Decision column — same branching as the Tickets page. */
+  function renderAction(t: SupportTicket) {
+    const busy = busyId === t.id;
+    if (t.kind === "Booking dispute") {
+      return (
+        <div className="cs-support-actions">
+          {t.status === "OPEN" && (
+            <button type="button" className="cs-btn" disabled={busy} onClick={() => investigateDispute(t.id, t.title)}>
+              {busy ? "…" : "Investigate"}
+            </button>
+          )}
+          <button type="button" className="cs-btn" disabled={busy} onClick={() => closeDispute(t.id, t.title, "RESOLVED")}>
+            {busy ? "…" : "Resolve"}
+          </button>
+          <button type="button" className="cs-btn" disabled={busy} onClick={() => closeDispute(t.id, t.title, "REJECTED")}>
+            Reject
+          </button>
+        </div>
+      );
+    }
+    if (t.kind === "Contact message") {
+      return (
+        <button type="button" className="cs-btn" disabled={busy} onClick={() => resolveMessage(t.id, t.title)}>
+          {busy ? "…" : "Resolve"}
+        </button>
+      );
+    }
+    return (
+      <button type="button" className="cs-btn cs-support-inert" disabled title="ShadiLife's Support Agent exposes no resolve endpoint — report status changes through the admin moderation queue, outside any AI agent.">
+        No agent endpoint
+      </button>
+    );
+  }
 
   const rows = useMemo(() => {
     const copy = [...s.escalations];
@@ -306,6 +402,7 @@ export default function SupportEscalationsPage({ params }: { params: Promise<{ p
                   <th>Status</th>
                   <th className="cs-num">Age</th>
                   <th className="cs-num">Raised</th>
+                  <th style={{ paddingRight: 19 }}>Decision</th>
                 </tr>
               </thead>
               <tbody>
@@ -330,6 +427,7 @@ export default function SupportEscalationsPage({ params }: { params: Promise<{ p
                     </td>
                     <td className="cs-num">{formatAge(t.ageDays)}</td>
                     <td className="cs-num">{formatWhen(t.createdAt)}</td>
+                    <td style={{ paddingRight: 19 }}>{renderAction(t)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -340,11 +438,14 @@ export default function SupportEscalationsPage({ params }: { params: Promise<{ p
         <p className="cs-support-readonly">
           <Icon name="eye" size={13} />
           <span>
-            Read-only workspace. {label} exposes resolve and reply endpoints for these rows, but nothing on this page is wired to
-            one — acting on an escalation stays in the agent console.
+            {platform === "ghrfix"
+              ? "Investigate, Resolve and Reject call GhrFix's real POST /ai-agents/support/disputes or messages/:id/resolve — resolving a row here also removes it from this list once it is no longer open or investigating."
+              : "ShadiLife's Support Agent exposes no resolve or reply-send endpoint of its own — draft-reply, summarize-thread and faq-suggest are AI drafting aids only. Report status changes through the admin moderation queue, outside any AI agent."}
           </span>
         </p>
       </Card>
+
+      {toast && <div className="cs-support-toast" role="status">{toast}</div>}
     </SpecialShell>
   );
 }
@@ -363,4 +464,7 @@ const PAGE_CSS = `
 .cs-support-sort .cs-tab{height:30px;font-size:11.5px}
 .cs-support-readonly{display:flex;gap:9px;align-items:flex-start;margin:0;padding:12px 19px 16px;border-top:1px solid #eef0f5;font-size:11px;line-height:18px;color:#69738c}
 .cs-support-readonly svg{color:#69738c;flex:0 0 auto;margin-top:2px}
+.cs-support-actions{display:flex;gap:6px;flex-wrap:wrap}
+.cs-support-inert{opacity:.55;cursor:not-allowed;white-space:nowrap}
+.cs-support-toast{position:fixed;right:22px;bottom:22px;max-width:380px;background:#11162f;color:#fff;border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:18px;box-shadow:0 14px 32px rgba(20,20,45,.28);z-index:50}
 `;

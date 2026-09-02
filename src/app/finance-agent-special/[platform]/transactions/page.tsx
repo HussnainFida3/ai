@@ -4,7 +4,7 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { usePlatformParam, platformLabel, useFinanceSnapshot, useFinanceBreakdown } from "@/lib/agent-data";
+import { usePlatformParam, platformLabel, platformLogoUrl, useFinanceSnapshot, useFinanceBreakdown } from "@/lib/agent-data";
 
 const nav: Array<[string, string, string]> = [
   ["⌂", "Dashboard", "dashboard"],
@@ -141,7 +141,7 @@ export default function Page({ params }: { params: Promise<{ platform: string }>
 
  return <div className="screen">
   <header className="topbar">
-   <div className="logo"><div className="heartLogo">♡<i/><i/></div><div><strong>{platformLabel(platform)}.com</strong><small>Finance Agent Special</small></div></div>
+   <div className="logo"><img className="heartLogo" src={platformLogoUrl(platform)} alt={`${platformLabel(platform)} logo`} /><div><strong>{platformLabel(platform)}.com</strong><small>Finance Agent Special</small></div></div>
    <div className="title"><div className="trendCircle">⌁</div><div><h1>{platformLabel(platform)} — Finance Manager AI Agent <span>✦</span></h1><p>Your intelligent finance partner for smarter decisions</p></div></div>
    <div className="topRight">
     <button className="date">May 1 – May 31, 2025 <span>│</span> ▣</button>
@@ -235,7 +235,7 @@ export default function Page({ params }: { params: Promise<{ platform: string }>
    *{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;color:#11152b;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
    button,input{font:inherit}button{cursor:pointer}.screen{width:1536px;min-width:1536px;height:1024px;overflow:hidden;background:#fff}
    .topbar{height:88px;border-bottom:1px solid #e9ebf1;display:flex;align-items:center;padding:0 20px}
-   .logo{width:226px;display:flex;align-items:center;gap:5px}.heartLogo{width:41px;height:45px;position:relative;color:#ef4d83;font-size:48px;line-height:43px}.heartLogo i{position:absolute;width:7px;height:7px;border-radius:50%;background:#cc2182;right:0;top:4px}.heartLogo i+i{right:-5px;top:14px;width:5px;height:5px}
+   .logo{width:226px;display:flex;align-items:center;gap:5px}.heartLogo{width:41px;height:45px;object-fit:contain;flex:0 0 auto}
    .logo strong{display:block;font-size:22px;letter-spacing:-.8px;background:linear-gradient(90deg,#6425be,#dd2c89);color:transparent;background-clip:text;-webkit-background-clip:text}.logo small{display:block;font-size:10.5px;text-align:center;color:#6726c2;margin-top:2px}
    .title{display:flex;align-items:center;gap:15px;margin-left:7px}.trendCircle{width:45px;height:45px;border-radius:50%;background:#f5f6f9;display:flex;align-items:center;justify-content:center;font-size:32px;color:#101114;font-weight:800}.title h1{font-size:21px;margin:0;line-height:24px;letter-spacing:-.5px;color:#0d0e13}.title h1 span{color:#6a30e8}.title p{font-size:12px;margin:4px 0;color:#171925}
    .topRight{margin-left:auto;display:flex;align-items:center;gap:15px}.date{width:218px;height:43px;border:1px solid #dfe3eb;border-radius:8px;background:#fff;color:#18213b;font-size:12px;display:flex;align-items:center;justify-content:space-between;padding:0 14px 0 20px}.notify{width:45px;height:45px;border-radius:50%;border:1px solid #edf0f5;background:#fff;position:relative;font-size:22px}.notify b{position:absolute;right:-1px;top:-3px;width:16px;height:16px;border-radius:50%;background:#ff3341;color:#fff;font-size:9px}.userCircle{width:42px;height:42px;border-radius:50%;background:#f0f1f7;color:#858ca0;text-align:center;padding-top:6px;font-size:19px}.user strong,.user small{display:block}.user strong{font-size:12px}.user small{font-size:10px;color:#505a75;margin-top:3px}

@@ -10,14 +10,18 @@
  * channel/severity mix) and a ranked category bar list — all recomputed from
  * the rows currently in scope, never hardcoded.
  *
- * READ-ONLY. GhrFix exposes POST /ai-agents/support/messages/:id/resolve and
- * /disputes/:id/resolve, and ShadiLife exposes POST /ai-agents/support/draft-reply.
- * None of them are wired here: the Reply / Resolve control is deliberately
- * inert and says so.
+ * GhrFix's Decision column is wired to the real, audited writes
+ * (POST /ai-agents/support/disputes/:id/resolve and
+ * .../messages/:id/resolve) — resolving a dispute with a note really sends
+ * that note to the customer as the resolution notification. ShadiLife's AI
+ * Support Agent exposes no resolve/reply-send endpoint of its own (only
+ * draft-reply/summarize-thread/faq-suggest, which are AI drafting aids); its
+ * real report-resolve lives on a separate plain admin route outside any AI
+ * agent, so this stays disabled there with an honest note.
  */
 
 import { useMemo, useState } from "react";
-import { useSupportSnapshot, formatAge, formatWhen } from "@/lib/support-data";
+import { useSupportSnapshot, formatAge, formatWhen, resolveGhrfixDispute, resolveGhrfixMessage, type DisputeResolutionStatus } from "@/lib/support-data";
 import type { SupportTicket, StatusGroup } from "@/lib/support-data";
 import { usePlatformParam, platformLabel } from "@/lib/agent-data";
 import {
@@ -86,6 +90,60 @@ export default function SupportTicketsPage({ params }: { params: Promise<{ platf
   const [category, setCategory] = useState("all");
   const [page, setPage] = useState(1);
 
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [toast, setToast] = useState("");
+  const notify = (text: string) => {
+    setToast(text);
+    window.setTimeout(() => setToast(""), 3600);
+  };
+
+  async function investigateDispute(id: string, title: string) {
+    if (!window.confirm(`Mark the dispute "${title}" as under investigation on GhrFix? This is a real, audited status change.`)) return;
+    setBusyId(id);
+    try {
+      await resolveGhrfixDispute(id, { status: "INVESTIGATING" });
+      s.applyGhrDisputeUpdate(id, { status: "INVESTIGATING" });
+      notify(`"${title}" is now under investigation.`);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Could not update this dispute.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function closeDispute(id: string, title: string, status: DisputeResolutionStatus) {
+    const verb = status === "RESOLVED" ? "Resolve" : "Reject";
+    const note = window.prompt(
+      `${verb} the dispute "${title}" on GhrFix? Your note is sent to the customer as the resolution message — leave blank for a generic notice, or press Cancel to abort.`,
+      "",
+    );
+    if (note === null) return;
+    setBusyId(id);
+    try {
+      await resolveGhrfixDispute(id, { status, resolutionNote: note || undefined });
+      s.applyGhrDisputeUpdate(id, { status, resolutionNote: note || null });
+      notify(`"${title}" marked ${status.toLowerCase()}${note ? " — the customer was notified with your note." : "."}`);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : `Could not ${verb.toLowerCase()} this dispute.`);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function resolveMessage(id: string, title: string) {
+    if (!window.confirm(`Mark the message "${title}" as resolved on GhrFix? This is a real, audited write.`)) return;
+    setBusyId(id);
+    try {
+      await resolveGhrfixMessage(id);
+      s.applyGhrMessageUpdate(id, { status: "RESOLVED" });
+      notify(`"${title}" marked resolved.`);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Could not resolve this message.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   const categories = useMemo(() => [...new Set(s.tickets.map((t) => t.category))].sort(), [s.tickets]);
 
   const filtered = useMemo(() => {
@@ -141,6 +199,43 @@ export default function SupportTicketsPage({ params }: { params: Promise<{ platf
   function reset(next: () => void) {
     next();
     setPage(1);
+  }
+
+  /** One cell of the Decision column — branches on real ticket kind, platform and current status. */
+  function renderAction(t: SupportTicket) {
+    const busy = busyId === t.id;
+    if (t.statusGroup === "resolved" || t.statusGroup === "rejected") {
+      return <Pill tone={GROUP_STYLE[t.statusGroup].tone}><span aria-hidden="true">{GROUP_STYLE[t.statusGroup].glyph}</span>Closed</Pill>;
+    }
+    if (t.kind === "Booking dispute") {
+      return (
+        <div className="cs-support-actions">
+          {t.status === "OPEN" && (
+            <button type="button" className="cs-btn" disabled={busy} onClick={() => investigateDispute(t.id, t.title)}>
+              {busy ? "…" : "Investigate"}
+            </button>
+          )}
+          <button type="button" className="cs-btn" disabled={busy} onClick={() => closeDispute(t.id, t.title, "RESOLVED")}>
+            {busy ? "…" : "Resolve"}
+          </button>
+          <button type="button" className="cs-btn" disabled={busy} onClick={() => closeDispute(t.id, t.title, "REJECTED")}>
+            Reject
+          </button>
+        </div>
+      );
+    }
+    if (t.kind === "Contact message") {
+      return (
+        <button type="button" className="cs-btn" disabled={busy} onClick={() => resolveMessage(t.id, t.title)}>
+          {busy ? "…" : "Resolve"}
+        </button>
+      );
+    }
+    return (
+      <button type="button" className="cs-btn cs-support-inert" disabled title="ShadiLife's Support Agent exposes no resolve endpoint — report status changes through the admin moderation queue, outside any AI agent.">
+        No agent endpoint
+      </button>
+    );
   }
 
   const unresolvedInScope = filtered.filter((t) => t.statusGroup === "open" || t.statusGroup === "investigating").length;
@@ -296,6 +391,7 @@ export default function SupportTicketsPage({ params }: { params: Promise<{ platf
                     <th>Status</th>
                     <th className="cs-num">Age</th>
                     <th className="cs-num">Raised</th>
+                    <th style={{ paddingRight: 19 }}>Decision</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -316,6 +412,7 @@ export default function SupportTicketsPage({ params }: { params: Promise<{ platf
                       </td>
                       <td className="cs-num">{formatAge(t.ageDays)}</td>
                       <td className="cs-num">{formatWhen(t.createdAt)}</td>
+                      <td style={{ paddingRight: 19 }}>{renderAction(t)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -342,11 +439,14 @@ export default function SupportTicketsPage({ params }: { params: Promise<{ platf
         <p className="cs-support-readonly">
           <Icon name="eye" size={13} />
           <span>
-            Read-only workspace. {label} does expose reply and resolve endpoints, but no button here is wired to one — replying to
-            or resolving a ticket stays in the agent console.
+            {platform === "ghrfix"
+              ? "Investigate, Resolve and Reject call GhrFix's real POST /ai-agents/support/disputes or messages/:id/resolve — resolving a dispute with a note really notifies the customer."
+              : "ShadiLife's Support Agent exposes no resolve or reply-send endpoint of its own — draft-reply, summarize-thread and faq-suggest are AI drafting aids only. Report status changes through the admin moderation queue, outside any AI agent."}
           </span>
         </p>
       </Card>
+
+      {toast && <div className="cs-support-toast" role="status">{toast}</div>}
     </SpecialShell>
   );
 }
@@ -367,4 +467,7 @@ const PAGE_CSS = `
 .cs-support-pager-btns{display:flex;gap:10px;align-items:center}
 .cs-support-readonly{display:flex;gap:9px;align-items:flex-start;margin:0;padding:12px 19px 16px;border-top:1px solid #eef0f5;font-size:11px;line-height:18px;color:#69738c}
 .cs-support-readonly svg{color:#69738c;flex:0 0 auto;margin-top:2px}
+.cs-support-actions{display:flex;gap:6px;flex-wrap:wrap}
+.cs-support-inert{opacity:.55;cursor:not-allowed;white-space:nowrap}
+.cs-support-toast{position:fixed;right:22px;bottom:22px;max-width:380px;background:#11162f;color:#fff;border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:18px;box-shadow:0 14px 32px rgba(20,20,45,.28);z-index:50}
 `;

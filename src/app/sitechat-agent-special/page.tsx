@@ -42,7 +42,7 @@ export default function SiteChatAgentSpecialIndex() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 20 }}>
           <div style={{ border: "1px solid #eef0f5", borderRadius: 16, background: "#fff", padding: 20, boxShadow: "0 2px 10px rgba(25,34,75,0.035)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-              <span style={{ width: 10, height: 10, borderRadius: "50%", background: ghrfix.color }} />
+              <img src={ghrfix.logoUrl} alt={`${ghrfix.label} logo`} style={{ width: 22, height: 22, borderRadius: 6, objectFit: "contain" }} />
               <strong style={{ fontSize: 16, color: "#11162d" }}>{ghrfix.label}</strong>
               <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: "#0f9e69", background: "#e9faf3", border: "1px solid #0f9e6933", borderRadius: 20, padding: "3px 9px" }}>
                 ✓ Agent registered
@@ -67,7 +67,7 @@ export default function SiteChatAgentSpecialIndex() {
 
           <div style={{ border: "1px solid #eef0f5", borderRadius: 16, background: "#fff", padding: 20, boxShadow: "0 2px 10px rgba(25,34,75,0.035)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-              <span style={{ width: 10, height: 10, borderRadius: "50%", background: shadilife.color }} />
+              <img src={shadilife.logoUrl} alt={`${shadilife.label} logo`} style={{ width: 22, height: 22, borderRadius: 6, objectFit: "contain" }} />
               <strong style={{ fontSize: 16, color: "#11162d" }}>{shadilife.label}</strong>
               <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: "#c9860f", background: "#fff6e6", border: "1px solid #c9860f33", borderRadius: 20, padding: "3px 9px" }}>
                 ⚠ Not registered

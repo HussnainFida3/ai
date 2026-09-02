@@ -27,7 +27,7 @@ export default function FinanceAgentSpecialIndex() {
           {PLATFORM_LIST.map((p) => (
             <div key={p.key} style={{ border: "1px solid #e7e7ee", borderRadius: 16, background: "#fff", padding: 20, boxShadow: "0 2px 10px rgba(20,20,45,0.045)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                <span style={{ width: 10, height: 10, borderRadius: "50%", background: p.color }} />
+                <img src={p.logoUrl} alt={`${p.label} logo`} style={{ width: 22, height: 22, borderRadius: 6, objectFit: "contain" }} />
                 <strong style={{ fontSize: 16, color: "#14162b" }}>{p.label}</strong>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>

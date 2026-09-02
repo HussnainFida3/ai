@@ -9,13 +9,18 @@
  * verification decision (/ai-agents/verification/pending).
  *
  * Filterable by type and status, searchable, paginated 12 rows at a time,
- * with the real age of every row. This page is READ-ONLY — the ops agent
- * does expose verify/reject and emergency-status writes, and none of them
- * are wired here; the row action is deliberately inert.
+ * with the real age of every row. The row action is wired to GhrFix's real
+ * writes — verify/reject for a "Verification" row
+ * (POST /ai-agents/ops/providers/:id/verify), resolve/cancel for an
+ * "Emergency" row (POST /ai-agents/ops/emergencies/:id/status) — the same
+ * two endpoints the dedicated Verifications and Incidents pages use.
+ * ShadiLife rows (scheduled jobs, members under review) stay disabled: no AI
+ * agent on ShadiLife exposes an equivalent write (verified by reading both
+ * ops-agent/router.ts and verification-agent/router.ts).
  */
 
 import { useMemo, useState } from "react";
-import { useOpsSnapshot, ageLabel } from "@/lib/ops-data";
+import { useOpsSnapshot, ageLabel, verifyProvider, verificationPatchFor, updateEmergencyStatus, emergencyPatchFor } from "@/lib/ops-data";
 import { usePlatformParam, platformLabel } from "@/lib/agent-data";
 import {
   BarRows,
@@ -78,6 +83,57 @@ export default function OpsQueuePage({ params }: { params: Promise<{ platform: s
       setter(v);
       setPage(1);
     };
+  }
+
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [toast, setToast] = useState("");
+  const notify = (text: string) => {
+    setToast(text);
+    window.setTimeout(() => setToast(""), 3200);
+  };
+
+  async function approveProvider(id: string, name: string) {
+    if (!window.confirm(`Approve "${name}" as a verified GhrFix provider? This is a real, audited write.`)) return;
+    setBusyId(id);
+    try {
+      await verifyProvider(id, "VERIFIED");
+      o.applyStatusUpdate(id, verificationPatchFor("VERIFIED"));
+      notify(`Approved "${name}".`);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Could not approve this provider.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function rejectProvider(id: string, name: string) {
+    const note = window.prompt(`Reject "${name}"'s verification on GhrFix? Add an optional audit note (leave blank to skip), or press Cancel to abort.`, "");
+    if (note === null) return;
+    setBusyId(id);
+    try {
+      await verifyProvider(id, "REJECTED", note || undefined);
+      o.applyStatusUpdate(id, verificationPatchFor("REJECTED"));
+      notify(`Rejected "${name}"'s verification.`);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Could not reject this provider.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function changeEmergencyStatus(id: string, title: string, status: "RESOLVED" | "CANCELLED") {
+    const verb = status === "RESOLVED" ? "Resolve" : "Cancel";
+    if (!window.confirm(`${verb} the "${title}" emergency on GhrFix? This is a real, audited status change.`)) return;
+    setBusyId(id);
+    try {
+      await updateEmergencyStatus(id, status);
+      o.applyStatusUpdate(id, emergencyPatchFor(status));
+      notify(`${verb === "Resolve" ? "Resolved" : "Cancelled"} "${title}".`);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : `Could not ${verb.toLowerCase()} this emergency.`);
+    } finally {
+      setBusyId(null);
+    }
   }
 
   const stale = o.items.filter((i) => i.ageDays !== null && i.ageDays > 7).length;
@@ -302,10 +358,36 @@ export default function OpsQueuePage({ params }: { params: Promise<{ platform: s
                     {i.timestamp ? `${i.ageBasis} ${new Date(i.timestamp).toLocaleDateString()}` : "Not recorded"}
                   </td>
                   <td style={{ paddingRight: 19 }}>
-                    <button type="button" className="cs-btn cs-ops-inert" disabled aria-label="Actions are not available on this read-only dashboard">
-                      <Icon name="eye" size={13} />
-                      Read-only
-                    </button>
+                    {platform === "ghrfix" && i.kind === "verification" && i.status === "PENDING" ? (
+                      <div className="cs-ops-actions">
+                        <button type="button" className="cs-btn" disabled={busyId === i.id} onClick={() => approveProvider(i.id, i.title)}>
+                          <Icon name="check" size={13} />
+                          {busyId === i.id ? "…" : "Approve"}
+                        </button>
+                        <button type="button" className="cs-btn" disabled={busyId === i.id} onClick={() => rejectProvider(i.id, i.title)}>
+                          <Icon name="alert" size={13} />
+                          Reject
+                        </button>
+                      </div>
+                    ) : platform === "ghrfix" && i.kind === "incident" && (i.status === "OPEN" || i.status === "ASSIGNED") ? (
+                      <div className="cs-ops-actions">
+                        <button type="button" className="cs-btn" disabled={busyId === i.id} onClick={() => changeEmergencyStatus(i.id, i.title, "RESOLVED")}>
+                          <Icon name="check" size={13} />
+                          {busyId === i.id ? "…" : "Resolve"}
+                        </button>
+                        <button type="button" className="cs-btn" disabled={busyId === i.id} onClick={() => changeEmergencyStatus(i.id, i.title, "CANCELLED")}>
+                          <Icon name="alert" size={13} />
+                          Cancel
+                        </button>
+                      </div>
+                    ) : platform === "ghrfix" ? (
+                      <Pill tone={i.tone}><Icon name={i.glyph} size={12} />Decided</Pill>
+                    ) : (
+                      <button type="button" className="cs-btn cs-ops-inert" disabled title="ShadiLife has no AI-agent endpoint for this row — see Verifications/Incidents for details.">
+                        <Icon name="eye" size={13} />
+                        No agent endpoint
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -314,8 +396,9 @@ export default function OpsQueuePage({ params }: { params: Promise<{ platform: s
         </div>
 
         <p className="cs-ops-readonly">
-          This workspace never writes. The ops agent does expose real approve / reject / resolve endpoints, but they are
-          not wired up here — use the agent console for actions.
+          {platform === "ghrfix"
+            ? "Approve/Reject and Resolve/Cancel call GhrFix's real ops-agent endpoints — every action is audited. See the Verifications and Incidents pages for the same actions with more context."
+            : "ShadiLife has no AI-agent endpoint for any row in this backlog, so nothing here can be actioned — see the Verifications and Incidents pages for why."}
         </p>
 
         {rows.length > PAGE_SIZE && (
@@ -335,6 +418,8 @@ export default function OpsQueuePage({ params }: { params: Promise<{ platform: s
           </div>
         )}
       </Card>
+
+      {toast && <div className="cs-ops-toast" role="status">{toast}</div>}
     </SpecialShell>
   );
 }
@@ -344,7 +429,9 @@ const QUEUE_CSS = `
 .cs-ops-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
 .cs-ops-src{font-size:11px;color:#69738c}
 .cs-ops-toolbar{display:flex;align-items:center;gap:12px;padding:14px 19px 0;flex-wrap:wrap}
-.cs-ops-inert{opacity:.55;cursor:not-allowed}
+.cs-ops-inert{opacity:.55;cursor:not-allowed;white-space:nowrap}
+.cs-ops-actions{display:flex;gap:6px;flex-wrap:wrap}
+.cs-ops-toast{position:fixed;right:22px;bottom:22px;max-width:360px;background:#11162f;color:#fff;border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:18px;box-shadow:0 14px 32px rgba(20,20,45,.28);z-index:50}
 .cs-ops-readonly{margin:0;padding:12px 19px;font-size:10.5px;line-height:17px;color:#8891a8;border-top:1px solid #eef0f5}
 .cs-ops-pager{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 19px 16px;border-top:1px solid #eef0f5;font-size:11px;color:#69738c;flex-wrap:wrap}
 .cs-ops-pager>div{display:flex;align-items:center;gap:8px}

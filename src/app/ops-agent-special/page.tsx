@@ -43,7 +43,7 @@ export default function OpsAgentSpecialIndex() {
           {PLATFORM_LIST.map((p) => (
             <div key={p.key} style={{ border: "1px solid #eef0f5", borderRadius: 16, background: "#fff", padding: 20, boxShadow: "0 2px 10px rgba(25,34,75,0.035)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                <span style={{ width: 10, height: 10, borderRadius: "50%", background: p.color }} />
+                <img src={p.logoUrl} alt={`${p.label} logo`} style={{ width: 22, height: 22, borderRadius: 6, objectFit: "contain" }} />
                 <strong style={{ fontSize: 16, color: "#11162d" }}>{p.label}</strong>
               </div>
               <p style={{ fontSize: 11.5, lineHeight: 1.6, color: "#69738c", margin: "0 0 14px" }}>

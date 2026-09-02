@@ -8,14 +8,19 @@
  * derived economics that sit on top of it: fees collected, net coin flow, and
  * the fee's implied share of each approved top-up.
  *
- * DISPLAY ONLY. Editing these values is `PATCH
- * /ai-agents/payment-wallet/settings` — a real, audited write that changes what
- * every provider is charged. It is not wired up here; the Save affordance is
- * inert by design and says so.
+ * Accept fee and signup grant are REAL, editable, audited writes — `Save
+ * changes` calls PATCH /ai-agents/payment-wallet/settings
+ * (src/lib/wallet-data.ts: `updateEconomySettings`) — GhrFix only, since
+ * ShadiLife registers no payment-wallet agent at all (the whole page renders
+ * the unsupported state there instead of this one). Bank details stay
+ * display-only here; the backend accepts them too, but nothing on this page
+ * offers to change where GhrFix's own bank account is shown to depositors.
  */
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useWalletSnapshot, coins, dateTime, type WalletSnapshot } from "@/lib/wallet-data";
+import { useWalletSnapshot, updateEconomySettings, coins, dateTime, type WalletSnapshot } from "@/lib/wallet-data";
+import { ApiError } from "@/lib/api";
 import { usePlatformParam, platformLabel } from "@/lib/agent-data";
 import {
   BarRows,
@@ -53,6 +58,62 @@ export default function WalletEconomyPage({ params }: { params: Promise<{ platfo
   const debits = w.metrics.find((m) => m.key === "debits")?.value ?? null;
   const cash = w.metrics.find((m) => m.key === "cash")?.value ?? null;
 
+  /* Editable accept-fee / signup-grant form. Re-hydrated from the live
+     settings whenever their real `updatedAt` changes — on first load, and
+     again right after this page's own save updates the hook's snapshot —
+     so a saved value is never overwritten by a stale draft. */
+  const [feeInput, setFeeInput] = useState("");
+  const [grantInput, setGrantInput] = useState("");
+  const [hydratedAt, setHydratedAt] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ text: string; tone: "success" | "error" } | null>(null);
+
+  useEffect(() => {
+    if (!e) return;
+    const key = e.updatedAt ?? "unset";
+    if (key === hydratedAt) return;
+    setFeeInput(e.acceptFeeTokens === null ? "" : String(e.acceptFeeTokens));
+    setGrantInput(e.signupTokenGrant === null ? "" : String(e.signupTokenGrant));
+    setHydratedAt(key);
+  }, [e, hydratedAt]);
+
+  function notify(text: string, tone: "success" | "error" = "success") {
+    setToast({ text, tone });
+    window.setTimeout(() => setToast((cur) => (cur?.text === text ? null : cur)), 3200);
+  }
+
+  const feeNum = feeInput.trim() === "" ? null : Number(feeInput);
+  const grantNum = grantInput.trim() === "" ? null : Number(grantInput);
+  const feeValid = feeNum !== null && Number.isFinite(feeNum) && feeNum >= 0;
+  const grantValid = grantNum !== null && Number.isFinite(grantNum) && grantNum >= 0;
+  const dirty = e !== null && ((feeValid && feeNum !== e.acceptFeeTokens) || (grantValid && grantNum !== e.signupTokenGrant));
+  const canSave = w.supported && !w.error && !w.loading && !saving && Boolean(e) && feeValid && grantValid && dirty;
+
+  async function handleSave() {
+    if (!e || feeNum === null || grantNum === null) return;
+    const changes: string[] = [];
+    if (feeNum !== e.acceptFeeTokens) changes.push(`• Accept fee: ${coins(e.acceptFeeTokens)} → ${coins(feeNum)}`);
+    if (grantNum !== e.signupTokenGrant) changes.push(`• Signup coin grant: ${coins(e.signupTokenGrant)} → ${coins(grantNum)}`);
+    const sure = window.confirm(
+      `Save these token-economy changes on ${label}?\n\n${changes.join("\n")}\n\nThis is a real, audited write that changes what every provider is charged, effective immediately.`,
+    );
+    if (!sure) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const updated = await updateEconomySettings({ acceptFeeTokens: feeNum, signupTokenGrant: grantNum });
+      w.applyEconomyUpdate(updated);
+      notify("Token economy settings saved.");
+    } catch (err) {
+      const msg = err instanceof ApiError ? err.message : "Could not save the token economy settings.";
+      setSaveError(msg);
+      notify(msg, "error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   /* The fee as a share of the average approved top-up — how many coins of a
      typical top-up one accepted job consumes. Null unless both halves are real. */
   const feeShare =
@@ -64,17 +125,7 @@ export default function WalletEconomyPage({ params }: { params: Promise<{ platfo
      platform revenue rather than refunds or bookings. */
   const feeShareOfDebits = fees !== null && debits !== null && debits > 0 ? Math.round((fees / debits) * 1000) / 10 : null;
 
-  const configRows: Array<{ label: string; value: string; note: string }> = [
-    {
-      label: "Accept fee",
-      value: e ? coins(e.acceptFeeTokens) : "—",
-      note: "Charged flat to a provider each time a job is accepted.",
-    },
-    {
-      label: "Signup coin grant",
-      value: e ? coins(e.signupTokenGrant) : "—",
-      note: "Credited once to every new account.",
-    },
+  const readOnlyConfigRows: Array<{ label: string; value: string; note: string }> = [
     { label: "Bank name", value: e?.bankName ?? "—", note: "Shown to users making a manual transfer." },
     { label: "Account name", value: e?.bankAccountName ?? "—", note: "Beneficiary on the transfer instructions." },
     { label: "Account number", value: e?.bankAccountNumber ?? "—", note: "As stored by the backend, unmodified." },
@@ -88,6 +139,7 @@ export default function WalletEconomyPage({ params }: { params: Promise<{ platfo
   ].filter((r) => r.value > 0);
 
   return (
+    <>
     <SpecialShell
       platform={platform}
       agentLabel="Payment & Wallet Agent"
@@ -95,13 +147,13 @@ export default function WalletEconomyPage({ params }: { params: Promise<{ platfo
       basePath="/wallet-agent-special"
       nav={NAV}
       headerIcon="tag"
-      assistantBlurb="I can explain the accept fee and the signup grant. Changing them is an audited write, not something I do from here."
+      assistantBlurb="I can explain the accept fee and the signup grant. Use Save changes on this page to update them for real."
       title="Token Economy"
-      subtitle={`The settings behind the ${label} accept fee — displayed read-only`}
+      subtitle={`The settings behind the ${label} accept fee — accept fee and signup grant are live-editable`}
       actions={
         <Pill tone={!w.supported ? "amber" : w.error ? "red" : "green"}>
           <Icon name={w.supported && !w.error ? "check" : "alert"} size={12} />
-          {!w.supported ? "Agent not on this platform" : w.error ? "Settings offline" : "Read-only"}
+          {!w.supported ? "Agent not on this platform" : w.error ? "Settings offline" : "Editable"}
         </Pill>
       }
     >
@@ -116,9 +168,10 @@ export default function WalletEconomyPage({ params }: { params: Promise<{ platfo
           <div className="cs-wallet-banner">
             <Icon name="alert" size={15} />
             <span>
-              <b>These settings are not editable here.</b> Changing the accept fee or signup grant is
+              <b>Accept fee and signup grant are live.</b> Saving calls
               <code> PATCH /ai-agents/payment-wallet/settings</code> — a real, audited write that alters what every
-              provider is charged. This workspace never calls it, so the Save control below is disabled by design.
+              provider is charged, effective immediately for every job accepted after the save. Bank details below
+              stay display-only. Always confirm before saving.
             </span>
           </div>
 
@@ -170,7 +223,27 @@ export default function WalletEconomyPage({ params }: { params: Promise<{ platfo
           <div className="cs-row-2">
             <Card
               title="Token economy settings"
-              action={<button type="button" className="cs-btn" disabled title="Not wired up — this is an audited money write" aria-label="Save settings (disabled)"><Icon name="check" size={13} />Save changes</button>}
+              action={
+                <button
+                  type="button"
+                  className="cs-btn cs-btn-primary cs-economy-save"
+                  disabled={!canSave}
+                  onClick={handleSave}
+                  aria-label="Save token economy changes"
+                  title={
+                    !e
+                      ? "Settings have not loaded yet"
+                      : !feeValid || !grantValid
+                        ? "Enter a valid non-negative number for both fields"
+                        : !dirty
+                          ? "No changes to save"
+                          : undefined
+                  }
+                >
+                  <Icon name="check" size={13} />
+                  {saving ? "Saving…" : "Save changes"}
+                </button>
+              }
             >
               {w.loading ? (
                 <Empty>Loading the economy settings…</Empty>
@@ -181,7 +254,45 @@ export default function WalletEconomyPage({ params }: { params: Promise<{ platfo
               ) : (
                 <>
                   <div className="cs-wallet-config">
-                    {configRows.map((r) => (
+                    <div className="cs-wallet-config-row">
+                      <div>
+                        <b>Accept fee</b>
+                        <p>Charged flat to a provider each time a job is accepted.</p>
+                      </div>
+                      <label className="cs-wallet-input">
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          min={0}
+                          step="1"
+                          value={feeInput}
+                          onChange={(ev) => setFeeInput(ev.target.value)}
+                          disabled={saving}
+                          aria-label="Accept fee, in GhrFix coins"
+                        />
+                        <span>GC</span>
+                      </label>
+                    </div>
+                    <div className="cs-wallet-config-row">
+                      <div>
+                        <b>Signup coin grant</b>
+                        <p>Credited once to every new account.</p>
+                      </div>
+                      <label className="cs-wallet-input">
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          min={0}
+                          step="1"
+                          value={grantInput}
+                          onChange={(ev) => setGrantInput(ev.target.value)}
+                          disabled={saving}
+                          aria-label="Signup coin grant, in GhrFix coins"
+                        />
+                        <span>GC</span>
+                      </label>
+                    </div>
+                    {readOnlyConfigRows.map((r) => (
                       <div className="cs-wallet-config-row" key={r.label}>
                         <div>
                           <b>{r.label}</b>
@@ -191,6 +302,12 @@ export default function WalletEconomyPage({ params }: { params: Promise<{ platfo
                       </div>
                     ))}
                   </div>
+                  {saveError && (
+                    <p className="cs-wallet-save-error">
+                      <Icon name="alert" size={12} />
+                      {saveError}
+                    </p>
+                  )}
                   <p className="cs-wallet-note">{w.economyNote}</p>
                 </>
               )}
@@ -280,6 +397,13 @@ export default function WalletEconomyPage({ params }: { params: Promise<{ platfo
         </>
       )}
     </SpecialShell>
+    {toast && (
+      <div className={`cs-toast${toast.tone === "error" ? " cs-toast-error" : ""}`} role="status" aria-live="polite">
+        <Icon name={toast.tone === "error" ? "alert" : "check"} size={14} />
+        {toast.text}
+      </div>
+    )}
+    </>
   );
 }
 
@@ -320,4 +444,17 @@ const ECONOMY_CSS = `
 .cs-wallet-unsupported{display:flex;gap:13px;align-items:flex-start}
 .cs-wallet-unsupported>span{width:34px;height:34px;border-radius:10px;flex:0 0 auto;display:grid;place-items:center;background:#fff6e6;color:#c9860f}
 .cs-wallet-unsupported p{margin:0 0 10px;font-size:12px;line-height:20px;color:#4c5470;max-width:640px}
+.cs-wallet-input{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 6px 0 10px;border:1px solid #dfe2ea;border-radius:8px;background:#fff;flex:0 0 auto}
+.cs-wallet-input:focus-within{border-color:#7c3aed}
+.cs-wallet-input input{width:84px;border:0;outline:0;text-align:right;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;background:transparent;color:inherit}
+.cs-wallet-input input:disabled{color:#9aa3b8}
+.cs-wallet-input input::-webkit-inner-spin-button,.cs-wallet-input input::-webkit-outer-spin-button{margin-left:4px}
+.cs-wallet-input span{font-size:11px;color:#8891a8;font-weight:650}
+.cs-economy-save:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+.cs-wallet-save-error{display:flex;align-items:flex-start;gap:6px;margin:12px 0 0;font-size:11.5px;line-height:17px;color:#c0323e}
+.cs-wallet-save-error svg{flex:0 0 auto;margin-top:2px}
+.cs-toast{position:fixed;right:22px;bottom:22px;max-width:360px;background:#11162f;color:#fff;border-radius:10px;padding:12px 16px;font-size:12px;line-height:18px;box-shadow:0 14px 32px rgba(20,22,50,.28);z-index:80;display:flex;align-items:flex-start;gap:9px}
+.cs-toast svg{flex:0 0 auto;margin-top:1px;color:#5eead4}
+.cs-toast-error{background:#3d1420}
+.cs-toast-error svg{color:#ff8a93}
 `;

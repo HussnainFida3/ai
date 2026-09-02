@@ -9,6 +9,7 @@
  */
 
 import Link from "next/link";
+import { PLATFORMS } from "@/lib/platforms";
 
 const PAGES = [
   { slug: "overview", label: "Overview", desc: "Wallet totals, credit trend, approval rate and the coin float." },
@@ -37,7 +38,7 @@ export default function WalletAgentSpecialIndex() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 20 }}>
           <div style={{ border: "1px solid #e3dcfa", borderRadius: 16, background: "#fff", padding: 20, boxShadow: "0 2px 10px rgba(25,34,75,0.035)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#7c3aed" }} />
+              <img src={PLATFORMS.ghrfix.logoUrl} alt={`${PLATFORMS.ghrfix.label} logo`} style={{ width: 22, height: 22, borderRadius: 6, objectFit: "contain" }} />
               <strong style={{ fontSize: 16, color: "#11162d" }}>GhrFix</strong>
               <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: "#0f9e69", background: "#e9faf3", border: "1px solid #0f9e6933", borderRadius: 6, padding: "3px 8px" }}>
                 ✓ Agent registered
@@ -62,7 +63,7 @@ export default function WalletAgentSpecialIndex() {
 
           <div style={{ border: "1px solid #eef0f5", borderRadius: 16, background: "#fbfbfd", padding: 20 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#d61d8c" }} />
+              <img src={PLATFORMS.shadilife.logoUrl} alt={`${PLATFORMS.shadilife.label} logo`} style={{ width: 22, height: 22, borderRadius: 6, objectFit: "contain" }} />
               <strong style={{ fontSize: 16, color: "#11162d" }}>ShadiLife</strong>
               <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: "#c9860f", background: "#fff6e6", border: "1px solid #c9860f33", borderRadius: 6, padding: "3px 8px" }}>
                 ⚠ Not registered

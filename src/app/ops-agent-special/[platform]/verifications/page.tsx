@@ -13,11 +13,15 @@
  *             (/ai-agents/verification/pending and /summary), and the page
  *             says so rather than implying Ops owns them.
  *
- * Read-only: the real approve/reject writes are not wired here.
+ * Approve/Reject are wired to the real, audited GhrFix write
+ * (POST /ai-agents/ops/providers/:id/verify). ShadiLife has no equivalent on
+ * either its Ops Agent or its Verification Agent — the actual human decision
+ * is made through the plain /admin/moderation queue, outside any AI agent —
+ * so this stays disabled there with an honest note instead of faking parity.
  */
 
 import { useMemo, useState } from "react";
-import { useOpsSnapshot, ageLabel } from "@/lib/ops-data";
+import { useOpsSnapshot, ageLabel, verifyProvider, verificationPatchFor } from "@/lib/ops-data";
 import { usePlatformParam, platformLabel } from "@/lib/agent-data";
 import {
   BarRows,
@@ -51,6 +55,44 @@ export default function OpsVerificationsPage({ params }: { params: Promise<{ pla
   const label = platformLabel(platform);
 
   const [onlyStale, setOnlyStale] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [toast, setToast] = useState("");
+  const notify = (text: string) => {
+    setToast(text);
+    window.setTimeout(() => setToast(""), 3200);
+  };
+
+  async function approveProvider(id: string, name: string) {
+    if (!window.confirm(`Approve "${name}" as a verified GhrFix provider? This is a real, audited write — they can start accepting bookings immediately.`)) return;
+    setBusyId(id);
+    try {
+      await verifyProvider(id, "VERIFIED");
+      o.applyStatusUpdate(id, verificationPatchFor("VERIFIED"));
+      notify(`Approved "${name}" — now a verified provider.`);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Could not approve this provider.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function rejectProvider(id: string, name: string) {
+    const note = window.prompt(
+      `Reject "${name}"'s verification on GhrFix? This is a real, audited write. Add an optional note for the audit log (leave blank to skip), or press Cancel to abort.`,
+      "",
+    );
+    if (note === null) return;
+    setBusyId(id);
+    try {
+      await verifyProvider(id, "REJECTED", note || undefined);
+      o.applyStatusUpdate(id, verificationPatchFor("REJECTED"));
+      notify(`Rejected "${name}"'s verification.`);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Could not reject this provider.");
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   /* Oldest first — the whole point of this page is who has waited longest. */
   const waiting = useMemo(() => {
@@ -252,14 +294,15 @@ export default function OpsVerificationsPage({ params }: { params: Promise<{ pla
                 <th>Detail</th>
                 <th>Status</th>
                 <th className="cs-num">Age</th>
-                <th className="cs-num" style={{ paddingRight: 19 }}>Submitted</th>
+                <th className="cs-num">Submitted</th>
+                <th style={{ paddingRight: 19 }}>Decision</th>
               </tr>
             </thead>
             <tbody>
-              {o.loading && <tr><td colSpan={5} style={{ padding: 19 }}><Empty>Loading the live pipeline…</Empty></td></tr>}
+              {o.loading && <tr><td colSpan={6} style={{ padding: 19 }}><Empty>Loading the live pipeline…</Empty></td></tr>}
               {!o.loading && o.error && (
                 <tr>
-                  <td colSpan={5} style={{ padding: 19 }}>
+                  <td colSpan={6} style={{ padding: 19 }}>
                     <Empty>
                       The {label} verification pipeline could not be reached, so who is waiting is unknown. Nothing here
                       should be read as “nobody is waiting”.
@@ -269,13 +312,13 @@ export default function OpsVerificationsPage({ params }: { params: Promise<{ pla
               )}
               {!o.loading && !o.error && o.verifications.length === 0 && (
                 <tr>
-                  <td colSpan={5} style={{ padding: 19 }}>
+                  <td colSpan={6} style={{ padding: 19 }}>
                     <Empty>{label} answered and returned an empty verification pipeline — genuinely nobody waiting.</Empty>
                   </td>
                 </tr>
               )}
               {!o.loading && !o.error && o.verifications.length > 0 && waiting.length === 0 && (
-                <tr><td colSpan={5} style={{ padding: 19 }}><Empty>Nobody has been waiting more than a week.</Empty></td></tr>
+                <tr><td colSpan={6} style={{ padding: 19 }}><Empty>Nobody has been waiting more than a week.</Empty></td></tr>
               )}
               {waiting.slice(0, SHOW).map((i) => (
                 <tr key={i.id}>
@@ -291,8 +334,29 @@ export default function OpsVerificationsPage({ params }: { params: Promise<{ pla
                     </Pill>
                   </td>
                   <td className="cs-num">{ageLabel(i)}</td>
-                  <td className="cs-num" style={{ paddingRight: 19, color: "#69738c" }}>
+                  <td className="cs-num" style={{ color: "#69738c" }}>
                     {i.timestamp ? new Date(i.timestamp).toLocaleDateString() : "Not recorded"}
+                  </td>
+                  <td style={{ paddingRight: 19 }}>
+                    {platform !== "ghrfix" ? (
+                      <button type="button" className="cs-btn cs-ops-inert" disabled title="ShadiLife has no approve/reject endpoint on any AI agent — that decision is made through the plain admin moderation queue.">
+                        <Icon name="eye" size={13} />
+                        No agent endpoint
+                      </button>
+                    ) : i.status !== "PENDING" ? (
+                      <Pill tone={i.tone}><Icon name={i.glyph} size={12} />Decided</Pill>
+                    ) : (
+                      <div className="cs-ops-actions">
+                        <button type="button" className="cs-btn" disabled={busyId === i.id} onClick={() => approveProvider(i.id, i.title)}>
+                          <Icon name="check" size={13} />
+                          {busyId === i.id ? "Working…" : "Approve"}
+                        </button>
+                        <button type="button" className="cs-btn" disabled={busyId === i.id} onClick={() => rejectProvider(i.id, i.title)}>
+                          <Icon name="alert" size={13} />
+                          Reject
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -302,9 +366,13 @@ export default function OpsVerificationsPage({ params }: { params: Promise<{ pla
 
         <p className="cs-ops-readonly">
           Showing the {Math.min(SHOW, waiting.length)} longest-waiting of {waiting.length.toLocaleString()} matching rows.
-          Approve and reject are real endpoints on this agent but are deliberately not wired into this read-only workspace.
+          {platform === "ghrfix"
+            ? " Approve and Reject call GhrFix's real POST /ai-agents/ops/providers/:id/verify — every decision is audited."
+            : " ShadiLife has no approve/reject endpoint on any AI agent, so decisions stay disabled here — see the callout above."}
         </p>
       </Card>
+
+      {toast && <div className="cs-ops-toast" role="status">{toast}</div>}
     </SpecialShell>
   );
 }
@@ -319,4 +387,7 @@ const VER_CSS = `
 .cs-ops-toolbar{display:flex;align-items:center;gap:12px;padding:16px 19px 0;flex-wrap:wrap;justify-content:space-between}
 .cs-ops-tabletitle{margin:0;font-size:13px;font-weight:750;letter-spacing:-.2px}
 .cs-ops-readonly{margin:0;padding:12px 19px 16px;font-size:10.5px;line-height:17px;color:#8891a8;border-top:1px solid #eef0f5}
+.cs-ops-actions{display:flex;gap:6px;flex-wrap:wrap}
+.cs-ops-inert{opacity:.55;cursor:not-allowed;white-space:nowrap}
+.cs-ops-toast{position:fixed;right:22px;bottom:22px;max-width:360px;background:#11162f;color:#fff;border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:18px;box-shadow:0 14px 32px rgba(20,20,45,.28);z-index:50}
 `;

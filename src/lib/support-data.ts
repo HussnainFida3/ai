@@ -26,12 +26,34 @@
  * stays `null` and carries a note naming the platform — never zero-filled,
  * because a zero here would read as a real measurement of "none".
  *
- * READ-ONLY. Both backends also expose resolve/reply writes
- * (POST /ai-agents/support/messages/:id/resolve, /disputes/:id/resolve,
- * POST /ai-agents/support/draft-reply). None of them are called from here.
+ * WRITES — GhrFix only, both real and audited on the backend:
+ *   POST /ai-agents/support/disputes/:id/resolve  — resolveGhrfixDispute()
+ *     Body: { status: "INVESTIGATING"|"RESOLVED"|"REJECTED", resolutionNote?,
+ *     refundAmount? }. resolutionNote IS the reply — dispute.service.ts sends
+ *     it straight to the customer as a real notification (falling back to a
+ *     generic status message when left blank). refundAmount triggers a real
+ *     wallet credit when status is RESOLVED; deliberately not exposed from
+ *     this workspace to avoid crediting a wallet from a quick text prompt.
+ *   POST /ai-agents/support/messages/:id/resolve  — resolveGhrfixMessage()
+ *     Body: { status? }, defaults to RESOLVED server-side. No note field
+ *     exists on this one — ContactMessage has no reply channel of its own.
+ *
+ * ShadiLife's AI Support Agent (ai-agents/support-agent/router.ts) exposes
+ * NO resolve or reply-send endpoint at all — only draft-reply,
+ * summarize-thread and faq-suggest, which are AI drafting aids that return
+ * text and change nothing. The real way to close a Report is
+ * PUT /admin/reports/:id, a plain CRUD route gated by a broader
+ * (SUPER_ADMIN/MODERATOR) role check, not the SUPER_ADMIN-only AI-agent
+ * router this workspace wraps — so it is deliberately left unwired here and
+ * the pages say so, rather than reaching outside the Support Agent's own
+ * surface to force symmetry with GhrFix.
+ *
+ * `applyGhrDisputeUpdate`/`applyGhrMessageUpdate` patch the matching raw row
+ * right after a successful write, so every derived stat/chart/escalation
+ * recomputes without a refetch.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiFetch, ApiError } from "./api";
 import { platformLabel } from "./agent-data";
 import type { PlatformKey } from "./platforms";
@@ -151,6 +173,11 @@ export interface SupportSnapshot {
   isEmpty: boolean;
   loading: boolean;
   error: string | null;
+
+  /** Patch one raw dispute's status locally right after a real resolve succeeds (GhrFix only). */
+  applyGhrDisputeUpdate: (disputeId: string, patch: Partial<{ status: string; resolutionNote: string | null; refundAmount: string | null }>) => void;
+  /** Patch one raw contact message's status locally right after a real resolve succeeds (GhrFix only). */
+  applyGhrMessageUpdate: (messageId: string, patch: Partial<{ status: string }>) => void;
 }
 
 /* ── Raw backend shapes ─────────────────────────────────────────────── */
@@ -369,6 +396,28 @@ export function severityRank(sev: string | null): number {
   return severityWeight(sev);
 }
 
+/* ── Real writes — GhrFix only (see the file banner above) ───────────── */
+
+export type DisputeResolutionStatus = "INVESTIGATING" | "RESOLVED" | "REJECTED";
+
+export interface ResolveDisputeInput {
+  status: DisputeResolutionStatus;
+  /** Sent to the customer verbatim as the resolution notification. Leave blank for a generic status message. */
+  resolutionNote?: string;
+}
+
+/** Real, audited write: POST /ai-agents/support/disputes/:id/resolve. */
+export async function resolveGhrfixDispute(disputeId: string, input: ResolveDisputeInput): Promise<void> {
+  const body: Record<string, unknown> = { status: input.status };
+  if (input.resolutionNote && input.resolutionNote.trim()) body.resolutionNote = input.resolutionNote.trim().slice(0, 2000);
+  await apiFetch("ghrfix", `/ai-agents/support/disputes/${disputeId}/resolve`, { method: "POST", body });
+}
+
+/** Real, audited write: POST /ai-agents/support/messages/:id/resolve. No reply-text field exists on this endpoint. */
+export async function resolveGhrfixMessage(messageId: string): Promise<void> {
+  await apiFetch("ghrfix", `/ai-agents/support/messages/${messageId}/resolve`, { method: "POST", body: { status: "RESOLVED" } });
+}
+
 /* ── The hook ───────────────────────────────────────────────────────── */
 
 interface RawState {
@@ -432,14 +481,58 @@ export function useSupportSnapshot(platform: PlatformKey): SupportSnapshot {
     };
   }, [platform]);
 
-  return useMemo(() => derive(platform, raw, loading, error), [platform, raw, loading, error]);
+  /**
+   * Patch one raw dispute/message's status right after a real resolve
+   * succeeds. `derive()` recomputes statusGroup/escalated/every stat from
+   * this raw status string on the next render, so patching just this field
+   * is enough for the whole page (including the item leaving the escalated
+   * list once it is no longer open/investigating) to update with no refetch.
+   */
+  const applyGhrDisputeUpdate = useCallback((disputeId: string, patch: Partial<GhrDispute>) => {
+    setRaw((prev) => {
+      const disputesPage = prev.ghr?.tickets?.disputes;
+      if (!prev.ghr || !disputesPage) return prev;
+      return {
+        ...prev,
+        ghr: {
+          ...prev.ghr,
+          tickets: {
+            ...prev.ghr.tickets,
+            disputes: { ...disputesPage, items: (disputesPage.items ?? []).map((d) => (d.id === disputeId ? { ...d, ...patch } : d)) },
+          },
+        },
+      };
+    });
+  }, []);
+
+  const applyGhrMessageUpdate = useCallback((messageId: string, patch: Partial<GhrContactMessage>) => {
+    setRaw((prev) => {
+      const messagesPage = prev.ghr?.tickets?.messages;
+      if (!prev.ghr || !messagesPage) return prev;
+      return {
+        ...prev,
+        ghr: {
+          ...prev.ghr,
+          tickets: {
+            ...prev.ghr.tickets,
+            messages: { ...messagesPage, items: (messagesPage.items ?? []).map((m) => (m.id === messageId ? { ...m, ...patch } : m)) },
+          },
+        },
+      };
+    });
+  }, []);
+
+  const snapshot = useMemo(() => derive(platform, raw, loading, error), [platform, raw, loading, error]);
+  return { ...snapshot, applyGhrDisputeUpdate, applyGhrMessageUpdate };
 }
 
 /* ── Normalization ──────────────────────────────────────────────────── */
 
-type Derived = Omit<SupportSnapshot, "platform" | "isEmpty" | "loading" | "error">;
+type Derived = Omit<SupportSnapshot, "platform" | "isEmpty" | "loading" | "error" | "applyGhrDisputeUpdate" | "applyGhrMessageUpdate">;
 
-function derive(platform: PlatformKey, raw: RawState, loading: boolean, error: string | null): SupportSnapshot {
+type SnapshotWithoutWrites = Omit<SupportSnapshot, "applyGhrDisputeUpdate" | "applyGhrMessageUpdate">;
+
+function derive(platform: PlatformKey, raw: RawState, loading: boolean, error: string | null): SnapshotWithoutWrites {
   const label = platformLabel(platform);
   const base = platform === "ghrfix" ? deriveGhrfix(raw.ghr, label) : deriveShadilife(raw.shadi, label);
   const isEmpty = !loading && error === null && base.tickets.length === 0;
