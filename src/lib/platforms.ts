@@ -35,6 +35,8 @@ export interface PlatformDef {
   blurb: string;
   /** Brand colour — used for the platform badge and hub section. */
   color: string;
+  /** Real brand mark (Cloudinary), same asset the platform's own site uses. Use in an <img>, never as a CSS background emoji/icon. */
+  logoUrl: string;
   /** API base URL, env-driven so it can point at a bare server IP. */
   apiBase: string;
   /** localStorage namespace so the two sessions never collide. */
@@ -83,6 +85,7 @@ export const PLATFORMS: Record<PlatformKey, PlatformDef> = {
     label: "GhrFix",
     blurb: "Pakistan's home-services marketplace",
     color: "#7c3aed",
+    logoUrl: "https://res.cloudinary.com/dvu9enho7/image/upload/v1787162828/Gemini_Generated_Image_wiu67lwiu67lwiu6-removebg-preview_zaacfl.png",
     apiBase: process.env.NEXT_PUBLIC_GHRFIX_API ?? "http://localhost:5050/api",
     tokenNs: "cc_ghrfix",
     agents: GHRFIX_AGENTS,
@@ -92,6 +95,7 @@ export const PLATFORMS: Record<PlatformKey, PlatformDef> = {
     label: "ShadiLife",
     blurb: "Matrimonial matching platform",
     color: "#d61d8c",
+    logoUrl: "https://res.cloudinary.com/dvu9enho7/image/upload/v1782679061/WhatsApp_Image_2026-06-28_at_1.16.43_PM-removebg-preview_sbf7jx.png",
     apiBase: process.env.NEXT_PUBLIC_SHADILIFE_API ?? "http://localhost:4000/api",
     tokenNs: "cc_shadilife",
     agents: SHADILIFE_AGENTS,
