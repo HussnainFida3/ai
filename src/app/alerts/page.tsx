@@ -1,303 +1,165 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
-  ArrowDownToLine,
-  ArrowUpRight,
-  BadgeCheck,
-  Ban,
   Bot,
   Check,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  CircleAlert,
-  ClipboardList,
   Clock3,
   Download,
   Eye,
   FileClock,
-  Filter,
-  KeyRound,
+  Globe,
   ListFilter,
   Lock,
-  Monitor,
-  MoreHorizontal,
   RefreshCw,
   Search,
-  Settings2,
   Shield,
   ShieldAlert,
   SlidersHorizontal,
-  Trash2,
-  User,
-  UserCheck,
-  UserCog,
-  Users,
+  TriangleAlert,
   XCircle,
 } from "lucide-react";
 
 import { AppShell } from "@/components/dashboard/AppShell";
+import { Svg } from "@/components/agents/rich";
+import { Icons } from "@/components/agents/icons";
+import { PLATFORMS, type PlatformKey } from "@/lib/platforms";
+import {
+  useAuditLogSnapshot,
+  ago,
+  dateTime,
+  type AuditRow,
+  type AuditRowStatus,
+} from "@/lib/alerts-data";
 
-type AuditStatus = "Success" | "Warning" | "Failed" | "Info";
-type AuditCategory =
-  | "Authentication"
-  | "Agents"
-  | "System"
-  | "Users"
-  | "Security"
-  | "Settings";
-
-type AuditLog = {
-  id: string;
-  action: string;
-  description: string;
-  user: string;
-  userRole: string;
-  category: AuditCategory;
-  status: AuditStatus;
-  ip: string;
-  location: string;
-  time: string;
-  timestamp: string;
-  icon: typeof Activity;
-  color: string;
+const PLATFORM_COLORS: Record<PlatformKey, string> = {
+  ghrfix: PLATFORMS.ghrfix.color,
+  shadilife: PLATFORMS.shadilife.color,
 };
 
-const LOGS: AuditLog[] = [
-  {
-    id: "AUD-20491",
-    action: "Agent configuration updated",
-    description: "Research Agent model and execution limits were updated.",
-    user: "Muhammad Hussnain",
-    userRole: "Super Admin",
-    category: "Agents",
-    status: "Success",
-    ip: "192.168.1.24",
-    location: "Lahore, PK",
-    time: "Just now",
-    timestamp: "Aug 31, 2026 • 10:42 PM",
-    icon: Bot,
-    color: "#8b5cf6",
-  },
-  {
-    id: "AUD-20490",
-    action: "Admin signed in",
-    description: "Successful administrator authentication from a recognized device.",
-    user: "Muhammad Hussnain",
-    userRole: "Super Admin",
-    category: "Authentication",
-    status: "Success",
-    ip: "192.168.1.24",
-    location: "Lahore, PK",
-    time: "2 min ago",
-    timestamp: "Aug 31, 2026 • 10:40 PM",
-    icon: UserCheck,
-    color: "#22c55e",
-  },
-  {
-    id: "AUD-20489",
-    action: "API rate limit warning",
-    description: "Analytics integration reached 84% of its configured request limit.",
-    user: "System",
-    userRole: "Automated Event",
-    category: "System",
-    status: "Warning",
-    ip: "Internal",
-    location: "Cloud",
-    time: "8 min ago",
-    timestamp: "Aug 31, 2026 • 10:34 PM",
-    icon: CircleAlert,
-    color: "#f59e0b",
-  },
-  {
-    id: "AUD-20488",
-    action: "User permissions changed",
-    description: "Marketing Manager role was granted campaign management access.",
-    user: "Sarah Ahmed",
-    userRole: "Administrator",
-    category: "Users",
-    status: "Success",
-    ip: "10.0.0.88",
-    location: "Karachi, PK",
-    time: "14 min ago",
-    timestamp: "Aug 31, 2026 • 10:28 PM",
-    icon: UserCog,
-    color: "#38bdf8",
-  },
-  {
-    id: "AUD-20487",
-    action: "Failed login attempt",
-    description: "Multiple invalid password attempts were detected for an admin account.",
-    user: "Unknown",
-    userRole: "Unverified",
-    category: "Security",
-    status: "Failed",
-    ip: "103.27.88.14",
-    location: "Unknown",
-    time: "21 min ago",
-    timestamp: "Aug 31, 2026 • 10:21 PM",
-    icon: ShieldAlert,
-    color: "#f43f5e",
-  },
-  {
-    id: "AUD-20486",
-    action: "System settings updated",
-    description: "Default AI execution timeout was changed from 60 seconds to 90 seconds.",
-    user: "Muhammad Hussnain",
-    userRole: "Super Admin",
-    category: "Settings",
-    status: "Success",
-    ip: "192.168.1.24",
-    location: "Lahore, PK",
-    time: "34 min ago",
-    timestamp: "Aug 31, 2026 • 10:08 PM",
-    icon: Settings2,
-    color: "#a855f7",
-  },
-  {
-    id: "AUD-20485",
-    action: "Security policy triggered",
-    description: "Suspicious API token usage was automatically blocked by the security layer.",
-    user: "Security Engine",
-    userRole: "Automated Event",
-    category: "Security",
-    status: "Warning",
-    ip: "45.81.22.91",
-    location: "External",
-    time: "41 min ago",
-    timestamp: "Aug 31, 2026 • 10:01 PM",
-    icon: Lock,
-    color: "#f59e0b",
-  },
-  {
-    id: "AUD-20484",
-    action: "New workflow created",
-    description: "A new automated content generation workflow was created.",
-    user: "Ali Raza",
-    userRole: "Administrator",
-    category: "Agents",
-    status: "Success",
-    ip: "10.0.0.32",
-    location: "Islamabad, PK",
-    time: "1 hr ago",
-    timestamp: "Aug 31, 2026 • 9:42 PM",
-    icon: ClipboardList,
-    color: "#8b5cf6",
-  },
-  {
-    id: "AUD-20483",
-    action: "Access token revoked",
-    description: "An expired integration access token was revoked automatically.",
-    user: "System",
-    userRole: "Automated Event",
-    category: "Security",
-    status: "Info",
-    ip: "Internal",
-    location: "Cloud",
-    time: "1 hr ago",
-    timestamp: "Aug 31, 2026 • 9:31 PM",
-    icon: KeyRound,
-    color: "#38bdf8",
-  },
-  {
-    id: "AUD-20482",
-    action: "Agent execution failed",
-    description: "SEO Agent execution stopped because a required external integration was unavailable.",
-    user: "SEO Agent",
-    userRole: "AI Agent",
-    category: "Agents",
-    status: "Failed",
-    ip: "Internal",
-    location: "Cloud",
-    time: "2 hrs ago",
-    timestamp: "Aug 31, 2026 • 8:47 PM",
-    icon: XCircle,
-    color: "#f43f5e",
-  },
-  {
-    id: "AUD-20481",
-    action: "New administrator invited",
-    description: "An invitation was sent to a new platform administrator.",
-    user: "Muhammad Hussnain",
-    userRole: "Super Admin",
-    category: "Users",
-    status: "Info",
-    ip: "192.168.1.24",
-    location: "Lahore, PK",
-    time: "3 hrs ago",
-    timestamp: "Aug 31, 2026 • 7:30 PM",
-    icon: Users,
-    color: "#22d3ee",
-  },
-];
-
-const STATUS_CONFIG: Record<
-  AuditStatus,
-  { color: string; bg: string; icon: typeof Check }
-> = {
-  Success: {
-    color: "#22c55e",
-    bg: "rgba(34,197,94,.12)",
-    icon: Check,
-  },
-  Warning: {
-    color: "#f59e0b",
-    bg: "rgba(245,158,11,.12)",
-    icon: CircleAlert,
-  },
-  Failed: {
-    color: "#f43f5e",
-    bg: "rgba(244,63,94,.12)",
-    icon: XCircle,
-  },
-  Info: {
-    color: "#38bdf8",
-    bg: "rgba(56,189,248,.12)",
-    icon: Activity,
-  },
+const STATUS_CONFIG: Record<AuditRowStatus, { color: string; bg: string; icon: typeof Check }> = {
+  Completed: { color: "#22c55e", bg: "rgba(34,197,94,.12)", icon: Check },
+  Accepted: { color: "#22c55e", bg: "rgba(34,197,94,.12)", icon: CheckCircle2 },
+  Pending: { color: "#f59e0b", bg: "rgba(245,158,11,.12)", icon: Clock3 },
+  Dismissed: { color: "#f43f5e", bg: "rgba(244,63,94,.12)", icon: XCircle },
+  Superseded: { color: "#38bdf8", bg: "rgba(56,189,248,.12)", icon: RefreshCw },
 };
 
-const CATEGORIES: AuditCategory[] = [
-  "Authentication",
-  "Agents",
-  "System",
-  "Users",
-  "Security",
-  "Settings",
-];
+const SEVERITY_COLOR: Record<string, string> = {
+  INFO: "#38bdf8",
+  WARNING: "#f59e0b",
+  CRITICAL: "#f43f5e",
+};
+
+const PAGE_SIZE = 15;
+
+/** A genuine client-side export of the rows currently on screen — same justification as the Credits Usage page: no export endpoint exists on either backend to wire a real one to. */
+function exportCsv(rows: AuditRow[]) {
+  const header = ["Platform", "Time", "Action", "Category", "Actor", "Status", "Target Type", "Target ID", "Cost USD", "IP Address"];
+  const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const lines = rows.map((r) =>
+    [
+      r.platformLabel,
+      r.createdAt,
+      r.action,
+      r.category,
+      r.actorLabel,
+      r.status,
+      r.targetType ?? "",
+      r.targetId ?? "",
+      r.costUsd === null ? "" : r.costUsd.toFixed(4),
+      r.ipAddress ?? "",
+    ]
+      .map((v) => escape(String(v)))
+      .join(","),
+  );
+  const csv = [header.map(escape).join(","), ...lines].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `audit-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 export default function AuditLogsPage() {
+  const snapshot = useAuditLogSnapshot();
+
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState<"All" | AuditCategory>("All");
-  const [status, setStatus] = useState<"All" | AuditStatus>("All");
-  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
+  const [platform, setPlatform] = useState<"All" | PlatformKey>("All");
+  const [category, setCategory] = useState<string>("All");
+  const [status, setStatus] = useState<"All" | AuditRowStatus>("All");
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<AuditRow | null>(null);
+  const [page, setPage] = useState(1);
 
-  const filteredLogs = useMemo(() => {
+  const filteredRows = useMemo(() => {
     const q = search.trim().toLowerCase();
-
-    return LOGS.filter((log) => {
+    return snapshot.rows.filter((row) => {
       const matchesSearch =
         !q ||
-        log.action.toLowerCase().includes(q) ||
-        log.description.toLowerCase().includes(q) ||
-        log.user.toLowerCase().includes(q) ||
-        log.id.toLowerCase().includes(q);
-
-      const matchesCategory =
-        category === "All" || log.category === category;
-
-      const matchesStatus = status === "All" || log.status === status;
-
-      return matchesSearch && matchesCategory && matchesStatus;
+        row.action.toLowerCase().includes(q) ||
+        row.actorLabel.toLowerCase().includes(q) ||
+        row.rawAction.toLowerCase().includes(q) ||
+        (row.targetType ?? "").toLowerCase().includes(q) ||
+        (row.targetId ?? "").toLowerCase().includes(q);
+      const matchesPlatform = platform === "All" || row.platformKey === platform;
+      const matchesCategory = category === "All" || row.category === category;
+      const matchesStatus = status === "All" || row.status === status;
+      return matchesSearch && matchesPlatform && matchesCategory && matchesStatus;
     });
-  }, [search, category, status]);
+  }, [snapshot.rows, search, platform, category, status]);
 
-  const totalEvents = LOGS.length;
-  const successfulEvents = LOGS.filter((x) => x.status === "Success").length;
-  const warnings = LOGS.filter((x) => x.status === "Warning").length;
-  const failedEvents = LOGS.filter((x) => x.status === "Failed").length;
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  const clampedPage = Math.min(page, totalPages);
+  const pageRows = filteredRows.slice((clampedPage - 1) * PAGE_SIZE, clampedPage * PAGE_SIZE);
+
+  // Any filter change invalidates the current page rather than leaving it
+  // stranded past the end of a now-shorter real result set.
+  useEffect(() => {
+    setPage(1);
+  }, [search, platform, category, status]);
+
+  const bothFailed = Boolean(snapshot.ghrfixError && snapshot.shadilifeError);
+  const oneFailed = !bothFailed && Boolean(snapshot.ghrfixError || snapshot.shadilifeError);
+
+  const stats = [
+    {
+      label: "EVENTS LOADED",
+      value: snapshot.loading ? "—" : snapshot.rows.length.toLocaleString(),
+      sub: snapshot.loading ? "Loading…" : `${snapshot.ghrfixCount} GhrFix · ${snapshot.shadilifeCount} ShadiLife`,
+      icon: Activity,
+      color: "#38bdf8",
+    },
+    {
+      label: "AI AGENT ACTIONS",
+      value: snapshot.loading ? "—" : snapshot.agentActionCount.toLocaleString(),
+      sub: "Writes and calls made by an AI agent, not a human admin",
+      icon: Bot,
+      color: "#8b5cf6",
+    },
+    {
+      label: "PENDING AI SUGGESTIONS",
+      value: snapshot.loading ? "—" : snapshot.pendingSuggestions.toLocaleString(),
+      sub: "Awaiting human review — ShadiLife only",
+      icon: Clock3,
+      color: "#f59e0b",
+    },
+    {
+      label: "SECURITY EVENTS (24H)",
+      value: snapshot.loading ? "—" : snapshot.securityEvents24h.toLocaleString(),
+      sub: snapshot.loading ? "Loading…" : `${snapshot.securityEvents7d.toLocaleString()} in the last 7 days · ShadiLife only`,
+      icon: ShieldAlert,
+      color: "#f43f5e",
+    },
+  ];
 
   return (
     <AppShell>
@@ -317,20 +179,10 @@ export default function AuditLogsPage() {
           border: 1px solid rgba(148, 163, 184, 0.12);
           border-radius: 18px;
           background:
-            radial-gradient(
-              circle at 0% 0%,
-              rgba(56, 189, 248, 0.11),
-              transparent 34%
-            ),
-            radial-gradient(
-              circle at 100% 100%,
-              rgba(139, 92, 246, 0.1),
-              transparent 34%
-            ),
+            radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.11), transparent 34%),
+            radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.1), transparent 34%),
             rgba(15, 23, 42, 0.46);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.04),
-            0 18px 50px rgba(0, 0, 0, 0.12);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 50px rgba(0, 0, 0, 0.12);
         }
 
         .audit-hero::after {
@@ -342,9 +194,7 @@ export default function AuditLogsPage() {
           top: -250px;
           border-radius: 50%;
           border: 1px solid rgba(56, 189, 248, 0.08);
-          box-shadow:
-            0 0 0 48px rgba(56, 189, 248, 0.025),
-            0 0 0 96px rgba(56, 189, 248, 0.018);
+          box-shadow: 0 0 0 48px rgba(56, 189, 248, 0.025), 0 0 0 96px rgba(56, 189, 248, 0.018);
           pointer-events: none;
         }
 
@@ -382,17 +232,10 @@ export default function AuditLogsPage() {
           display: grid;
           place-items: center;
           border-radius: 13px;
-          background:
-            linear-gradient(
-              135deg,
-              rgba(56, 189, 248, 0.2),
-              rgba(139, 92, 246, 0.14)
-            );
+          background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(139, 92, 246, 0.14));
           border: 1px solid rgba(56, 189, 248, 0.2);
           color: #38bdf8;
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.1),
-            0 8px 24px rgba(56, 189, 248, 0.08);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 8px 24px rgba(56, 189, 248, 0.08);
         }
 
         .audit-title {
@@ -466,16 +309,19 @@ export default function AuditLogsPage() {
           cursor: pointer;
           font-size: 11px;
           font-weight: 700;
-          transition:
-            transform 0.18s ease,
-            background 0.18s ease,
-            border-color 0.18s ease;
+          transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
         }
 
         .audit-action:hover {
           transform: translateY(-1px);
           background: rgba(30, 41, 59, 0.75);
           border-color: rgba(56, 189, 248, 0.28);
+        }
+
+        .audit-action:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          transform: none;
         }
 
         .audit-action.primary {
@@ -487,6 +333,31 @@ export default function AuditLogsPage() {
 
         .audit-action.primary:hover {
           background: linear-gradient(135deg, #67d3ff, #4ce8f5);
+        }
+
+        .audit-error-panel {
+          margin-bottom: 18px;
+          padding: 20px;
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+          border-radius: 16px;
+          border: 1px solid rgba(148, 163, 184, 0.1);
+          background: rgba(15, 23, 42, 0.44);
+        }
+
+        .audit-warn-banner {
+          margin-bottom: 18px;
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          padding: 11px 16px;
+          border-radius: 12px;
+          border: 1px solid rgba(245, 158, 11, 0.2);
+          background: rgba(245, 158, 11, 0.07);
+          color: #fbbf24;
+          font-size: 11.5px;
+          font-weight: 600;
         }
 
         .audit-stats {
@@ -504,10 +375,7 @@ export default function AuditLogsPage() {
           border-radius: 15px;
           border: 1px solid rgba(148, 163, 184, 0.1);
           background: rgba(15, 23, 42, 0.46);
-          transition:
-            transform 0.2s ease,
-            border-color 0.2s ease,
-            background 0.2s ease;
+          transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
         }
 
         .audit-stat:hover {
@@ -553,16 +421,6 @@ export default function AuditLogsPage() {
           gap: 6px;
           color: var(--dc-ink-soft, #94a3b8);
           font-size: 10.5px;
-        }
-
-        .audit-stat-line {
-          position: absolute;
-          left: 17px;
-          bottom: 0;
-          width: calc(100% - 34px);
-          height: 2px;
-          border-radius: 999px;
-          opacity: 0.7;
         }
 
         .audit-toolbar {
@@ -636,7 +494,7 @@ export default function AuditLogsPage() {
         .audit-filter-panel {
           width: 100%;
           display: grid;
-          grid-template-columns: repeat(2, minmax(180px, 240px));
+          grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
           gap: 10px;
           padding-top: 2px;
         }
@@ -705,6 +563,7 @@ export default function AuditLogsPage() {
         .audit-card-meta {
           color: var(--dc-ink-faint, #64748b);
           font-size: 10px;
+          text-align: right;
         }
 
         .audit-table-wrap {
@@ -807,21 +666,8 @@ export default function AuditLogsPage() {
 
         .audit-user-role {
           margin-top: 2px;
-          color: #64748b;
           font-size: 9.5px;
-        }
-
-        .audit-category {
-          display: inline-flex;
-          align-items: center;
-          min-height: 25px;
-          padding: 0 8px;
-          border-radius: 7px;
-          background: rgba(148, 163, 184, 0.06);
-          border: 1px solid rgba(148, 163, 184, 0.08);
-          color: #94a3b8;
-          font-size: 9.5px;
-          font-weight: 700;
+          font-weight: 800;
         }
 
         .audit-status {
@@ -905,7 +751,12 @@ export default function AuditLogsPage() {
           transition: 0.18s ease;
         }
 
-        .audit-page-btn:hover,
+        .audit-page-btn:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+
+        .audit-page-btn:hover:not(:disabled),
         .audit-page-btn.active {
           color: #e0f2fe;
           background: rgba(56, 189, 248, 0.1);
@@ -940,7 +791,6 @@ export default function AuditLogsPage() {
           align-items: center;
           justify-content: space-between;
           gap: 8px;
-          margin-bottom: 9px;
         }
 
         .audit-health-label {
@@ -953,22 +803,8 @@ export default function AuditLogsPage() {
         }
 
         .audit-health-value {
-          color: #e2e8f0;
           font-size: 10px;
           font-weight: 800;
-        }
-
-        .audit-progress {
-          height: 5px;
-          overflow: hidden;
-          border-radius: 999px;
-          background: rgba(148, 163, 184, 0.08);
-        }
-
-        .audit-progress > span {
-          display: block;
-          height: 100%;
-          border-radius: inherit;
         }
 
         .audit-security-score {
@@ -976,14 +812,8 @@ export default function AuditLogsPage() {
           padding: 17px;
           overflow: hidden;
           border-radius: 13px;
-          background:
-            radial-gradient(
-              circle at 100% 0%,
-              rgba(34, 197, 94, 0.12),
-              transparent 45%
-            ),
-            rgba(2, 6, 23, 0.24);
-          border: 1px solid rgba(34, 197, 94, 0.1);
+          background: radial-gradient(circle at 100% 0%, rgba(244, 63, 94, 0.1), transparent 45%), rgba(2, 6, 23, 0.24);
+          border: 1px solid rgba(244, 63, 94, 0.1);
         }
 
         .audit-security-score-top {
@@ -1002,23 +832,25 @@ export default function AuditLogsPage() {
           margin-top: 10px;
           display: flex;
           align-items: baseline;
-          gap: 5px;
+          gap: 14px;
         }
 
         .audit-score strong {
-          font-size: 32px;
+          font-size: 26px;
           line-height: 1;
           letter-spacing: -0.04em;
-          color: #86efac;
+          color: #f8fafc;
         }
 
         .audit-score span {
           color: #64748b;
-          font-size: 10px;
+          font-size: 9.5px;
+          display: block;
+          margin-top: 2px;
         }
 
         .audit-score-text {
-          margin-top: 8px;
+          margin-top: 10px;
           color: #94a3b8;
           font-size: 10px;
           line-height: 1.55;
@@ -1062,7 +894,7 @@ export default function AuditLogsPage() {
           line-height: 1.4;
         }
 
-        .audit-mini-time {
+        .audit-mini-sub {
           margin-top: 3px;
           color: #64748b;
           font-size: 9px;
@@ -1071,6 +903,14 @@ export default function AuditLogsPage() {
         .audit-empty {
           padding: 55px 20px;
           text-align: center;
+        }
+
+        .audit-empty-side {
+          padding: 24px 12px;
+          text-align: center;
+          color: #64748b;
+          font-size: 10.5px;
+          line-height: 1.6;
         }
 
         .audit-empty-icon {
@@ -1256,10 +1096,6 @@ export default function AuditLogsPage() {
             grid-template-columns: 1fr;
           }
 
-          .audit-filter-panel {
-            grid-template-columns: 1fr;
-          }
-
           .audit-pagination {
             align-items: flex-start;
             flex-direction: column;
@@ -1296,142 +1132,83 @@ export default function AuditLogsPage() {
               </div>
 
               <p className="audit-subtitle">
-                Monitor every important action across your AI platform.
-                Track administrator activity, security events, system changes,
-                agent operations and platform access in one complete timeline.
+                Every audited action and real AI agent event across GhrFix and ShadiLife, merged into one timeline —
+                administrator activity, AI-agent writes, AI calls and suggestions, and ShadiLife&apos;s security log.
               </p>
             </div>
 
             <div>
               <div className="audit-live">
                 <span className="audit-live-dot" />
-                Live event monitoring enabled
+                Auto-refreshing every 60s
               </div>
 
               <div className="audit-actions" style={{ marginTop: 10 }}>
-                <button className="audit-action" type="button">
+                <button className="audit-action" type="button" onClick={snapshot.refresh} disabled={snapshot.loading}>
                   <RefreshCw size={14} />
                   Refresh
                 </button>
 
-                <button className="audit-action primary" type="button">
-                  <ArrowDownToLine size={14} />
-                  Export Logs
+                <button
+                  className="audit-action primary"
+                  type="button"
+                  disabled={filteredRows.length === 0}
+                  onClick={() => exportCsv(filteredRows)}
+                >
+                  <Download size={14} />
+                  Export CSV
                 </button>
               </div>
             </div>
           </div>
         </section>
 
+        {bothFailed && (
+          <div className="audit-error-panel">
+            <TriangleAlert size={18} color="#f87171" style={{ flex: "0 0 auto", marginTop: 2 }} />
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 12.5, color: "#f87171" }}>Neither platform responded</div>
+              <p style={{ margin: "6px 0 0", fontSize: 11.5, color: "var(--dc-ink-soft)", lineHeight: 1.6 }}>
+                GhrFix: {snapshot.ghrfixError}
+                <br />
+                ShadiLife: {snapshot.shadilifeError}
+              </p>
+              <p style={{ margin: "8px 0 0", fontSize: 11, color: "var(--dc-ink-faint)" }}>
+                Make sure both backends are running and that this browser is signed in on the{" "}
+                <a href="/connect" style={{ color: "#38bdf8", fontWeight: 700 }}>
+                  Connect
+                </a>{" "}
+                page.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {oneFailed && (
+          <div className="audit-warn-banner">
+            <TriangleAlert size={14} />
+            {snapshot.ghrfixError ? `GhrFix: ${snapshot.ghrfixError}` : `ShadiLife: ${snapshot.shadilifeError}`} — every row below
+            reflects the other platform only until this is reconnected.
+          </div>
+        )}
+
         {/* STATISTICS */}
         <section className="audit-stats">
-          <div className="audit-stat">
-            <div className="audit-stat-head">
-              <span className="audit-stat-label">TOTAL EVENTS</span>
-              <span
-                className="audit-stat-icon"
-                style={{ background: "rgba(56,189,248,.12)", color: "#38bdf8" }}
-              >
-                <Activity size={16} />
-              </span>
-            </div>
-
-            <div className="audit-stat-value">{totalEvents.toLocaleString()}</div>
-
-            <div className="audit-stat-foot">
-              <ArrowUpRight size={11} color="#22c55e" />
-              All recorded events today
-            </div>
-
-            <div
-              className="audit-stat-line"
-              style={{
-                background:
-                  "linear-gradient(90deg,#38bdf8,rgba(56,189,248,.08))",
-              }}
-            />
-          </div>
-
-          <div className="audit-stat">
-            <div className="audit-stat-head">
-              <span className="audit-stat-label">SUCCESSFUL ACTIONS</span>
-              <span
-                className="audit-stat-icon"
-                style={{ background: "rgba(34,197,94,.12)", color: "#22c55e" }}
-              >
-                <BadgeCheck size={16} />
-              </span>
-            </div>
-
-            <div className="audit-stat-value">{successfulEvents}</div>
-
-            <div className="audit-stat-foot">
-              <Check size={11} color="#22c55e" />
-              Platform operations completed
-            </div>
-
-            <div
-              className="audit-stat-line"
-              style={{
-                background:
-                  "linear-gradient(90deg,#22c55e,rgba(34,197,94,.08))",
-              }}
-            />
-          </div>
-
-          <div className="audit-stat">
-            <div className="audit-stat-head">
-              <span className="audit-stat-label">WARNINGS</span>
-              <span
-                className="audit-stat-icon"
-                style={{ background: "rgba(245,158,11,.12)", color: "#f59e0b" }}
-              >
-                <CircleAlert size={16} />
-              </span>
-            </div>
-
-            <div className="audit-stat-value">{warnings}</div>
-
-            <div className="audit-stat-foot">
-              <Shield size={11} color="#f59e0b" />
-              Events requiring attention
-            </div>
-
-            <div
-              className="audit-stat-line"
-              style={{
-                background:
-                  "linear-gradient(90deg,#f59e0b,rgba(245,158,11,.08))",
-              }}
-            />
-          </div>
-
-          <div className="audit-stat">
-            <div className="audit-stat-head">
-              <span className="audit-stat-label">FAILED EVENTS</span>
-              <span
-                className="audit-stat-icon"
-                style={{ background: "rgba(244,63,94,.12)", color: "#f43f5e" }}
-              >
-                <Ban size={16} />
-              </span>
-            </div>
-
-            <div className="audit-stat-value">{failedEvents}</div>
-
-            <div className="audit-stat-foot">
-              <ShieldAlert size={11} color="#f43f5e" />
-              Security and execution failures
-            </div>
-
-            <div
-              className="audit-stat-line"
-              style={{
-                background:
-                  "linear-gradient(90deg,#f43f5e,rgba(244,63,94,.08))",
-              }}
-            />
-          </div>
+          {stats.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <div className="audit-stat" key={stat.label}>
+                <div className="audit-stat-head">
+                  <span className="audit-stat-label">{stat.label}</span>
+                  <span className="audit-stat-icon" style={{ background: `${stat.color}1f`, color: stat.color }}>
+                    <Icon size={16} />
+                  </span>
+                </div>
+                <div className="audit-stat-value">{stat.value}</div>
+                <div className="audit-stat-foot">{stat.sub}</div>
+              </div>
+            );
+          })}
         </section>
 
         {/* TOOLBAR */}
@@ -1441,15 +1218,11 @@ export default function AuditLogsPage() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search audit logs, users, actions or event IDs..."
+              placeholder="Search actions, actors, or target IDs..."
             />
           </div>
 
-          <button
-            type="button"
-            className={`audit-filter-btn ${showFilters ? "active" : ""}`}
-            onClick={() => setShowFilters((v) => !v)}
-          >
+          <button type="button" className={`audit-filter-btn ${showFilters ? "active" : ""}`} onClick={() => setShowFilters((v) => !v)}>
             <SlidersHorizontal size={14} />
             Advanced Filters
           </button>
@@ -1459,6 +1232,7 @@ export default function AuditLogsPage() {
             className="audit-filter-btn"
             onClick={() => {
               setSearch("");
+              setPlatform("All");
               setCategory("All");
               setStatus("All");
             }}
@@ -1470,38 +1244,35 @@ export default function AuditLogsPage() {
           {showFilters && (
             <div className="audit-filter-panel">
               <div className="audit-select-wrap">
-                <select
-                  value={category}
-                  onChange={(e) =>
-                    setCategory(e.target.value as "All" | AuditCategory)
-                  }
-                >
-                  <option value="All">All Categories</option>
+                <select value={platform} onChange={(e) => setPlatform(e.target.value as "All" | PlatformKey)}>
+                  <option value="All">All Platforms</option>
+                  <option value="ghrfix">GhrFix</option>
+                  <option value="shadilife">ShadiLife</option>
+                </select>
+                <ChevronRight size={13} />
+              </div>
 
-                  {CATEGORIES.map((item) => (
+              <div className="audit-select-wrap">
+                <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                  <option value="All">All Categories</option>
+                  {snapshot.categories.map((item) => (
                     <option key={item} value={item}>
                       {item}
                     </option>
                   ))}
                 </select>
-
                 <ChevronRight size={13} />
               </div>
 
               <div className="audit-select-wrap">
-                <select
-                  value={status}
-                  onChange={(e) =>
-                    setStatus(e.target.value as "All" | AuditStatus)
-                  }
-                >
+                <select value={status} onChange={(e) => setStatus(e.target.value as "All" | AuditRowStatus)}>
                   <option value="All">All Statuses</option>
-                  <option value="Success">Success</option>
-                  <option value="Warning">Warning</option>
-                  <option value="Failed">Failed</option>
-                  <option value="Info">Info</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Accepted">Accepted</option>
+                  <option value="Dismissed">Dismissed</option>
+                  <option value="Superseded">Superseded</option>
                 </select>
-
                 <ChevronRight size={13} />
               </div>
             </div>
@@ -1518,19 +1289,27 @@ export default function AuditLogsPage() {
               </div>
 
               <div className="audit-card-meta">
-                Showing {filteredLogs.length} of {LOGS.length} events
+                {snapshot.loading
+                  ? "Loading…"
+                  : `Showing ${filteredRows.length} of ${snapshot.rows.length} loaded events${
+                      snapshot.ghrfixTotalAllTime !== null ? ` · GhrFix has ${snapshot.ghrfixTotalAllTime.toLocaleString()} all-time` : ""
+                    }`}
               </div>
             </div>
 
-            {filteredLogs.length > 0 ? (
+            {snapshot.loading ? (
+              <div className="audit-empty">
+                <div className="audit-empty-title">Loading real activity…</div>
+                <div className="audit-empty-text">Pulling audit logs from GhrFix and ShadiLife.</div>
+              </div>
+            ) : pageRows.length > 0 ? (
               <>
                 <div className="audit-table-wrap">
                   <table className="audit-table">
                     <thead>
                       <tr>
                         <th>EVENT</th>
-                        <th>USER</th>
-                        <th>CATEGORY</th>
+                        <th>ACTOR</th>
                         <th>STATUS</th>
                         <th>TIME</th>
                         <th />
@@ -1538,33 +1317,21 @@ export default function AuditLogsPage() {
                     </thead>
 
                     <tbody>
-                      {filteredLogs.map((log) => {
-                        const Icon = log.icon;
-                        const statusConfig = STATUS_CONFIG[log.status];
+                      {pageRows.map((row) => {
+                        const statusConfig = STATUS_CONFIG[row.status];
                         const StatusIcon = statusConfig.icon;
 
                         return (
-                          <tr key={log.id}>
+                          <tr key={row.id}>
                             <td>
                               <div className="audit-event">
-                                <span
-                                  className="audit-event-icon"
-                                  style={{
-                                    background: `${log.color}16`,
-                                    color: log.color,
-                                  }}
-                                >
-                                  <Icon size={16} />
+                                <span className="audit-event-icon" style={{ background: `${row.actorAccent}16`, color: row.actorAccent }}>
+                                  {row.actorIcon ? <Svg path={Icons[row.actorIcon]} size={16} /> : <Svg path={Icons.audit} size={16} />}
                                 </span>
 
                                 <div>
-                                  <div className="audit-event-title">
-                                    {log.action}
-                                  </div>
-
-                                  <div className="audit-event-desc">
-                                    {log.description}
-                                  </div>
+                                  <div className="audit-event-title">{row.action}</div>
+                                  <div className="audit-event-desc">{row.category}</div>
                                 </div>
                               </div>
                             </td>
@@ -1572,59 +1339,34 @@ export default function AuditLogsPage() {
                             <td>
                               <div className="audit-user">
                                 <span className="audit-avatar">
-                                  <User size={14} />
+                                  <Svg path={row.actorIcon ? Icons[row.actorIcon] : Icons.users} size={14} />
                                 </span>
 
                                 <div>
-                                  <div className="audit-user-name">
-                                    {log.user}
-                                  </div>
-
-                                  <div className="audit-user-role">
-                                    {log.userRole}
+                                  <div className="audit-user-name">{row.actorLabel}</div>
+                                  <div className="audit-user-role" style={{ color: PLATFORM_COLORS[row.platformKey] }}>
+                                    {row.platformLabel}
                                   </div>
                                 </div>
                               </div>
                             </td>
 
                             <td>
-                              <span className="audit-category">
-                                {log.category}
-                              </span>
-                            </td>
-
-                            <td>
-                              <span
-                                className="audit-status"
-                                style={{
-                                  color: statusConfig.color,
-                                  background: statusConfig.bg,
-                                }}
-                              >
+                              <span className="audit-status" style={{ color: statusConfig.color, background: statusConfig.bg }}>
                                 <StatusIcon size={11} />
-                                {log.status}
+                                {row.status}
                               </span>
                             </td>
 
                             <td>
                               <div className="audit-time">
-                                <div className="audit-time-main">
-                                  {log.time}
-                                </div>
-
-                                <div className="audit-time-sub">
-                                  {log.id}
-                                </div>
+                                <div className="audit-time-main">{ago(row.createdAt)}</div>
+                                <div className="audit-time-sub">{dateTime(row.createdAt)}</div>
                               </div>
                             </td>
 
                             <td>
-                              <button
-                                type="button"
-                                className="audit-view-btn"
-                                title="View event details"
-                                onClick={() => setSelectedLog(log)}
-                              >
+                              <button type="button" className="audit-view-btn" title="View event details" onClick={() => setSelectedRow(row)}>
                                 <Eye size={15} />
                               </button>
                             </td>
@@ -1637,30 +1379,39 @@ export default function AuditLogsPage() {
 
                 <div className="audit-pagination">
                   <span className="audit-pagination-info">
-                    Updated automatically • Last sync a few seconds ago
+                    Page {clampedPage} of {totalPages} · {filteredRows.length} matching events
                   </span>
 
                   <div className="audit-pages">
-                    <button className="audit-page-btn" type="button">
+                    <button className="audit-page-btn" type="button" disabled={clampedPage <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
                       <ChevronLeft size={14} />
                     </button>
 
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter((n) => n === 1 || n === totalPages || Math.abs(n - clampedPage) <= 1)
+                      .reduce<number[]>((acc, n) => {
+                        if (acc.length > 0 && n - acc[acc.length - 1] > 1) acc.push(-1);
+                        acc.push(n);
+                        return acc;
+                      }, [])
+                      .map((n, i) =>
+                        n === -1 ? (
+                          <span key={`gap-${i}`} style={{ color: "#475569", fontSize: 10, padding: "0 2px" }}>
+                            …
+                          </span>
+                        ) : (
+                          <button key={n} className={`audit-page-btn ${n === clampedPage ? "active" : ""}`} type="button" onClick={() => setPage(n)}>
+                            {n}
+                          </button>
+                        ),
+                      )}
+
                     <button
-                      className="audit-page-btn active"
+                      className="audit-page-btn"
                       type="button"
+                      disabled={clampedPage >= totalPages}
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     >
-                      1
-                    </button>
-
-                    <button className="audit-page-btn" type="button">
-                      2
-                    </button>
-
-                    <button className="audit-page-btn" type="button">
-                      3
-                    </button>
-
-                    <button className="audit-page-btn" type="button">
                       <ChevronRight size={14} />
                     </button>
                   </div>
@@ -1671,11 +1422,9 @@ export default function AuditLogsPage() {
                 <div className="audit-empty-icon">
                   <Search size={20} />
                 </div>
-
                 <div className="audit-empty-title">No audit events found</div>
-
                 <div className="audit-empty-text">
-                  Try adjusting your search or active filters.
+                  {snapshot.rows.length === 0 ? "Neither platform reported any activity." : "Try adjusting your search or active filters."}
                 </div>
               </div>
             )}
@@ -1687,7 +1436,7 @@ export default function AuditLogsPage() {
               <div className="audit-card-head">
                 <div className="audit-card-title">
                   <Activity size={15} color="#22c55e" />
-                  SYSTEM HEALTH
+                  PLATFORM STATUS
                 </div>
               </div>
 
@@ -1696,63 +1445,48 @@ export default function AuditLogsPage() {
                   <div className="audit-health-item">
                     <div className="audit-health-top">
                       <span className="audit-health-label">
-                        <Monitor size={13} color="#38bdf8" />
-                        Event Pipeline
+                        <Lock size={13} color={PLATFORM_COLORS.ghrfix} />
+                        GhrFix Audit Log
                       </span>
-
-                      <span className="audit-health-value">99.9%</span>
-                    </div>
-
-                    <div className="audit-progress">
-                      <span
-                        style={{
-                          width: "99%",
-                          background:
-                            "linear-gradient(90deg,#38bdf8,#22d3ee)",
-                        }}
-                      />
+                      <span className="audit-health-value" style={{ color: snapshot.ghrfixError ? "#f87171" : "#4ade80" }}>
+                        {snapshot.loading ? "…" : snapshot.ghrfixError ? "Unreachable" : "Reachable"}
+                      </span>
                     </div>
                   </div>
 
                   <div className="audit-health-item">
                     <div className="audit-health-top">
                       <span className="audit-health-label">
-                        <Shield size={13} color="#22c55e" />
-                        Security Monitor
+                        <Lock size={13} color={PLATFORM_COLORS.shadilife} />
+                        ShadiLife Audit Log
                       </span>
-
-                      <span className="audit-health-value">Healthy</span>
-                    </div>
-
-                    <div className="audit-progress">
-                      <span
-                        style={{
-                          width: "92%",
-                          background:
-                            "linear-gradient(90deg,#22c55e,#4ade80)",
-                        }}
-                      />
+                      <span className="audit-health-value" style={{ color: snapshot.shadilifeError ? "#f87171" : "#4ade80" }}>
+                        {snapshot.loading ? "…" : snapshot.shadilifeError ? "Unreachable" : "Reachable"}
+                      </span>
                     </div>
                   </div>
 
                   <div className="audit-health-item">
                     <div className="audit-health-top">
                       <span className="audit-health-label">
-                        <Clock3 size={13} color="#8b5cf6" />
-                        Log Retention
+                        <Globe size={13} color="#f43f5e" />
+                        Active IP Blocks
                       </span>
-
-                      <span className="audit-health-value">87 days</span>
+                      <span className="audit-health-value" style={{ color: "#e2e8f0" }}>
+                        {snapshot.loading ? "…" : snapshot.activeIpBlocks === null ? "—" : snapshot.activeIpBlocks}
+                      </span>
                     </div>
+                  </div>
 
-                    <div className="audit-progress">
-                      <span
-                        style={{
-                          width: "72%",
-                          background:
-                            "linear-gradient(90deg,#8b5cf6,#a855f7)",
-                        }}
-                      />
+                  <div className="audit-health-item">
+                    <div className="audit-health-top">
+                      <span className="audit-health-label">
+                        <Bot size={13} color="#8b5cf6" />
+                        Pending AI Suggestions
+                      </span>
+                      <span className="audit-health-value" style={{ color: "#e2e8f0" }}>
+                        {snapshot.loading ? "…" : snapshot.pendingSuggestions}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -1762,28 +1496,32 @@ export default function AuditLogsPage() {
             <div className="audit-card">
               <div className="audit-card-head">
                 <div className="audit-card-title">
-                  <Shield size={15} color="#22c55e" />
-                  SECURITY SCORE
+                  <ShieldAlert size={15} color="#f43f5e" />
+                  SHADILIFE SECURITY
                 </div>
               </div>
 
               <div className="audit-side-body">
                 <div className="audit-security-score">
                   <div className="audit-security-score-top">
-                    <span className="audit-score-label">
-                      PLATFORM SECURITY
-                    </span>
-
-                    <Shield size={17} color="#22c55e" />
+                    <span className="audit-score-label">REAL SECURITY EVENTS</span>
+                    <Shield size={17} color="#f43f5e" />
                   </div>
 
                   <div className="audit-score">
-                    <strong>94</strong>
-                    <span>/100</span>
+                    <div>
+                      <strong>{snapshot.loading ? "—" : snapshot.securityEvents24h}</strong>
+                      <span>last 24h</span>
+                    </div>
+                    <div>
+                      <strong>{snapshot.loading ? "—" : snapshot.securityEvents7d}</strong>
+                      <span>last 7d</span>
+                    </div>
                   </div>
 
                   <div className="audit-score-text">
-                    Excellent security posture. No critical threats detected.
+                    From ShadiLife&apos;s real SecurityEvent log (failed logins, agent/actor events). GhrFix has no equivalent
+                    security-event model, so this panel is ShadiLife-only.
                   </div>
                 </div>
               </div>
@@ -1798,41 +1536,30 @@ export default function AuditLogsPage() {
               </div>
 
               <div className="audit-side-body">
-                <div className="audit-recent-list">
-                  {LOGS.filter(
-                    (x) =>
-                      x.category === "Security" ||
-                      x.category === "Authentication"
-                  )
-                    .slice(0, 4)
-                    .map((log) => {
-                      const Icon = log.icon;
-
+                {snapshot.loading ? (
+                  <div className="audit-empty-side">Loading…</div>
+                ) : snapshot.securityEvents.length === 0 ? (
+                  <div className="audit-empty-side">No security events reported by ShadiLife.</div>
+                ) : (
+                  <div className="audit-recent-list">
+                    {snapshot.securityEvents.slice(0, 5).map((ev) => {
+                      const color = SEVERITY_COLOR[ev.severity] ?? "#64748b";
                       return (
-                        <div className="audit-mini-log" key={log.id}>
-                          <span
-                            className="audit-mini-icon"
-                            style={{
-                              background: `${log.color}16`,
-                              color: log.color,
-                            }}
-                          >
-                            <Icon size={14} />
+                        <div className="audit-mini-log" key={ev.id}>
+                          <span className="audit-mini-icon" style={{ background: `${color}16`, color }}>
+                            <ShieldAlert size={14} />
                           </span>
-
                           <div>
-                            <div className="audit-mini-title">
-                              {log.action}
-                            </div>
-
-                            <div className="audit-mini-time">
-                              {log.time}
+                            <div className="audit-mini-title">{ev.eventType}</div>
+                            <div className="audit-mini-sub">
+                              {ev.ipAddress} · {ago(ev.createdAt)}
                             </div>
                           </div>
                         </div>
                       );
                     })}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           </aside>
@@ -1840,49 +1567,29 @@ export default function AuditLogsPage() {
       </main>
 
       {/* DETAILS MODAL */}
-      {selectedLog && (
-        <div
-          className="audit-modal-backdrop"
-          onClick={() => setSelectedLog(null)}
-        >
-          <div
-            className="audit-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
+      {selectedRow && (
+        <div className="audit-modal-backdrop" onClick={() => setSelectedRow(null)}>
+          <div className="audit-modal" onClick={(e) => e.stopPropagation()}>
             <div className="audit-modal-head">
               <div className="audit-modal-title">
                 <FileClock size={16} color="#38bdf8" />
                 Audit Event Details
               </div>
-
-              <button
-                className="audit-close"
-                type="button"
-                onClick={() => setSelectedLog(null)}
-              >
+              <button className="audit-close" type="button" onClick={() => setSelectedRow(null)}>
                 <XCircle size={17} />
               </button>
             </div>
 
             <div className="audit-modal-body">
               <div className="audit-modal-event">
-                <div
-                  className="audit-modal-event-icon"
-                  style={{
-                    background: `${selectedLog.color}16`,
-                    color: selectedLog.color,
-                  }}
-                >
-                  <selectedLog.icon size={21} />
+                <div className="audit-modal-event-icon" style={{ background: `${selectedRow.actorAccent}16`, color: selectedRow.actorAccent }}>
+                  {selectedRow.actorIcon ? <Svg path={Icons[selectedRow.actorIcon]} size={21} /> : <Svg path={Icons.audit} size={21} />}
                 </div>
-
                 <div>
-                  <div className="audit-modal-event-title">
-                    {selectedLog.action}
-                  </div>
-
+                  <div className="audit-modal-event-title">{selectedRow.action}</div>
                   <div className="audit-modal-event-desc">
-                    {selectedLog.description}
+                    {selectedRow.actorLabel} on {selectedRow.platformLabel}
+                    {selectedRow.targetType ? ` · ${selectedRow.targetType}${selectedRow.targetId ? ` #${selectedRow.targetId.slice(0, 10)}` : ""}` : ""}
                   </div>
                 </div>
               </div>
@@ -1890,58 +1597,56 @@ export default function AuditLogsPage() {
               <div className="audit-details">
                 <div className="audit-detail">
                   <div className="audit-detail-label">EVENT ID</div>
-                  <div className="audit-detail-value">
-                    {selectedLog.id}
-                  </div>
+                  <div className="audit-detail-value">{selectedRow.id}</div>
                 </div>
 
                 <div className="audit-detail">
                   <div className="audit-detail-label">STATUS</div>
-                  <div className="audit-detail-value">
-                    {selectedLog.status}
-                  </div>
+                  <div className="audit-detail-value">{selectedRow.status}</div>
                 </div>
 
                 <div className="audit-detail">
-                  <div className="audit-detail-label">USER</div>
-                  <div className="audit-detail-value">
-                    {selectedLog.user}
-                  </div>
-                </div>
-
-                <div className="audit-detail">
-                  <div className="audit-detail-label">ROLE</div>
-                  <div className="audit-detail-value">
-                    {selectedLog.userRole}
+                  <div className="audit-detail-label">PLATFORM</div>
+                  <div className="audit-detail-value" style={{ color: PLATFORM_COLORS[selectedRow.platformKey] }}>
+                    {selectedRow.platformLabel}
                   </div>
                 </div>
 
                 <div className="audit-detail">
                   <div className="audit-detail-label">CATEGORY</div>
-                  <div className="audit-detail-value">
-                    {selectedLog.category}
-                  </div>
+                  <div className="audit-detail-value">{selectedRow.category}</div>
+                </div>
+
+                <div className="audit-detail">
+                  <div className="audit-detail-label">ACTOR</div>
+                  <div className="audit-detail-value">{selectedRow.actorLabel}</div>
                 </div>
 
                 <div className="audit-detail">
                   <div className="audit-detail-label">TIMESTAMP</div>
+                  <div className="audit-detail-value">{dateTime(selectedRow.createdAt)}</div>
+                </div>
+
+                <div className="audit-detail">
+                  <div className="audit-detail-label">RAW ACTION</div>
+                  <div className="audit-detail-value">{selectedRow.rawAction}</div>
+                </div>
+
+                <div className="audit-detail">
+                  <div className="audit-detail-label">COST</div>
+                  <div className="audit-detail-value">{selectedRow.costUsd === null ? "Not tracked" : `$${selectedRow.costUsd.toFixed(4)}`}</div>
+                </div>
+
+                <div className="audit-detail">
+                  <div className="audit-detail-label">TARGET</div>
                   <div className="audit-detail-value">
-                    {selectedLog.timestamp}
+                    {selectedRow.targetType ? `${selectedRow.targetType}${selectedRow.targetId ? ` #${selectedRow.targetId}` : ""}` : "—"}
                   </div>
                 </div>
 
                 <div className="audit-detail">
                   <div className="audit-detail-label">IP ADDRESS</div>
-                  <div className="audit-detail-value">
-                    {selectedLog.ip}
-                  </div>
-                </div>
-
-                <div className="audit-detail">
-                  <div className="audit-detail-label">LOCATION</div>
-                  <div className="audit-detail-value">
-                    {selectedLog.location}
-                  </div>
+                  <div className="audit-detail-value">{selectedRow.ipAddress ?? "Not recorded"}</div>
                 </div>
               </div>
             </div>
