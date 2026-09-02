@@ -665,3 +665,164 @@ export async function agentChat(
 export function platformLabel(platform: PlatformKey): string {
   return PLATFORMS[platform].label;
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Content Agent — normalized blog library.
+
+   The two backends expose their blog libraries through genuinely different
+   routes and field names: GhrFix serves the agent's own paginated
+   `/ai-agents/content/posts` (seoTitle / seoDescription / readMinutes, no
+   view counter), ShadiLife serves the admin route `/admin/content/blog`
+   (metaTitle / metaDescription / keywords / views). Both collapse into the
+   one `ContentPost` shape below so a single set of UI components can render
+   either platform, with fields the platform genuinely lacks left `null`
+   rather than faked as zero.
+   ══════════════════════════════════════════════════════════════════════ */
+
+export interface ContentPost {
+  id: string;
+  title: string;
+  slug: string;
+  category: string;
+  status: "PUBLISHED" | "DRAFT" | "OTHER";
+  createdAt: string | null;
+  publishedAt: string | null;
+  /** null on GhrFix — it does not track per-post views. */
+  views: number | null;
+  hasMetaTitle: boolean;
+  hasMetaDescription: boolean;
+  hasKeywords: boolean;
+  hasCover: boolean;
+  /** null on ShadiLife — it stores raw HTML, not a stored read time. */
+  readMinutes: number | null;
+  words: number | null;
+}
+
+export interface ContentSnapshot {
+  posts: ContentPost[];
+  published: ContentPost[];
+  drafts: ContentPost[];
+  totalViews: number | null;
+  fullyOptimised: number;
+  byCategory: Array<{ label: string; value: number }>;
+  byStatus: Array<{ label: string; value: number }>;
+  /** Last 8 months of created / published counts, for the trend chart. */
+  monthly: { labels: string[]; created: number[]; published: number[] };
+  loading: boolean;
+  error: string | null;
+}
+
+const stripTags = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+const asText = (v: unknown) => (typeof v === "string" ? v : "");
+const asNum = (v: unknown) => (v === null || v === undefined || v === "" ? null : Number(v));
+
+function normalizeStatus(s: string): ContentPost["status"] {
+  const up = s.toUpperCase();
+  return up === "PUBLISHED" ? "PUBLISHED" : up === "DRAFT" ? "DRAFT" : "OTHER";
+}
+
+function countBy(posts: ContentPost[], pick: (p: ContentPost) => string): Array<{ label: string; value: number }> {
+  const map = new Map<string, number>();
+  for (const p of posts) {
+    const key = pick(p).trim();
+    if (!key) continue;
+    map.set(key, (map.get(key) ?? 0) + 1);
+  }
+  return [...map.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value);
+}
+
+function monthlyBuckets(posts: ContentPost[], months = 8) {
+  const keys: Array<{ key: string; label: string }> = [];
+  const now = new Date();
+  for (let i = months - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    keys.push({ key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`, label: d.toLocaleDateString(undefined, { month: "short" }) });
+  }
+  const tally = (pick: (p: ContentPost) => string | null) => {
+    const counts = new Map(keys.map((k) => [k.key, 0]));
+    for (const p of posts) {
+      const iso = pick(p);
+      if (!iso) continue;
+      const key = iso.slice(0, 7);
+      if (counts.has(key)) counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return keys.map((k) => counts.get(k.key) ?? 0);
+  };
+  return { labels: keys.map((k) => k.label), created: tally((p) => p.createdAt), published: tally((p) => p.publishedAt) };
+}
+
+export function useContentSnapshot(platform: PlatformKey): ContentSnapshot {
+  const [posts, setPosts] = useState<ContentPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    const call =
+      platform === "ghrfix"
+        ? apiFetch<Array<Record<string, unknown>>>(platform, "/ai-agents/content/posts", { query: { pageSize: 100 } })
+        : apiFetch<Array<Record<string, unknown>>>(platform, "/admin/content/blog");
+
+    call
+      .then(({ data }) => {
+        if (cancelled) return;
+        const rows = Array.isArray(data) ? data : [];
+        setPosts(
+          rows.map((r, i): ContentPost => {
+            const html = asText(r.contentHtml) || asText(r.content);
+            const words = html ? stripTags(html).split(/\s+/).filter(Boolean).length : null;
+            return {
+              id: asText(r.id) || `post-${i}`,
+              title: asText(r.title) || "Untitled post",
+              slug: asText(r.slug),
+              category: asText(r.category) || "Uncategorised",
+              status: normalizeStatus(asText(r.status)),
+              createdAt: asText(r.createdAt) || null,
+              publishedAt: asText(r.publishedAt) || null,
+              views: asNum(r.views),
+              hasMetaTitle: Boolean(asText(r.metaTitle).trim() || asText(r.seoTitle).trim()),
+              hasMetaDescription: Boolean(asText(r.metaDescription).trim() || asText(r.seoDescription).trim()),
+              hasKeywords: Array.isArray(r.keywords) && r.keywords.length > 0,
+              hasCover: Boolean(asText(r.coverImageUrl).trim()),
+              readMinutes: asNum(r.readMinutes),
+              words,
+            };
+          }),
+        );
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof ApiError ? err.message : "Could not reach the backend.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [platform]);
+
+  const published = posts.filter((p) => p.status === "PUBLISHED");
+  const drafts = posts.filter((p) => p.status === "DRAFT");
+  // Whether views exist is a property of the PLATFORM, not of the current
+  // rows: GhrFix's post model has no view counter at all, while ShadiLife's
+  // does. Deriving this from the data would make an empty ShadiLife library
+  // claim the platform doesn't track views, which is untrue.
+  const viewsSupported = platform === "shadilife";
+
+  return {
+    posts,
+    published,
+    drafts,
+    totalViews: viewsSupported ? posts.reduce((s, p) => s + (p.views ?? 0), 0) : null,
+    fullyOptimised: posts.filter((p) => p.hasMetaTitle && p.hasMetaDescription && p.hasKeywords).length,
+    byCategory: countBy(posts, (p) => p.category).slice(0, 6),
+    byStatus: countBy(posts, (p) => (p.status === "OTHER" ? "Other" : p.status === "PUBLISHED" ? "Published" : "Draft")),
+    monthly: monthlyBuckets(posts),
+    loading,
+    error,
+  };
+}
