@@ -246,7 +246,7 @@ interface ShadiLifeMetaUsage {
   monthlyBudgetUsd: number;
   byAgent: Array<{ agent: string; spendUsd: number; calls: number }>;
 }
-interface ShadiLifeMetaEvent {
+export interface ShadiLifeMetaEvent {
   id: string;
   kind: "call" | "suggestion";
   agent: string;
@@ -256,7 +256,7 @@ interface ShadiLifeMetaEvent {
   costUsd?: number;
   createdAt: string;
 }
-interface ShadiLifeMetaActivity {
+export interface ShadiLifeMetaActivity {
   events: ShadiLifeMetaEvent[];
 }
 

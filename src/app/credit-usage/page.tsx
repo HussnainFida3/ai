@@ -1,240 +1,106 @@
 "use client";
 
+import { useState } from "react";
 import {
   Coins,
-  CreditCard,
-  TrendingUp,
-  TrendingDown,
-  Bot,
   Zap,
   CircleDollarSign,
-  ArrowUpRight,
-  ArrowDownRight,
-  Plus,
   Download,
-  Search,
-  Filter,
   CalendarDays,
   Activity,
   Cpu,
   Database,
-  Sparkles,
-  ChevronRight,
-  ReceiptText,
-  ChartNoAxesCombined,
   CircleAlert,
   CheckCircle2,
-  Clock3,
   WalletCards,
+  TriangleAlert,
 } from "lucide-react";
 import { AppShell } from "@/components/dashboard/AppShell";
-import { Donut, Sparkline, type DonutSlice } from "@/components/dashboard/charts";
+import { Donut, Sparkline } from "@/components/dashboard/charts";
+import { Svg } from "@/components/agents/rich";
+import { Icons } from "@/components/agents/icons";
+import { PLATFORMS } from "@/lib/platforms";
+import { useCreditUsageSnapshot, usd, count, ago, type CreditAgentRow } from "@/lib/credit-usage-data";
 
-const CREDIT_STATS = [
-  {
-    label: "AVAILABLE CREDITS",
-    value: "48,750",
-    sub: "Estimated 18 days remaining",
-    icon: Coins,
-    color: "#f59e0b",
-    trend: "+12.4%",
-    trendType: "up",
-  },
-  {
-    label: "CREDITS USED TODAY",
-    value: "2,842",
-    sub: "1,842 tasks processed",
-    icon: Zap,
-    color: "#38bdf8",
-    trend: "+8.6%",
-    trendType: "up",
-  },
-  {
-    label: "MONTHLY USAGE",
-    value: "51,249",
-    sub: "68.3% of monthly budget",
-    icon: ChartNoAxesCombined,
-    color: "#8b5cf6",
-    trend: "+4.2%",
-    trendType: "up",
-  },
-  {
-    label: "ESTIMATED COST",
-    value: "$1,247.80",
-    sub: "$0.68 average per task",
-    icon: CircleDollarSign,
-    color: "#22c55e",
-    trend: "-6.8%",
-    trendType: "down",
-  },
-];
+/** The six-colour palette this app's donut/legend pairs use everywhere spend
+ * is folded into "top N + Other" — never extended past six slices. */
+const PALETTE = ["#38bdf8", "#8b5cf6", "#22c55e", "#f59e0b", "#ec4899", "#64748b"];
 
-const CREDIT_DISTRIBUTION: DonutSlice[] = [
-  { label: "Research", value: 14230, color: "#38bdf8" },
-  { label: "Content", value: 11840, color: "#8b5cf6" },
-  { label: "Analytics", value: 9460, color: "#22c55e" },
-  { label: "Marketing", value: 7220, color: "#f59e0b" },
-  { label: "Support", value: 4499, color: "#ec4899" },
-];
+const PLATFORM_COLORS: Record<"ghrfix" | "shadilife", string> = {
+  ghrfix: PLATFORMS.ghrfix.color,
+  shadilife: PLATFORMS.shadilife.color,
+};
 
-const AGENT_USAGE = [
-  {
-    name: "Research Agent",
-    tasks: "342 tasks",
-    credits: "8,942",
-    percentage: 87,
-    color: "#38bdf8",
-    icon: Search,
-    change: "+14.2%",
-  },
-  {
-    name: "Content Writer Agent",
-    tasks: "286 tasks",
-    credits: "7,814",
-    percentage: 76,
-    color: "#8b5cf6",
-    icon: Sparkles,
-    change: "+9.8%",
-  },
-  {
-    name: "Data Analyst Agent",
-    tasks: "298 tasks",
-    credits: "6,928",
-    percentage: 68,
-    color: "#22c55e",
-    icon: ChartNoAxesCombined,
-    change: "+5.1%",
-  },
-  {
-    name: "SEO Agent",
-    tasks: "214 tasks",
-    credits: "5,462",
-    percentage: 53,
-    color: "#f59e0b",
-    icon: TrendingUp,
-    change: "-2.4%",
-  },
-  {
-    name: "Customer Support Agent",
-    tasks: "391 tasks",
-    credits: "4,826",
-    percentage: 47,
-    color: "#ec4899",
-    icon: Activity,
-    change: "+7.3%",
-  },
-];
-
-const RECENT_TRANSACTIONS = [
-  {
-    title: "Research Agent task execution",
-    agent: "Research Agent",
-    credits: "-245",
-    time: "2 min ago",
-    icon: Search,
-    color: "#38bdf8",
-    type: "usage",
-  },
-  {
-    title: "Monthly credit allocation",
-    agent: "System",
-    credits: "+50,000",
-    time: "Today, 09:00 AM",
-    icon: Plus,
-    color: "#22c55e",
-    type: "credit",
-  },
-  {
-    title: "Content generation task",
-    agent: "Content Writer Agent",
-    credits: "-184",
-    time: "8 min ago",
-    icon: Sparkles,
-    color: "#8b5cf6",
-    type: "usage",
-  },
-  {
-    title: "Analytics processing",
-    agent: "Data Analyst Agent",
-    credits: "-326",
-    time: "14 min ago",
-    icon: ChartNoAxesCombined,
-    color: "#f59e0b",
-    type: "usage",
-  },
-  {
-    title: "Marketing campaign analysis",
-    agent: "Marketing Agent",
-    credits: "-128",
-    time: "21 min ago",
-    icon: TrendingUp,
-    color: "#ec4899",
-    type: "usage",
-  },
-];
-
-const USAGE_HISTORY = [
-  { day: "Mon", value: "1,842", height: 42, color: "#38bdf8" },
-  { day: "Tue", value: "2,164", height: 54, color: "#38bdf8" },
-  { day: "Wed", value: "1,756", height: 39, color: "#38bdf8" },
-  { day: "Thu", value: "2,489", height: 67, color: "#38bdf8" },
-  { day: "Fri", value: "2,842", height: 82, color: "#8b5cf6" },
-  { day: "Sat", value: "2,274", height: 61, color: "#38bdf8" },
-  { day: "Sun", value: "2,612", height: 73, color: "#38bdf8" },
-];
-
-const SYSTEM_USAGE = [
-  {
-    label: "AI Processing",
-    value: "62%",
-    detail: "31,742 credits",
-    color: "#38bdf8",
-    data: [22, 35, 29, 48, 44, 56, 51, 62],
-    icon: Cpu,
-  },
-  {
-    label: "Data Processing",
-    value: "24%",
-    detail: "12,294 credits",
-    color: "#8b5cf6",
-    data: [10, 14, 18, 16, 20, 22, 21, 24],
-    icon: Database,
-  },
-  {
-    label: "API & Integrations",
-    value: "14%",
-    detail: "7,213 credits",
-    color: "#22c55e",
-    data: [8, 9, 12, 11, 13, 12, 15, 14],
-    icon: Zap,
-  },
-];
-
-const BUDGETS = [
-  {
-    name: "Monthly AI Budget",
-    used: "$1,247.80",
-    total: "$2,000",
-    percent: 62,
-    color: "#38bdf8",
-  },
-  {
-    name: "Research Operations",
-    used: "14,230",
-    total: "20,000",
-    percent: 71,
-    color: "#8b5cf6",
-  },
-  {
-    name: "Content Generation",
-    used: "11,840",
-    total: "15,000",
-    percent: 79,
-    color: "#f59e0b",
-  },
-];
+/** A genuine client-side export of the data already on screen — not a fake
+ * button, since no purchase/export endpoint exists on either backend to wire
+ * a real one to. */
+function exportCsv(rows: CreditAgentRow[]) {
+  const header = ["Platform", "Agent", "Category", "Calls This Month", "Calls Today", "Spend USD This Month", "Reported"];
+  const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const lines = rows.map((r) =>
+    [
+      r.platformLabel,
+      r.name,
+      r.tag,
+      r.calls === null ? "" : String(r.calls),
+      r.callsToday === null ? "" : String(r.callsToday),
+      r.spendUsd === null ? "" : r.spendUsd.toFixed(4),
+      r.reported ? "yes" : "no",
+    ]
+      .map((v) => escape(String(v)))
+      .join(","),
+  );
+  const csv = [header.map(escape).join(","), ...lines].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `credit-usage-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 export default function CreditsUsagePage() {
+  const [days, setDays] = useState(7);
+  const snapshot = useCreditUsageSnapshot(days);
+
+  const bothFailed = Boolean(snapshot.ghrfixError && snapshot.shadilifeError);
+  const oneFailed = !bothFailed && Boolean(snapshot.ghrfixError || snapshot.shadilifeError);
+  const allReportedBudget = snapshot.platforms.length > 0 && snapshot.platforms.every((p) => p.pctUsed !== null);
+
+  const stats = [
+    {
+      label: "COMBINED SPEND (MONTH)",
+      value: snapshot.loading ? "—" : usd(snapshot.totalSpendUsd),
+      sub: snapshot.loading ? "Loading…" : `${snapshot.reportedCount} of ${snapshot.registryCount} agents reporting`,
+      icon: CircleDollarSign,
+      color: "#22c55e",
+    },
+    {
+      label: "COMBINED BUDGET",
+      value: snapshot.loading ? "—" : usd(snapshot.totalBudgetUsd, 0),
+      sub: snapshot.loading ? "Loading…" : snapshot.budgetUsedPct === null ? "No budget published" : `${snapshot.budgetUsedPct}% used across both platforms`,
+      icon: WalletCards,
+      color: "#f59e0b",
+    },
+    {
+      label: "REMAINING BUDGET",
+      value: snapshot.loading ? "—" : snapshot.totalRemainingUsd === null ? "—" : usd(snapshot.totalRemainingUsd),
+      sub: snapshot.loading ? "Loading…" : snapshot.budgetUsedPct === null ? "Needs a published budget" : `${Math.max(0, Math.round((100 - snapshot.budgetUsedPct) * 10) / 10)}% left this month`,
+      icon: Coins,
+      color: "#38bdf8",
+    },
+    {
+      label: "CALLS THIS MONTH",
+      value: snapshot.loading ? "—" : count(snapshot.totalCallsThisMonth),
+      sub: snapshot.loading ? "Loading…" : snapshot.avgCostPerCallUsd === null ? "No calls recorded yet" : `${usd(snapshot.avgCostPerCallUsd, 4)} average per call`,
+      icon: Zap,
+      color: "#8b5cf6",
+    },
+  ];
+
   return (
     <AppShell>
       <div className="cu-page">
@@ -321,15 +187,10 @@ export default function CreditsUsagePage() {
             background: rgba(30, 41, 59, 0.8);
           }
 
-          .cu-btn-primary {
-            border-color: rgba(245, 158, 11, 0.35);
-            color: #fff;
-            background: linear-gradient(135deg, #d97706, #f59e0b);
-            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.18);
-          }
-
-          .cu-btn-primary:hover {
-            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+          .cu-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
           }
 
           .cu-stats {
@@ -413,13 +274,6 @@ export default function CreditsUsagePage() {
             color: var(--dc-ink-soft, #94a3b8);
           }
 
-          .cu-trend {
-            display: inline-flex;
-            align-items: center;
-            gap: 2px;
-            font-weight: 800;
-          }
-
           .cu-layout-top {
             display: grid;
             grid-template-columns: 1.1fr 1.55fr 1fr;
@@ -493,6 +347,7 @@ export default function CreditsUsagePage() {
             display: flex;
             align-items: center;
             gap: 24px;
+            min-height: 154px;
           }
 
           .cu-donut-wrap {
@@ -559,6 +414,7 @@ export default function CreditsUsagePage() {
             width: 7px;
             height: 7px;
             border-radius: 50%;
+            flex: 0 0 auto;
           }
 
           .cu-legend-value {
@@ -567,7 +423,7 @@ export default function CreditsUsagePage() {
           }
 
           .cu-chart-body {
-            height: 226px;
+            min-height: 226px;
             padding: 18px 18px 14px;
             display: flex;
             flex-direction: column;
@@ -593,23 +449,13 @@ export default function CreditsUsagePage() {
             color: var(--dc-ink-faint, #64748b);
           }
 
-          .cu-chart-change {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: #22c55e;
-            font-size: 10px;
-            font-weight: 800;
-            padding-bottom: 2px;
-          }
-
           .cu-bars {
             flex: 1;
             min-height: 0;
             display: flex;
             align-items: flex-end;
             justify-content: space-between;
-            gap: 10px;
+            gap: 6px;
             padding-top: 6px;
           }
 
@@ -649,6 +495,7 @@ export default function CreditsUsagePage() {
           .cu-bar-day {
             color: var(--dc-ink-faint, #64748b);
             font-size: 9px;
+            white-space: nowrap;
           }
 
           .cu-balance-body {
@@ -675,7 +522,7 @@ export default function CreditsUsagePage() {
 
           .cu-balance-value {
             margin-top: 9px;
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 800;
             letter-spacing: -0.04em;
             color: var(--dc-ink, #f8fafc);
@@ -691,11 +538,12 @@ export default function CreditsUsagePage() {
 
           .cu-balance-progress > span {
             display: block;
-            width: 68%;
+            width: 0%;
             height: 100%;
             border-radius: inherit;
             background: linear-gradient(90deg, #f59e0b, #fbbf24);
             box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+            transition: width 0.4s ease;
           }
 
           .cu-balance-meta {
@@ -706,33 +554,28 @@ export default function CreditsUsagePage() {
             color: var(--dc-ink-faint, #64748b);
           }
 
-          .cu-balance-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+          .cu-balance-facts {
+            display: flex;
+            flex-direction: column;
             gap: 9px;
-            margin-top: 12px;
+            margin-top: 14px;
           }
 
-          .cu-small-btn {
-            height: 35px;
-            border-radius: 9px;
-            border: 1px solid rgba(148, 163, 184, 0.12);
-            background: rgba(30, 41, 59, 0.42);
-            color: var(--dc-ink-soft, #94a3b8);
+          .cu-balance-fact-row {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s ease;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 10.5px;
+            padding: 9px 11px;
+            border-radius: 9px;
+            background: rgba(148, 163, 184, 0.06);
+            color: var(--dc-ink-soft, #94a3b8);
           }
 
-          .cu-small-btn:hover {
-            color: #fff;
-            border-color: rgba(56, 189, 248, 0.3);
-            background: rgba(30, 41, 59, 0.7);
+          .cu-balance-fact-row b {
+            color: var(--dc-ink, #f8fafc);
+            font-weight: 700;
           }
 
           .cu-agent-list {
@@ -795,12 +638,6 @@ export default function CreditsUsagePage() {
             font-weight: 800;
           }
 
-          .cu-agent-change {
-            font-size: 9px;
-            font-weight: 700;
-            color: #22c55e;
-          }
-
           .cu-agent-progress {
             width: 100%;
             height: 4px;
@@ -861,6 +698,10 @@ export default function CreditsUsagePage() {
             color: var(--dc-ink-faint, #64748b);
           }
 
+          .cu-platform-tag {
+            font-weight: 800;
+          }
+
           .cu-transaction-right {
             text-align: right;
             flex: 0 0 auto;
@@ -869,6 +710,7 @@ export default function CreditsUsagePage() {
           .cu-transaction-credit {
             font-size: 11px;
             font-weight: 800;
+            white-space: nowrap;
           }
 
           .cu-transaction-time {
@@ -930,6 +772,8 @@ export default function CreditsUsagePage() {
           .cu-system-spark {
             height: 38px;
             margin-top: 10px;
+            display: flex;
+            align-items: center;
           }
 
           .cu-budget-list {
@@ -968,6 +812,7 @@ export default function CreditsUsagePage() {
           .cu-budget-fill {
             height: 100%;
             border-radius: inherit;
+            transition: width 0.4s ease;
           }
 
           .cu-budget-foot {
@@ -976,18 +821,6 @@ export default function CreditsUsagePage() {
             justify-content: space-between;
             font-size: 9px;
             color: var(--dc-ink-faint, #64748b);
-          }
-
-          .cu-view-all {
-            border: 0;
-            background: transparent;
-            color: #38bdf8;
-            font-size: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
           }
 
           .cu-alert {
@@ -1012,6 +845,42 @@ export default function CreditsUsagePage() {
             color: var(--dc-ink-soft, #94a3b8);
             font-size: 9px;
             line-height: 1.5;
+          }
+
+          .cu-empty {
+            width: 100%;
+            padding: 20px 4px;
+            text-align: center;
+            color: var(--dc-ink-faint, #64748b);
+            font-size: 11px;
+            line-height: 1.6;
+          }
+
+          .cu-muted-note {
+            margin: 10px 0 0;
+            font-size: 9.5px;
+            line-height: 1.6;
+            color: var(--dc-ink-faint, #64748b);
+          }
+
+          .cu-warn-banner {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 11px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            background: rgba(245, 158, 11, 0.07);
+            color: #fbbf24;
+            font-size: 11.5px;
+            font-weight: 600;
+          }
+
+          .cu-error-panel {
+            padding: 20px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
           }
 
           @media (max-width: 1250px) {
@@ -1084,49 +953,65 @@ export default function CreditsUsagePage() {
             <h1 className="cu-title">Credits Usage</h1>
 
             <p className="cu-subtitle">
-              Monitor every credit consumed across your AI infrastructure, agents,
-              workflows and automated operations.
+              Real AI spend and call volume across both platforms — GhrFix and ShadiLife — pulled live from each
+              backend&apos;s own usage log. Nothing below is estimated.
             </p>
           </div>
 
           <div className="cu-actions">
-            <button type="button" className="cu-btn">
+            <div className="cu-btn" style={{ cursor: "default" }}>
               <CalendarDays size={15} />
-              Last 30 Days
-            </button>
+              Month to date
+            </div>
 
-            <button type="button" className="cu-btn">
+            <button
+              type="button"
+              className="cu-btn"
+              disabled={snapshot.loading || snapshot.reportedRows.length === 0}
+              onClick={() => exportCsv(snapshot.rows)}
+            >
               <Download size={15} />
-              Export
-            </button>
-
-            <button type="button" className="cu-btn cu-btn-primary">
-              <Plus size={15} />
-              Add Credits
+              Export CSV
             </button>
           </div>
         </header>
 
-        <section className="cu-stats">
-          {CREDIT_STATS.map((stat) => {
-            const Icon = stat.icon;
-            const TrendIcon =
-              stat.trendType === "down" ? ArrowDownRight : ArrowUpRight;
+        {bothFailed && (
+          <div className="cu-card cu-error-panel">
+            <TriangleAlert size={18} color="#f87171" style={{ flex: "0 0 auto", marginTop: 2 }} />
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 12.5, color: "#f87171" }}>Neither platform responded</div>
+              <p style={{ margin: "6px 0 0", fontSize: 11.5, color: "var(--dc-ink-soft)", lineHeight: 1.6 }}>
+                GhrFix: {snapshot.ghrfixError}
+                <br />
+                ShadiLife: {snapshot.shadilifeError}
+              </p>
+              <p style={{ margin: "8px 0 0", fontSize: 11, color: "var(--dc-ink-faint)" }}>
+                Make sure both backends are running and that this browser is signed in on the{" "}
+                <a href="/connect" style={{ color: "#38bdf8", fontWeight: 700 }}>Connect</a> page.
+              </p>
+            </div>
+          </div>
+        )}
 
+        {oneFailed && (
+          <div className="cu-warn-banner">
+            <TriangleAlert size={14} />
+            {snapshot.ghrfixError ? `GhrFix: ${snapshot.ghrfixError}` : `ShadiLife: ${snapshot.shadilifeError}`} — every figure below reflects the other platform only until this is reconnected.
+          </div>
+        )}
+
+        <section className="cu-stats">
+          {stats.map((stat) => {
+            const Icon = stat.icon;
             return (
               <div className="cu-stat" key={stat.label}>
-                <div
-                  className="cu-stat-glow"
-                  style={{ background: stat.color }}
-                />
+                <div className="cu-stat-glow" style={{ background: stat.color }} />
 
                 <div className="cu-stat-head">
                   <span className="cu-stat-label">{stat.label}</span>
 
-                  <span
-                    className="cu-stat-icon"
-                    style={{ background: `${stat.color}18` }}
-                  >
+                  <span className="cu-stat-icon" style={{ background: `${stat.color}18` }}>
                     <Icon size={16} color={stat.color} />
                   </span>
                 </div>
@@ -1134,17 +1019,6 @@ export default function CreditsUsagePage() {
                 <div className="cu-stat-value">{stat.value}</div>
 
                 <div className="cu-stat-foot">
-                  <span
-                    className="cu-trend"
-                    style={{
-                      color:
-                        stat.trendType === "down" ? "#22c55e" : stat.color,
-                    }}
-                  >
-                    <TrendIcon size={11} />
-                    {stat.trend}
-                  </span>
-
                   <span className="cu-stat-sub">{stat.sub}</span>
                 </div>
               </div>
@@ -1157,43 +1031,38 @@ export default function CreditsUsagePage() {
             <div className="cu-card-head">
               <div className="cu-card-title-wrap">
                 <span className="cu-card-title">CREDIT DISTRIBUTION</span>
-                <span className="cu-card-description">
-                  Usage by operation category
-                </span>
+                <span className="cu-card-description">Combined spend by agent category</span>
               </div>
-
-              <button type="button" className="cu-view-all">
-                Details <ChevronRight size={13} />
-              </button>
             </div>
 
             <div className="cu-donut-content">
-              <div className="cu-donut-wrap">
-                <Donut data={CREDIT_DISTRIBUTION} />
-
-                <div className="cu-donut-center">
-                  <span className="cu-donut-value">47.2K</span>
-                  <span className="cu-donut-label">Credits Used</span>
-                </div>
-              </div>
-
-              <div className="cu-legend">
-                {CREDIT_DISTRIBUTION.map((item) => (
-                  <div className="cu-legend-row" key={item.label}>
-                    <div className="cu-legend-left">
-                      <span
-                        className="cu-swatch"
-                        style={{ background: item.color }}
-                      />
-                      {item.label}
+              {snapshot.loading ? (
+                <div className="cu-empty">Loading…</div>
+              ) : snapshot.spendByTag.length === 0 ? (
+                <div className="cu-empty">No agent on either platform has recorded spend yet this month.</div>
+              ) : (
+                <>
+                  <div className="cu-donut-wrap">
+                    <Donut data={snapshot.spendByTag.map((s, i) => ({ label: s.label, value: s.value, color: PALETTE[i % PALETTE.length] }))} />
+                    <div className="cu-donut-center">
+                      <span className="cu-donut-value">{usd(snapshot.totalSpendUsd, 0)}</span>
+                      <span className="cu-donut-label">Spend (Month)</span>
                     </div>
-
-                    <span className="cu-legend-value">
-                      {(item.value / 1000).toFixed(1)}K
-                    </span>
                   </div>
-                ))}
-              </div>
+
+                  <div className="cu-legend">
+                    {snapshot.spendByTag.map((item, i) => (
+                      <div className="cu-legend-row" key={item.label}>
+                        <div className="cu-legend-left">
+                          <span className="cu-swatch" style={{ background: PALETTE[i % PALETTE.length] }} />
+                          {item.label}
+                        </div>
+                        <span className="cu-legend-value">{usd(item.value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -1201,54 +1070,55 @@ export default function CreditsUsagePage() {
             <div className="cu-card-head">
               <div className="cu-card-title-wrap">
                 <span className="cu-card-title">CREDIT CONSUMPTION</span>
-                <span className="cu-card-description">
-                  Daily credit usage trend
-                </span>
+                <span className="cu-card-description">Real daily spend — GhrFix fleet</span>
               </div>
 
-              <select className="cu-select" defaultValue="week">
-                <option value="week">Last 7 Days</option>
-                <option value="month">Last 30 Days</option>
-                <option value="quarter">Last 90 Days</option>
+              <select className="cu-select" value={days} onChange={(e) => setDays(Number(e.target.value))}>
+                <option value={7}>Last 7 Days</option>
+                <option value={30}>Last 30 Days</option>
+                <option value={60}>Last 60 Days</option>
               </select>
             </div>
 
             <div className="cu-chart-body">
-              <div className="cu-chart-summary">
-                <div>
-                  <div className="cu-chart-value">16,979</div>
-                  <div className="cu-chart-meta">
-                    Total credits consumed this week
-                  </div>
-                </div>
-
-                <div className="cu-chart-change">
-                  <TrendingUp size={13} />
-                  +11.8%
-                </div>
-              </div>
-
-              <div className="cu-bars">
-                {USAGE_HISTORY.map((item, index) => (
-                  <div className="cu-bar-group" key={item.day}>
-                    <div className="cu-bar-track">
-                      <div
-                        className="cu-bar"
-                        title={`${item.day}: ${item.value}`}
-                        style={{
-                          height: `${item.height}%`,
-                          background:
-                            index === 4
-                              ? "linear-gradient(180deg, #a855f7, #7c3aed)"
-                              : "linear-gradient(180deg, #38bdf8, #0284c7)",
-                        }}
-                      />
+              {snapshot.loading ? (
+                <div className="cu-empty">Loading…</div>
+              ) : !snapshot.dailyTrend ? (
+                <div className="cu-empty">{snapshot.dailyTrendNote}</div>
+              ) : (
+                <>
+                  <div className="cu-chart-summary">
+                    <div>
+                      <div className="cu-chart-value">{usd(snapshot.dailyTrend.costUsd.reduce((a, b) => a + b, 0))}</div>
+                      <div className="cu-chart-meta">
+                        GhrFix spend, last {days} days · {count(snapshot.dailyTrend.calls.reduce((a, b) => a + b, 0))} calls
+                      </div>
                     </div>
-
-                    <span className="cu-bar-day">{item.day}</span>
                   </div>
-                ))}
-              </div>
+
+                  <div className="cu-bars">
+                    {snapshot.dailyTrend.labels.map((label, i) => {
+                      const value = snapshot.dailyTrend!.costUsd[i];
+                      const max = Math.max(...snapshot.dailyTrend!.costUsd, 0.0001);
+                      const heightPct = Math.max(2, Math.round((value / max) * 100));
+                      return (
+                        <div className="cu-bar-group" key={`${label}-${i}`}>
+                          <div className="cu-bar-track">
+                            <div
+                              className="cu-bar"
+                              title={`${label}: ${usd(value, 4)} · ${count(snapshot.dailyTrend!.calls[i])} calls`}
+                              style={{ height: `${heightPct}%`, background: "linear-gradient(180deg, #38bdf8, #0284c7)" }}
+                            />
+                          </div>
+                          {days <= 14 && <span className="cu-bar-day">{label}</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <p className="cu-muted-note">{snapshot.dailyTrendNote}</p>
+                </>
+              )}
             </div>
           </div>
 
@@ -1256,9 +1126,7 @@ export default function CreditsUsagePage() {
             <div className="cu-card-head">
               <div className="cu-card-title-wrap">
                 <span className="cu-card-title">CREDIT BALANCE</span>
-                <span className="cu-card-description">
-                  Current account availability
-                </span>
+                <span className="cu-card-description">Combined budget across both platforms</span>
               </div>
 
               <WalletCards size={16} color="#f59e0b" />
@@ -1266,30 +1134,29 @@ export default function CreditsUsagePage() {
 
             <div className="cu-balance-body">
               <div className="cu-balance-main">
-                <div className="cu-balance-label">AVAILABLE BALANCE</div>
+                <div className="cu-balance-label">REMAINING BUDGET</div>
 
-                <div className="cu-balance-value">48,750</div>
+                <div className="cu-balance-value">
+                  {snapshot.loading ? "—" : snapshot.totalRemainingUsd === null ? "Not available" : usd(snapshot.totalRemainingUsd)}
+                </div>
 
                 <div className="cu-balance-progress">
-                  <span />
+                  <span style={{ width: `${Math.min(100, snapshot.budgetUsedPct ?? 0)}%` }} />
                 </div>
 
                 <div className="cu-balance-meta">
-                  <span>68.3% remaining</span>
-                  <span>100,000 monthly</span>
+                  <span>{snapshot.budgetUsedPct === null ? "No budget published" : `${snapshot.budgetUsedPct}% used`}</span>
+                  <span>{snapshot.totalBudgetUsd === null ? "—" : `${usd(snapshot.totalBudgetUsd, 0)} monthly`}</span>
                 </div>
               </div>
 
-              <div className="cu-balance-actions">
-                <button type="button" className="cu-small-btn">
-                  <CreditCard size={14} />
-                  Purchase
-                </button>
-
-                <button type="button" className="cu-small-btn">
-                  <ReceiptText size={14} />
-                  Billing
-                </button>
+              <div className="cu-balance-facts">
+                {snapshot.platforms.map((p) => (
+                  <div className="cu-balance-fact-row" key={p.platformKey}>
+                    <span>{p.label}</span>
+                    <b>{p.error ? "Unavailable" : p.budgetUsd === null ? "No budget set" : `${usd(p.spentUsd)} / ${usd(p.budgetUsd, 0)}`}</b>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -1300,132 +1167,97 @@ export default function CreditsUsagePage() {
             <div className="cu-card-head">
               <div className="cu-card-title-wrap">
                 <span className="cu-card-title">TOP CREDIT CONSUMERS</span>
-                <span className="cu-card-description">
-                  Agents ranked by total credit usage
-                </span>
+                <span className="cu-card-description">Agents ranked by real spend this month, both platforms</span>
               </div>
-
-              <button type="button" className="cu-view-all">
-                View All <ChevronRight size={13} />
-              </button>
             </div>
 
             <div className="cu-agent-list">
-              {AGENT_USAGE.map((agent) => {
-                const Icon = agent.icon;
+              {snapshot.loading ? (
+                <div className="cu-empty">Loading…</div>
+              ) : snapshot.topAgents.length === 0 ? (
+                <div className="cu-empty">No agent on either platform has recorded spend yet this month.</div>
+              ) : (
+                snapshot.topAgents.map((agent) => {
+                  const maxSpend = snapshot.topAgents[0]?.spendUsd ?? 0;
+                  const pct = maxSpend > 0 ? Math.round(((agent.spendUsd ?? 0) / maxSpend) * 100) : 0;
 
-                return (
-                  <div className="cu-agent-row" key={agent.name}>
-                    <span
-                      className="cu-agent-icon"
-                      style={{
-                        background: `${agent.color}18`,
-                        color: agent.color,
-                      }}
-                    >
-                      <Icon size={16} />
-                    </span>
+                  return (
+                    <div className="cu-agent-row" key={`${agent.platformKey}-${agent.key}`}>
+                      <span className="cu-agent-icon" style={{ background: `${agent.accent}18`, color: agent.accent }}>
+                        <Svg path={Icons[agent.icon]} size={16} />
+                      </span>
 
-                    <div className="cu-agent-main">
-                      <div className="cu-agent-name">{agent.name}</div>
-
-                      <div className="cu-agent-sub">{agent.tasks}</div>
-                    </div>
-
-                    <div className="cu-agent-right">
-                      <div className="cu-agent-credits">
-                        <Coins size={12} color={agent.color} />
-                        {agent.credits}
-
-                        <span
-                          className="cu-agent-change"
-                          style={{
-                            color: agent.change.startsWith("-")
-                              ? "#22c55e"
-                              : "#f59e0b",
-                          }}
-                        >
-                          {agent.change}
-                        </span>
+                      <div className="cu-agent-main">
+                        <div className="cu-agent-name">{agent.fullName}</div>
+                        <div className="cu-agent-sub">
+                          {count(agent.calls)} calls this month
+                          {agent.callsToday !== null ? ` · ${count(agent.callsToday)} today` : ""}
+                        </div>
                       </div>
 
-                      <div className="cu-agent-progress">
-                        <span
-                          style={{
-                            width: `${agent.percentage}%`,
-                            background: agent.color,
-                          }}
-                        />
+                      <div className="cu-agent-right">
+                        <div className="cu-agent-credits">
+                          <Coins size={12} color={agent.accent} />
+                          {usd(agent.spendUsd)}
+                        </div>
+
+                        <div className="cu-agent-progress">
+                          <span style={{ width: `${pct}%`, background: agent.accent }} />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
+
+            {!snapshot.loading && snapshot.unreportedCount > 0 && (
+              <p className="cu-muted-note" style={{ padding: "0 16px 14px" }}>
+                {snapshot.unreportedCount} of {snapshot.registryCount} registered agents did not report this month and are excluded from this ranking.
+              </p>
+            )}
           </div>
 
           <div className="cu-card">
             <div className="cu-card-head">
               <div className="cu-card-title-wrap">
                 <span className="cu-card-title">RECENT TRANSACTIONS</span>
-                <span className="cu-card-description">
-                  Latest credit activity
-                </span>
+                <span className="cu-card-description">Real AI calls, suggestions and agent actions</span>
               </div>
-
-              <button type="button" className="cu-view-all">
-                <Filter size={12} />
-                Filter
-              </button>
             </div>
 
             <div className="cu-transactions">
-              {RECENT_TRANSACTIONS.map((transaction) => {
-                const Icon = transaction.icon;
-                const positive = transaction.type === "credit";
-
-                return (
-                  <div
-                    className="cu-transaction"
-                    key={`${transaction.title}-${transaction.time}`}
-                  >
-                    <span
-                      className="cu-transaction-icon"
-                      style={{
-                        background: `${transaction.color}18`,
-                        color: transaction.color,
-                      }}
-                    >
-                      <Icon size={15} />
+              {snapshot.loading ? (
+                <div className="cu-empty">Loading…</div>
+              ) : snapshot.transactions.length === 0 ? (
+                <div className="cu-empty">No recent AI activity recorded on either platform.</div>
+              ) : (
+                snapshot.transactions.map((tx) => (
+                  <div className="cu-transaction" key={tx.id}>
+                    <span className="cu-transaction-icon" style={{ background: `${tx.accent}18`, color: tx.accent }}>
+                      <Activity size={15} />
                     </span>
 
                     <div className="cu-transaction-main">
-                      <div className="cu-transaction-title">
-                        {transaction.title}
-                      </div>
-
+                      <div className="cu-transaction-title">{tx.title}</div>
                       <div className="cu-transaction-sub">
-                        {transaction.agent}
+                        <span className="cu-platform-tag" style={{ color: PLATFORM_COLORS[tx.platformKey] }}>
+                          {tx.platformLabel}
+                        </span>
+                        {" · "}
+                        {tx.agentName}
                       </div>
                     </div>
 
                     <div className="cu-transaction-right">
-                      <div
-                        className="cu-transaction-credit"
-                        style={{
-                          color: positive ? "#22c55e" : "#f87171",
-                        }}
-                      >
-                        {transaction.credits}
+                      <div className="cu-transaction-credit" style={{ color: tx.costUsd === null ? "var(--dc-ink-faint, #64748b)" : "#f87171" }}>
+                        {tx.costUsd === null ? "Not tracked" : `-${usd(tx.costUsd, 4)}`}
                       </div>
-
-                      <div className="cu-transaction-time">
-                        {transaction.time}
-                      </div>
+                      <div className="cu-transaction-time">{ago(tx.createdAt)}</div>
                     </div>
                   </div>
-                );
-              })}
+                ))
+              )}
             </div>
           </div>
         </section>
@@ -1435,49 +1267,62 @@ export default function CreditsUsagePage() {
             <div className="cu-card-head">
               <div className="cu-card-title-wrap">
                 <span className="cu-card-title">SYSTEM CREDIT ALLOCATION</span>
-                <span className="cu-card-description">
-                  Where your AI infrastructure consumes resources
-                </span>
+                <span className="cu-card-description">Real spend by platform, this month</span>
               </div>
 
               <Activity size={16} color="#38bdf8" />
             </div>
 
             <div className="cu-system-grid">
-              {SYSTEM_USAGE.map((system) => {
-                const Icon = system.icon;
-
-                return (
-                  <div className="cu-system-item" key={system.label}>
-                    <div className="cu-system-head">
-                      <span
-                        className="cu-system-icon"
-                        style={{
-                          background: `${system.color}18`,
-                          color: system.color,
-                        }}
-                      >
-                        <Icon size={14} />
-                      </span>
-
-                      <span
-                        className="cu-system-value"
-                        style={{ color: system.color }}
-                      >
-                        {system.value}
-                      </span>
-                    </div>
-
-                    <div className="cu-system-label">{system.label}</div>
-
-                    <div className="cu-system-detail">{system.detail}</div>
-
-                    <div className="cu-system-spark">
-                      <Sparkline data={system.data} color={system.color} />
-                    </div>
+              {snapshot.platforms.map((p) => (
+                <div className="cu-system-item" key={p.platformKey}>
+                  <div className="cu-system-head">
+                    <span className="cu-system-icon" style={{ background: `${PLATFORM_COLORS[p.platformKey]}18`, color: PLATFORM_COLORS[p.platformKey] }}>
+                      {p.platformKey === "ghrfix" ? <Cpu size={14} /> : <Database size={14} />}
+                    </span>
+                    <span className="cu-system-value" style={{ color: PLATFORM_COLORS[p.platformKey] }}>
+                      {snapshot.loading ? "—" : p.error ? "—" : usd(p.spentUsd)}
+                    </span>
                   </div>
-                );
-              })}
+
+                  <div className="cu-system-label">{p.label}</div>
+
+                  <div className="cu-system-detail">
+                    {snapshot.loading ? "Loading…" : p.error ? p.error : `${count(p.callsThisMonth)} calls · ${p.model ?? "model not reported"}`}
+                  </div>
+
+                  <div className="cu-system-spark">
+                    {p.platformKey === "ghrfix" && snapshot.dailyTrend && snapshot.dailyTrend.costUsd.length > 1 ? (
+                      <Sparkline data={snapshot.dailyTrend.costUsd} color={PLATFORM_COLORS.ghrfix} />
+                    ) : (
+                      <span className="cu-muted-note" style={{ margin: 0 }}>
+                        {p.platformKey === "ghrfix" ? "No daily data yet" : "Day-level spend not tracked"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              <div className="cu-system-item">
+                <div className="cu-system-head">
+                  <span className="cu-system-icon" style={{ background: "#8b5cf618", color: "#8b5cf6" }}>
+                    <CheckCircle2 size={14} />
+                  </span>
+                  <span className="cu-system-value" style={{ color: "#8b5cf6" }}>
+                    {snapshot.loading ? "—" : `${snapshot.reportedCount}/${snapshot.registryCount}`}
+                  </span>
+                </div>
+
+                <div className="cu-system-label">Reporting Coverage</div>
+
+                <div className="cu-system-detail">
+                  {snapshot.loading
+                    ? "Loading…"
+                    : snapshot.unreportedCount > 0
+                      ? `${snapshot.unreportedCount} registered agents did not respond`
+                      : "Every registered agent responded"}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1485,58 +1330,64 @@ export default function CreditsUsagePage() {
             <div className="cu-card-head">
               <div className="cu-card-title-wrap">
                 <span className="cu-card-title">BUDGET & LIMITS</span>
-                <span className="cu-card-description">
-                  Current spending thresholds
-                </span>
+                <span className="cu-card-description">Real monthly AI budget, per platform</span>
               </div>
-
-              <button type="button" className="cu-view-all">
-                Manage <ChevronRight size={13} />
-              </button>
             </div>
 
             <div className="cu-budget-list">
-              {BUDGETS.map((budget) => (
-                <div key={budget.name}>
-                  <div className="cu-budget-row-head">
-                    <span className="cu-budget-name">{budget.name}</span>
+              {snapshot.platforms.map((p) => {
+                const pct = p.pctUsed ?? 0;
+                const barColor = PLATFORM_COLORS[p.platformKey];
+                return (
+                  <div key={p.platformKey}>
+                    <div className="cu-budget-row-head">
+                      <span className="cu-budget-name">{p.label} Monthly AI Budget</span>
+                      <span className="cu-budget-value">
+                        {p.error ? "Unavailable" : p.budgetUsd === null ? "Not published" : `${usd(p.spentUsd)} / ${usd(p.budgetUsd, 0)}`}
+                      </span>
+                    </div>
 
-                    <span className="cu-budget-value">
-                      {budget.used} / {budget.total}
-                    </span>
+                    <div className="cu-budget-track">
+                      <div className="cu-budget-fill" style={{ width: p.pctUsed === null ? "0%" : `${Math.min(100, pct)}%`, background: barColor }} />
+                    </div>
+
+                    <div className="cu-budget-foot">
+                      <span>{p.pctUsed === null ? "No usage data" : `${pct}% consumed`}</span>
+                      <span>{p.pctUsed === null ? "—" : `${Math.max(0, Math.round((100 - pct) * 10) / 10)}% remaining`}</span>
+                    </div>
                   </div>
+                );
+              })}
+            </div>
 
-                  <div className="cu-budget-track">
-                    <div
-                      className="cu-budget-fill"
-                      style={{
-                        width: `${budget.percent}%`,
-                        background: budget.color,
-                      }}
-                    />
+            {!snapshot.loading &&
+              (snapshot.alerts.length > 0 ? (
+                snapshot.alerts.map((a) => (
+                  <div className="cu-alert" key={a.platformLabel}>
+                    <CircleAlert size={15} color="#f59e0b" />
+                    <div>
+                      <div className="cu-alert-title">{a.platformLabel} is nearing its budget limit</div>
+                      <div className="cu-alert-text">
+                        {a.platformLabel} has used {a.pctUsed}% of its {usd(a.budgetUsd, 0)} monthly AI budget ({usd(a.spentUsd)} spent so far).
+                      </div>
+                    </div>
                   </div>
-
-                  <div className="cu-budget-foot">
-                    <span>{budget.percent}% consumed</span>
-                    <span>{100 - budget.percent}% remaining</span>
+                ))
+              ) : (
+                <div className="cu-alert" style={{ borderColor: "rgba(34,197,94,0.16)", background: "rgba(34,197,94,0.055)" }}>
+                  <CheckCircle2 size={15} color="#22c55e" />
+                  <div>
+                    <div className="cu-alert-title" style={{ color: "#4ade80" }}>
+                      {allReportedBudget ? "Both platforms are within budget" : "No known budget overrun"}
+                    </div>
+                    <div className="cu-alert-text">
+                      {allReportedBudget
+                        ? "Neither GhrFix nor ShadiLife has crossed 70% of its published monthly AI budget."
+                        : "No platform has crossed 70% of its published monthly AI budget, though at least one platform's budget figure is currently unavailable."}
+                    </div>
                   </div>
                 </div>
               ))}
-            </div>
-
-            <div className="cu-alert">
-              <CircleAlert size={15} color="#f59e0b" />
-
-              <div>
-                <div className="cu-alert-title">
-                  Content Generation nearing budget limit
-                </div>
-
-                <div className="cu-alert-text">
-                  You have consumed 79% of the allocated monthly credits.
-                </div>
-              </div>
-            </div>
           </div>
         </section>
       </div>
