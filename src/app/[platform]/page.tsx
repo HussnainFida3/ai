@@ -4,6 +4,8 @@ import { use } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPlatform, agentTitle } from "@/lib/platforms";
+import { Icons } from "@/components/agents/icons";
+import { Svg } from "@/components/agents/rich";
 
 export default function PlatformPage({ params }: { params: Promise<{ platform: string }> }) {
   const { platform: key } = use(params);
@@ -28,7 +30,7 @@ export default function PlatformPage({ params }: { params: Promise<{ platform: s
           {platform.agents.map((a) => (
             <Link key={a.key} href={`/${platform.key}/${a.key}`} className="ag-tile" style={{ ["--tile-accent" as string]: a.accent }}>
               <div className="ag-tile-top">
-                <span className="ag-tile-icon">{a.icon}</span>
+                <span className="ag-tile-icon"><Svg path={Icons[a.icon]} size={22} /></span>
                 <div style={{ minWidth: 0 }}>
                   <div className="ag-tile-name ag-display">{agentTitle(platform, a)}</div>
                   <div className="ag-tile-tag">{a.tag}</div>

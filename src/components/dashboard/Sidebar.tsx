@@ -17,11 +17,8 @@ import {
 const NAV_ITEMS = [
   { label: "Overview", href: "/", icon: LayoutGrid },
   { label: "AI Agents", href: "/ai-agents", icon: Bot },
-  { label: "Tasks & Workflows", href: "/tasks", icon: ListChecks },
-  { label: "Live Monitoring", href: "/live-monitoring", icon: Radar },
-  { label: "Data & Knowledge", href: "/data-knowledge", icon: Database },
-  { label: "Analytics & Reports", href: "/analytics", icon: BarChart3 },
-  { label: "Integrations", href: "/integrations", icon: Puzzle },
+  { label: "Usage ", href: "/credit-usage", icon: ListChecks },
+
   { label: "Alerts & Logs", href: "/alerts", icon: Bell },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
