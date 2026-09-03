@@ -26,22 +26,22 @@ import { platformLabel, platformLogoUrl } from "@/lib/agent-data";
 import type { PlatformKey } from "@/lib/platforms";
 
 /* ── Series colors ────────────────────────────────────────────────────
-   Validated with the dataviz palette checker against a white surface:
-   lightness band, chroma floor, CVD separation, normal-vision floor and
-   3:1 contrast all pass. Assigned in fixed order and never cycled, so a
-   category keeps its color when the set is filtered. Every chart drawn
-   from these ships a directly-labelled legend, which is also what makes
-   the one adjacent pair sitting in the CVD floor band legible.
+   Mirrors the Command Centre's own accent palette (dashboard.css) so
+   every chart in this kit reads as part of the same product on the
+   dark #0b1220 card surface. Assigned in fixed order and never cycled,
+   so a category keeps its color when the set is filtered. Every chart
+   drawn from these ships a directly-labelled legend, which is also what
+   makes the one adjacent pair sitting in the CVD floor band legible.
    ─────────────────────────────────────────────────────────────────── */
-export const SERIES = ["#7c3aed", "#3b7fd1", "#0f9e69", "#c9860f", "#e04452", "#0e8fa8"];
+export const SERIES = ["#8b5cf6", "#38bdf8", "#22c55e", "#f59e0b", "#f43f5e", "#22d3ee"];
 
 export const TONE: Record<string, { fg: string; bg: string }> = {
-  purple: { fg: "#7c3aed", bg: "#f2edff" },
-  blue: { fg: "#3b7fd1", bg: "#eef5ff" },
-  green: { fg: "#0f9e69", bg: "#e9faf3" },
-  amber: { fg: "#c9860f", bg: "#fff6e6" },
-  red: { fg: "#e04452", bg: "#ffeef0" },
-  cyan: { fg: "#0e8fa8", bg: "#e8f7fb" },
+  purple: { fg: "#8b5cf6", bg: "rgba(139,92,246,.14)" },
+  blue: { fg: "#38bdf8", bg: "rgba(56,189,248,.14)" },
+  green: { fg: "#22c55e", bg: "rgba(34,197,94,.14)" },
+  amber: { fg: "#f59e0b", bg: "rgba(245,158,11,.14)" },
+  red: { fg: "#f43f5e", bg: "rgba(244,63,94,.14)" },
+  cyan: { fg: "#22d3ee", bg: "rgba(34,211,238,.14)" },
 };
 
 /* ── Icons ──────────────────────────────────────────────────────────── */
@@ -112,9 +112,9 @@ export function Donut({ data, size = 148, center, centerLabel = "Total" }: { dat
     const from = sum > 0 ? (acc / sum) * 100 : 0;
     acc += d.value;
     const to = sum > 0 ? (acc / sum) * 100 : 0;
-    stops.push(`${color} ${from}% ${to}%`, `#fff ${to}% ${Math.min(100, to + 0.6)}%`);
+    stops.push(`${color} ${from}% ${to}%`, `#0b1220 ${to}% ${Math.min(100, to + 0.6)}%`);
   });
-  const bg = sum > 0 ? `conic-gradient(${stops.join(",")})` : "conic-gradient(#eef0f5 0 100%)";
+  const bg = sum > 0 ? `conic-gradient(${stops.join(",")})` : "conic-gradient(rgba(255,255,255,.08) 0 100%)";
   return (
     <div className="cs-donut" style={{ width: size, height: size, background: bg }}>
       <div className="cs-donut-hole" style={{ inset: size * 0.19 }}>
@@ -143,10 +143,10 @@ export function Legend({ data, showPct = true }: { data: Slice[]; showPct?: bool
 }
 
 /* ── Score ring (single value out of a max) ─────────────────────────── */
-export function ScoreRing({ value, max = 100, size = 118, color = "#7c3aed", label = "Score" }: { value: number; max?: number; size?: number; color?: string; label?: string }) {
+export function ScoreRing({ value, max = 100, size = 118, color = "#8b5cf6", label = "Score" }: { value: number; max?: number; size?: number; color?: string; label?: string }) {
   const pct = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0;
   return (
-    <div className="cs-donut" style={{ width: size, height: size, background: `conic-gradient(${color} 0 ${pct}%, #edeff5 ${pct}% 100%)` }}>
+    <div className="cs-donut" style={{ width: size, height: size, background: `conic-gradient(${color} 0 ${pct}%, rgba(255,255,255,.08) ${pct}% 100%)` }}>
       <div className="cs-donut-hole" style={{ inset: size * 0.115 }}>
         <strong style={{ fontSize: size * 0.23 }}>{value.toLocaleString()}</strong>
         <span>{label}</span>
@@ -214,9 +214,9 @@ export function TrendChart({
           })}
         </defs>
 
-        {gridY.map((y, i) => <line key={i} x1={padL} x2={W - padR} y1={y} y2={y} stroke="#eef0f5" strokeWidth="1" />)}
+        {gridY.map((y, i) => <line key={i} x1={padL} x2={W - padR} y1={y} y2={y} stroke="rgba(255,255,255,.07)" strokeWidth="1" />)}
         {gridY.map((y, i) => (
-          <text key={`y${i}`} x={padL - 9} y={y + 3.5} textAnchor="end" fontSize="10" fill="#8891a8">
+          <text key={`y${i}`} x={padL - 9} y={y + 3.5} textAnchor="end" fontSize="10" fill="#5b6780">
             {Math.round(max - (i / (ticks - 1)) * max).toLocaleString()}
           </text>
         ))}
@@ -229,13 +229,13 @@ export function TrendChart({
               <path d={area} fill={`url(#cs-fill-${i})`} />
               <path d={line} fill="none" stroke={c} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
               {s.data.map((v, j) => (
-                <circle key={j} cx={xAt(j)} cy={yAt(v)} r={hover === j ? 5 : 3.2} fill="#fff" stroke={c} strokeWidth="2.2" />
+                <circle key={j} cx={xAt(j)} cy={yAt(v)} r={hover === j ? 5 : 3.2} fill="#0b1220" stroke={c} strokeWidth="2.2" />
               ))}
             </g>
           );
         })}
 
-        {hover !== null && <line x1={xAt(hover)} x2={xAt(hover)} y1={padT} y2={padT + plotH} stroke="#c9cede" strokeWidth="1" strokeDasharray="3 3" />}
+        {hover !== null && <line x1={xAt(hover)} x2={xAt(hover)} y1={padT} y2={padT + plotH} stroke="rgba(255,255,255,.18)" strokeWidth="1" strokeDasharray="3 3" />}
         {labels.map((_, i) => (
           <rect key={i} x={xAt(i) - plotW / n / 2} y={padT} width={plotW / n} height={plotH} fill="transparent" onMouseEnter={() => setHover(i)} />
         ))}
@@ -279,7 +279,7 @@ export function BarRows({ rows, colored = true, suffix = "" }: { rows: Slice[]; 
             <b>{r.value.toLocaleString()}{suffix}</b>
           </div>
           <div className="cs-bar-track">
-            <div className="cs-bar-fill" style={{ width: `${(r.value / max) * 100}%`, background: colored ? r.color ?? SERIES[i % SERIES.length] : "#7c3aed" }} />
+            <div className="cs-bar-fill" style={{ width: `${(r.value / max) * 100}%`, background: colored ? r.color ?? SERIES[i % SERIES.length] : "#8b5cf6" }} />
           </div>
         </div>
       ))}
@@ -288,7 +288,7 @@ export function BarRows({ rows, colored = true, suffix = "" }: { rows: Slice[]; 
 }
 
 /* ── Sparkline ──────────────────────────────────────────────────────── */
-export function Sparkline({ data, color = "#7c3aed" }: { data: number[]; color?: string }) {
+export function Sparkline({ data, color = "#8b5cf6" }: { data: number[]; color?: string }) {
   if (data.length < 2) return null;
   const max = Math.max(1, ...data);
   const pts = data.map((v, i) => `${(i / (data.length - 1)) * 170},${42 - (v / max) * 36}`).join(" ");
@@ -468,7 +468,7 @@ export function Robot({ scale = 1 }: { scale?: number }) {
 
 /* ── Stylesheet ─────────────────────────────────────────────────────── */
 const CSS = `
-.cs-app{--cs-purple:#7c3aed;--cs-ink:#11162d;--cs-ink-soft:#4c5470;--cs-muted:#69738c;--cs-line:#eef0f5;--cs-line-soft:#f4f5f9;--cs-bg:#fafbfe;--cs-green:#0f9e69;--cs-red:#e04452;--cs-amber:#c9860f;
+.cs-app{--cs-purple:#8b5cf6;--cs-ink:#f1f5f9;--cs-ink-soft:#94a3b8;--cs-muted:#5b6780;--cs-line:rgba(255,255,255,.07);--cs-line-soft:rgba(255,255,255,.05);--cs-bg:#030712;--cs-green:#22c55e;--cs-red:#f43f5e;--cs-amber:#f59e0b;
   min-height:100vh;background:var(--cs-bg);color:var(--cs-ink);display:flex;
   font-family:var(--font-inter),Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.005em}
 .cs-app *{box-sizing:border-box;min-width:0}
@@ -478,66 +478,66 @@ const CSS = `
 .cs-app :focus-visible{outline:2px solid var(--cs-purple);outline-offset:2px;border-radius:6px}
 
 /* Sidebar */
-.cs-sidebar{position:fixed;left:0;top:0;bottom:0;width:232px;background:#fff;border-right:1px solid var(--cs-line);padding:20px 14px;display:flex;flex-direction:column;z-index:10;overflow-y:auto}
+.cs-sidebar{position:fixed;left:0;top:0;bottom:0;width:232px;background:#05080f;border-right:1px solid var(--cs-line);padding:20px 14px;display:flex;flex-direction:column;z-index:10;overflow-y:auto}
 .cs-brand{display:flex;align-items:center;gap:10px;padding:0 4px}
 .cs-brand-mark{width:36px;height:36px;border-radius:11px;object-fit:contain;flex:0 0 auto}
 .cs-brand-name{font-size:15px;font-weight:780;letter-spacing:-.3px}
 .cs-brand-tag{font-size:10px;color:var(--cs-muted);margin-top:1px}
 .cs-back{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:var(--cs-muted);padding:8px 10px;border-radius:8px;margin:14px 0 6px}
-.cs-back:hover{background:var(--cs-bg);color:var(--cs-ink)}
+.cs-back:hover{background:rgba(255,255,255,.06);color:var(--cs-ink)}
 .cs-nav{display:flex;flex-direction:column;gap:3px}
 .cs-nav-item{height:41px;border-radius:8px;display:flex;align-items:center;gap:13px;padding:0 12px;font-size:13px;font-weight:550;color:var(--cs-ink-soft);transition:background .15s ease,color .15s ease}
-.cs-nav-item svg{color:#7b8399;flex:0 0 auto}
-.cs-nav-item:hover{background:var(--cs-bg);color:var(--cs-ink)}
-.cs-nav-item.active{background:linear-gradient(90deg,#7238df,#8b5cf6);color:#fff;font-weight:670;box-shadow:0 6px 14px rgba(113,59,230,.2)}
+.cs-nav-item svg{color:var(--cs-muted);flex:0 0 auto}
+.cs-nav-item:hover{background:rgba(255,255,255,.04);color:var(--cs-ink)}
+.cs-nav-item.active{background:linear-gradient(90deg,#7c3aed,#8b5cf6);color:#fff;font-weight:670;box-shadow:0 6px 14px rgba(139,92,246,.35)}
 .cs-nav-item.active svg{color:#fff}
 
-.cs-assistant{margin-top:auto;border:1px solid #eeeafa;border-radius:12px;background:linear-gradient(180deg,#faf9ff,#fff);padding:15px 13px;text-align:center}
-.cs-assistant-title{font-size:13px;font-weight:750;color:#6941c6}
+.cs-assistant{margin-top:auto;border:1px solid rgba(139,92,246,.18);border-radius:12px;background:linear-gradient(180deg,rgba(139,92,246,.06),#0b1220);padding:15px 13px;text-align:center}
+.cs-assistant-title{font-size:13px;font-weight:750;color:var(--cs-purple)}
 .cs-assistant p{font-size:11px;line-height:18px;color:var(--cs-ink-soft);margin:8px 0 12px}
-.cs-assistant-btn{display:block;height:35px;line-height:35px;border-radius:8px;background:linear-gradient(90deg,#7137dc,#8b5cf6);color:#fff;font-size:12px;font-weight:650;box-shadow:0 5px 12px rgba(113,59,230,.2)}
+.cs-assistant-btn{display:block;height:35px;line-height:35px;border-radius:8px;background:linear-gradient(90deg,#7c3aed,#8b5cf6);color:#fff;font-size:12px;font-weight:650;box-shadow:0 5px 12px rgba(139,92,246,.35)}
 
 /* Robot */
 .cs-robot{width:96px;height:92px;position:relative;margin:10px auto 2px}
 .cs-robot span{position:absolute}
-.cs-robot-antenna{left:45px;top:0;width:6px;height:13px;background:#d8cef7;border-radius:5px}
-.cs-robot-antenna:after{content:"";position:absolute;width:9px;height:9px;border-radius:50%;background:#8052ed;left:-1.5px;top:-5px}
-.cs-robot-head{left:22px;top:11px;width:53px;height:44px;border-radius:17px;background:linear-gradient(145deg,#fff,#e6e0f8);box-shadow:inset 0 -5px 9px rgba(79,50,150,.12),0 5px 8px rgba(50,35,110,.1)}
+.cs-robot-antenna{left:45px;top:0;width:6px;height:13px;background:#423868;border-radius:5px}
+.cs-robot-antenna:after{content:"";position:absolute;width:9px;height:9px;border-radius:50%;background:#8b5cf6;left:-1.5px;top:-5px}
+.cs-robot-head{left:22px;top:11px;width:53px;height:44px;border-radius:17px;background:linear-gradient(145deg,#262b45,#14172a);box-shadow:inset 0 -5px 9px rgba(0,0,0,.35),0 5px 8px rgba(0,0,0,.3)}
 .cs-robot-face{position:absolute;left:7px;top:9px;width:39px;height:26px;border-radius:11px;background:#0d1233;display:flex;align-items:center;justify-content:center;gap:11px}
-.cs-robot-face i{width:6px;height:6px;border-radius:50%;background:#9b60ff;box-shadow:0 0 7px #8e50ff}
-.cs-robot-ear{top:26px;width:11px;height:20px;border-radius:6px;background:#d7cdf4}
+.cs-robot-face i{width:6px;height:6px;border-radius:50%;background:#a78bfa;box-shadow:0 0 7px #8b5cf6}
+.cs-robot-ear{top:26px;width:11px;height:20px;border-radius:6px;background:#423868}
 .cs-robot-ear.l{left:14px}.cs-robot-ear.r{right:14px}
-.cs-robot-body{left:33px;top:52px;width:31px;height:33px;border-radius:11px 11px 14px 14px;background:linear-gradient(145deg,#fff,#e6e0f8);box-shadow:inset 0 -5px 8px rgba(79,50,150,.12)}
-.cs-robot-arm{width:13px;height:28px;border-radius:9px;background:#e4def5;top:55px}
+.cs-robot-body{left:33px;top:52px;width:31px;height:33px;border-radius:11px 11px 14px 14px;background:linear-gradient(145deg,#262b45,#14172a);box-shadow:inset 0 -5px 8px rgba(0,0,0,.35)}
+.cs-robot-arm{width:13px;height:28px;border-radius:9px;background:#423868;top:55px}
 .cs-robot-arm.l{left:18px;transform:rotate(20deg)}.cs-robot-arm.r{right:18px;transform:rotate(-20deg)}
 
 /* Main */
 .cs-main{margin-left:232px;width:calc(100% - 232px);min-height:100vh;display:flex;flex-direction:column}
-.cs-topbar{min-height:86px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;background:#fff;border-bottom:1px solid var(--cs-line);position:sticky;top:0;z-index:9;flex-wrap:wrap}
+.cs-topbar{min-height:86px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;background:#0b1220;border-bottom:1px solid var(--cs-line);position:sticky;top:0;z-index:9;flex-wrap:wrap}
 .cs-topbar-title{display:flex;align-items:center;gap:13px;min-width:0}
-.cs-topbar-mark{width:44px;height:44px;border-radius:13px;background:#f2edff;color:var(--cs-purple);display:grid;place-items:center;flex:0 0 auto}
+.cs-topbar-mark{width:44px;height:44px;border-radius:13px;background:rgba(139,92,246,.14);color:var(--cs-purple);display:grid;place-items:center;flex:0 0 auto}
 .cs-topbar h1{margin:0;font-size:19px;font-weight:770;letter-spacing:-.4px}
 .cs-topbar p{margin:3px 0 0;font-size:12px;color:var(--cs-muted)}
 .cs-topbar-actions{display:flex;align-items:center;gap:11px;margin-left:auto}
-.cs-icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid #e4e7ef;background:#fff;color:var(--cs-ink-soft);display:grid;place-items:center}
-.cs-icon-btn:hover{background:var(--cs-bg)}
+.cs-icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--cs-line);background:#0b1220;color:var(--cs-ink-soft);display:grid;place-items:center}
+.cs-icon-btn:hover{background:rgba(255,255,255,.06)}
 .cs-user{display:flex;align-items:center;gap:9px}
-.cs-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(145deg,#7c3aed,#4c1d95);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
+.cs-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(145deg,#8b5cf6,#4c1d95);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
 .cs-user b{display:block;font-size:12px}
 .cs-user small{display:block;font-size:10px;color:var(--cs-muted);margin-top:1px}
-.cs-btn{height:36px;padding:0 14px;border-radius:8px;border:1px solid #dfe2ea;background:#fff;color:var(--cs-ink);font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:7px}
-.cs-btn:hover{background:var(--cs-bg)}
-.cs-btn-primary{border:0;background:linear-gradient(90deg,#7440df,#8b5cf6);color:#fff;box-shadow:0 5px 12px rgba(116,64,223,.2)}
+.cs-btn{height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--cs-line);background:#0b1220;color:var(--cs-ink);font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:7px}
+.cs-btn:hover{background:rgba(255,255,255,.06)}
+.cs-btn-primary{border:0;background:linear-gradient(90deg,#7c3aed,#8b5cf6);color:#fff;box-shadow:0 5px 12px rgba(139,92,246,.35)}
 .cs-content{padding:20px 24px 32px;display:flex;flex-direction:column;gap:14px}
 
 /* Cards */
-.cs-card{background:#fff;border:1px solid var(--cs-line);border-radius:12px;box-shadow:0 2px 9px rgba(25,34,75,.035)}
+.cs-card{background:#0b1220;border:1px solid var(--cs-line);border-radius:12px}
 .cs-card-pad{padding:17px 19px}
 .cs-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
 .cs-card-head h3{margin:0;font-size:13px;font-weight:750;letter-spacing:-.2px}
 .cs-grid{display:grid;gap:12px}
 .cs-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
-.cs-stat{background:#fff;border:1px solid var(--cs-line);border-radius:12px;box-shadow:0 2px 9px rgba(25,34,75,.035);padding:16px 17px 13px;position:relative;overflow:hidden}
+.cs-stat{background:#0b1220;border:1px solid var(--cs-line);border-radius:12px;padding:16px 17px 13px;position:relative;overflow:hidden}
 .cs-stat-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .cs-stat-label{font-size:11.5px;font-weight:640;color:var(--cs-ink-soft)}
 .cs-stat-icon{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:0 0 auto}
@@ -550,7 +550,7 @@ const CSS = `
 
 /* Donut + legend */
 .cs-donut{border-radius:50%;display:grid;place-items:center;position:relative;flex:0 0 auto}
-.cs-donut-hole{position:absolute;background:#fff;border-radius:50%;display:grid;place-items:center;align-content:center;text-align:center}
+.cs-donut-hole{position:absolute;background:#0b1220;border-radius:50%;display:grid;place-items:center;align-content:center;text-align:center}
 .cs-donut-hole strong{font-size:19px;font-weight:790;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
 .cs-donut-hole span{font-size:9.5px;color:var(--cs-muted);margin-top:2px}
 .cs-donut-row{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
@@ -567,7 +567,7 @@ const CSS = `
 .cs-chart-x{display:flex;justify-content:space-between;font-size:10px;color:var(--cs-muted);margin-top:6px}
 .cs-chart-legend{display:flex;gap:16px;font-size:11px;color:var(--cs-ink-soft);margin-top:10px;flex-wrap:wrap}
 .cs-chart-legend i{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px}
-.cs-tip{position:absolute;top:0;transform:translateX(-50%);background:#11162f;color:#fff;border-radius:8px;padding:8px 11px;font-size:10.5px;line-height:17px;pointer-events:none;box-shadow:0 12px 28px rgba(20,20,45,.22);white-space:nowrap;z-index:3}
+.cs-tip{position:absolute;top:0;transform:translateX(-50%);background:#161b36;border:1px solid rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:8px 11px;font-size:10.5px;line-height:17px;pointer-events:none;box-shadow:0 12px 28px rgba(0,0,0,.5);white-space:nowrap;z-index:3}
 .cs-tip b{display:block;margin-bottom:3px;font-size:10px;color:#b9bed4}
 .cs-tip span{display:block}
 .cs-tip i{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
@@ -577,7 +577,7 @@ const CSS = `
 .cs-bar-head{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;margin-bottom:5px}
 .cs-bar-head span{color:var(--cs-ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cs-bar-head b{font-weight:730;font-variant-numeric:tabular-nums}
-.cs-bar-track{height:7px;border-radius:5px;background:#f0f2f7;overflow:hidden}
+.cs-bar-track{height:7px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden}
 .cs-bar-fill{height:100%;border-radius:5px}
 
 /* Table */
@@ -585,7 +585,7 @@ const CSS = `
 .cs-table{width:100%;border-collapse:collapse;font-size:12px}
 .cs-table th{text-align:left;font-size:10.5px;font-weight:650;color:var(--cs-muted);padding:0 12px 10px;white-space:nowrap}
 .cs-table td{padding:12px;border-top:1px solid var(--cs-line);vertical-align:middle}
-.cs-table tbody tr:hover{background:#fbfbfe}
+.cs-table tbody tr:hover{background:rgba(255,255,255,.03)}
 .cs-table .title{font-weight:660;color:var(--cs-ink)}
 .cs-table .sub{font-size:10.5px;color:var(--cs-muted);margin-top:3px}
 .cs-num{font-variant-numeric:tabular-nums;text-align:right}
@@ -593,9 +593,9 @@ const CSS = `
 .cs-pill{display:inline-flex;align-items:center;gap:5px;height:23px;padding:0 9px;border-radius:6px;border:1px solid;font-size:10.5px;font-weight:640;white-space:nowrap}
 .cs-empty{margin:0;font-size:12px;color:var(--cs-muted);padding:10px 0}
 
-.cs-error{display:flex;gap:11px;align-items:flex-start;border:1px solid #f6d5d8;background:#fff5f5;border-radius:11px;padding:13px 15px}
-.cs-error-icon{width:28px;height:28px;border-radius:8px;background:#ffe3e5;color:var(--cs-red);display:grid;place-items:center;flex:0 0 auto}
-.cs-error b{display:block;font-size:12.5px;color:#a32732}
+.cs-error{display:flex;gap:11px;align-items:flex-start;border:1px solid rgba(244,63,94,.25);background:rgba(244,63,94,.08);border-radius:11px;padding:13px 15px}
+.cs-error-icon{width:28px;height:28px;border-radius:8px;background:rgba(244,63,94,.14);color:var(--cs-red);display:grid;place-items:center;flex:0 0 auto}
+.cs-error b{display:block;font-size:12.5px;color:var(--cs-red)}
 .cs-error span{display:block;font-size:11.5px;color:var(--cs-ink-soft);margin-top:3px}
 .cs-error a{color:var(--cs-purple);font-weight:650;text-decoration:underline}
 
@@ -603,7 +603,7 @@ const CSS = `
 .cs-tabs{display:flex;gap:4px;border-bottom:1px solid var(--cs-line);flex-wrap:wrap}
 .cs-tab{height:36px;padding:0 14px;border:0;background:none;color:var(--cs-ink-soft);font-size:12px;font-weight:600;border-bottom:2px solid transparent}
 .cs-tab.active{color:var(--cs-purple);border-color:var(--cs-purple)}
-.cs-search{height:36px;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid #dfe2ea;border-radius:8px;background:#fff;min-width:200px;color:var(--cs-muted)}
+.cs-search{height:36px;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid var(--cs-line);border-radius:8px;background:#0b1220;min-width:200px;color:var(--cs-muted)}
 .cs-search input{border:0;outline:0;width:100%;font-size:12px;background:transparent;color:var(--cs-ink)}
 
 /* Layout helpers */
