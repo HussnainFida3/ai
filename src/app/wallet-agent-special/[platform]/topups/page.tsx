@@ -331,10 +331,10 @@ export default function WalletTopUpsPage({ params }: { params: Promise<{ platfor
                         <div className="sub">{t.contact}</div>
                       </td>
                       <td className="cs-num" style={{ fontWeight: 700, whiteSpace: "nowrap" }}>{coins(t.amount)}</td>
-                      <td style={{ color: "#4c5470" }}>{t.bankReference ?? "—"}</td>
+                      <td style={{ color: "#cbd5e1" }}>{t.bankReference ?? "—"}</td>
                       <td><StatusPill status={t.status} raw={t.rawStatus} /></td>
-                      <td className="cs-num" style={{ color: "#69738c", whiteSpace: "nowrap" }}>{formatAge(t.ageDays)}</td>
-                      <td className="cs-num" style={{ color: "#69738c", whiteSpace: "nowrap" }}>{dateTime(t.createdAt)}</td>
+                      <td className="cs-num" style={{ color: "#94a3b8", whiteSpace: "nowrap" }}>{formatAge(t.ageDays)}</td>
+                      <td className="cs-num" style={{ color: "#94a3b8", whiteSpace: "nowrap" }}>{dateTime(t.createdAt)}</td>
                       <td style={{ paddingRight: 19, whiteSpace: "nowrap" }}>
                         <span className="cs-wallet-actions">
                           <button
@@ -421,19 +421,19 @@ function UnsupportedNotice({ snapshot, label }: { snapshot: WalletSnapshot; labe
 }
 
 const TOPUP_CSS = `
-.cs-wallet-meta{font-size:11px;color:#69738c}
-.cs-wallet-note{margin:12px 0 0;font-size:11px;line-height:18px;color:#8891a8}
-.cs-wallet-banner{display:flex;gap:10px;align-items:flex-start;border:1px solid #f0e0bd;background:#fffaef;color:#7a5a12;border-radius:11px;padding:12px 14px;font-size:11.5px;line-height:19px;margin-bottom:12px}
+.cs-wallet-meta{font-size:11px;color:#94a3b8}
+.cs-wallet-note{margin:12px 0 0;font-size:11px;line-height:18px;color:#94a3b8}
+.cs-wallet-banner{display:flex;gap:10px;align-items:flex-start;border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.13);color:#fbbf24;border-radius:11px;padding:12px 14px;font-size:11.5px;line-height:19px;margin-bottom:12px}
 .cs-wallet-banner svg{flex:0 0 auto;margin-top:2px}
 .cs-wallet-banner b{font-weight:750}
 .cs-wallet-toolbar{display:flex;align-items:center;gap:12px;padding:14px 19px 0;flex-wrap:wrap}
 .cs-wallet-actions{display:inline-flex;gap:6px}
 .cs-wallet-actions .cs-btn{height:30px;padding:0 10px;font-size:11px}
 .cs-wallet-actions .cs-btn:disabled{opacity:.45;cursor:not-allowed}
-.cs-wallet-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 19px;border-top:1px solid #eef0f5;font-size:11.5px;color:#4c5470;flex-wrap:wrap}
+.cs-wallet-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 19px;border-top:1px solid rgba(255,255,255,.07);font-size:11.5px;color:#cbd5e1;flex-wrap:wrap}
 .cs-wallet-unsupported{display:flex;gap:13px;align-items:flex-start}
-.cs-wallet-unsupported>span{width:34px;height:34px;border-radius:10px;flex:0 0 auto;display:grid;place-items:center;background:#fff6e6;color:#c9860f}
-.cs-wallet-unsupported p{margin:0 0 10px;font-size:12px;line-height:20px;color:#4c5470;max-width:640px}
+.cs-wallet-unsupported>span{width:34px;height:34px;border-radius:10px;flex:0 0 auto;display:grid;place-items:center;background:rgba(245,158,11,.13);color:#fbbf24}
+.cs-wallet-unsupported p{margin:0 0 10px;font-size:12px;line-height:20px;color:#cbd5e1;max-width:640px}
 .cs-toast{position:fixed;right:22px;bottom:22px;max-width:360px;background:#11162f;color:#fff;border-radius:10px;padding:12px 16px;font-size:12px;line-height:18px;box-shadow:0 14px 32px rgba(20,22,50,.28);z-index:80;display:flex;align-items:flex-start;gap:9px}
 .cs-toast svg{flex:0 0 auto;margin-top:1px;color:#5eead4}
 .cs-toast-error{background:#3d1420}

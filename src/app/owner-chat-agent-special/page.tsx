@@ -19,7 +19,7 @@ const PAGES = [
 
 export default function OwnerChatAgentSpecialIndex() {
   return (
-    <div style={{ minHeight: "100vh", background: "#fafbfe", padding: "48px 24px", fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#0d1526", padding: "48px 24px", fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}>
       <div style={{ maxWidth: 900, margin: "0 auto" }}>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 8 }}>
           Owner Chat Agent Special
@@ -27,14 +27,14 @@ export default function OwnerChatAgentSpecialIndex() {
         <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em", margin: "0 0 8px", color: "#11162d" }}>
           Pick a platform
         </h1>
-        <p style={{ fontSize: 14, color: "#4c5470", margin: "0 0 32px", lineHeight: 1.6 }}>
+        <p style={{ fontSize: 14, color: "#cbd5e1", margin: "0 0 32px", lineHeight: 1.6 }}>
           Owner Chat is the orchestration agent: conversational access to real platform data, plus a scoped set of audited
           writes. Every figure in this workspace is read live — the write surface is documented, never fired.
         </p>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 20 }}>
           {PLATFORM_LIST.map((p) => (
-            <div key={p.key} style={{ border: "1px solid #eef0f5", borderRadius: 16, background: "#fff", padding: 20, boxShadow: "0 2px 10px rgba(25,34,75,0.035)" }}>
+            <div key={p.key} style={{ border: "1px solid rgba(255,255,255,.07)", borderRadius: 16, background: "#0b1220", padding: 20, boxShadow: "0 2px 10px rgba(25,34,75,0.035)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
                 <img src={p.logoUrl} alt={`${p.label} logo`} style={{ width: 22, height: 22, borderRadius: 6, objectFit: "contain" }} />
                 <strong style={{ fontSize: 16, color: "#11162d" }}>{p.label}</strong>
@@ -44,10 +44,10 @@ export default function OwnerChatAgentSpecialIndex() {
                   <Link
                     key={page.slug}
                     href={`/owner-chat-agent-special/${p.key}/${page.slug}`}
-                    style={{ display: "block", padding: "12px 14px", borderRadius: 10, border: "1px solid #f0f2f7", textDecoration: "none", color: "inherit" }}
+                    style={{ display: "block", padding: "12px 14px", borderRadius: 10, border: "1px solid #0d1526", textDecoration: "none", color: "inherit" }}
                   >
                     <div style={{ fontSize: 13, fontWeight: 700, color: "#11162d" }}>{page.label}</div>
-                    <div style={{ fontSize: 11, color: "#69738c", marginTop: 2 }}>{page.desc}</div>
+                    <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>{page.desc}</div>
                   </Link>
                 ))}
               </div>

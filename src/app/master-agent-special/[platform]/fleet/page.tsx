@@ -332,13 +332,13 @@ function statusPill(r: FleetAgentRow) {
 }
 
 const CSS = `
-.cs-master-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
+.cs-master-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
 .cs-master-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.cs-master-select{height:36px;border:1px solid #dfe2ea;border-radius:8px;background:#fff;padding:0 10px;font-size:12px;color:#11162d}
-.cs-master-pager{display:flex;align-items:center;gap:12px;justify-content:flex-end;margin-top:14px;font-size:11.5px;color:#69738c}
+.cs-master-select{height:36px;border:1px solid rgba(255,255,255,.09);border-radius:8px;background:#0b1220;padding:0 10px;font-size:12px;color:#11162d}
+.cs-master-pager{display:flex;align-items:center;gap:12px;justify-content:flex-end;margin-top:14px;font-size:11.5px;color:#94a3b8}
 .cs-master-pager .cs-btn:disabled{opacity:.45;cursor:default}
 .cs-master-unreported{display:flex;flex-direction:column;gap:8px}
-.cs-master-unreported-row{display:flex;justify-content:space-between;gap:14px;font-size:11.5px;padding:8px 11px;border:1px solid #f6d5d8;background:#fff7f7;border-radius:9px}
-.cs-master-unreported-row b{font-weight:700;color:#a32732;white-space:nowrap}
-.cs-master-unreported-row span{color:#69738c;text-align:right}
+.cs-master-unreported-row{display:flex;justify-content:space-between;gap:14px;font-size:11.5px;padding:8px 11px;border:1px solid rgba(244,63,94,.32);background:rgba(244,63,94,.12);border-radius:9px}
+.cs-master-unreported-row b{font-weight:700;color:#fda4af;white-space:nowrap}
+.cs-master-unreported-row span{color:#94a3b8;text-align:right}
 `;

@@ -98,7 +98,7 @@ export default function AnalyticsTrendsPage({ params }: { params: Promise<{ plat
 
       <Card
         title="Time Series"
-        action={<span style={{ fontSize: 11, color: "#69738c" }}>{hasSeries ? series.granularity : "None returned"}</span>}
+        action={<span style={{ fontSize: 11, color: "#94a3b8" }}>{hasSeries ? series.granularity : "None returned"}</span>}
       >
         {a.loading ? (
           <Empty>Loading live snapshot…</Empty>
@@ -263,13 +263,13 @@ export default function AnalyticsTrendsPage({ params }: { params: Promise<{ plat
 
 /* Page-local styles only, all `cs-analytics-*` prefixed. */
 const TRENDS_CSS = `
-.cs-analytics-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
+.cs-analytics-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
 .cs-analytics-facts{display:flex;flex-direction:column;gap:2px}
-.cs-analytics-fact{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:11.5px;padding:7px 0;border-bottom:1px solid #f4f5f9}
-.cs-analytics-fact span{color:#4c5470;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cs-analytics-fact{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:11.5px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.cs-analytics-fact span{color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cs-analytics-fact b{font-weight:730;white-space:nowrap}
-.cs-analytics-noseries{display:flex;gap:11px;align-items:flex-start;border:1px solid #f2e3c6;background:#fffaf0;border-radius:11px;padding:13px 15px}
-.cs-analytics-noseries-icon{width:28px;height:28px;border-radius:8px;background:#fdf0d8;color:#c9860f;display:grid;place-items:center;flex:0 0 auto}
+.cs-analytics-noseries{display:flex;gap:11px;align-items:flex-start;border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.13);border-radius:11px;padding:13px 15px}
+.cs-analytics-noseries-icon{width:28px;height:28px;border-radius:8px;background:rgba(245,158,11,.13);color:#fbbf24;display:grid;place-items:center;flex:0 0 auto}
 .cs-analytics-noseries b{display:block;font-size:12.5px;color:#8a5b06}
-.cs-analytics-noseries p{margin:4px 0 0;font-size:11.5px;line-height:19px;color:#4c5470}
+.cs-analytics-noseries p{margin:4px 0 0;font-size:11.5px;line-height:19px;color:#cbd5e1}
 `;

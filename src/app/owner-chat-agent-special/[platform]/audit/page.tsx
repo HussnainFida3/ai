@@ -254,9 +254,9 @@ export default function OwnerChatAuditPage({ params }: { params: Promise<{ platf
                       {e.targetType ? `○ ${e.targetType}` : "◆ None"}
                     </Pill>
                   </td>
-                  <td className="cs-num" style={{ color: "#4c5470" }}>{e.targetId ? e.targetId.slice(0, 14) : "—"}</td>
-                  <td style={{ color: "#4c5470" }}>{e.admin ?? "—"}</td>
-                  <td className="cs-num" style={{ paddingRight: 19, color: "#69738c", whiteSpace: "nowrap" }}>{relativeTime(e.createdAt)}</td>
+                  <td className="cs-num" style={{ color: "#cbd5e1" }}>{e.targetId ? e.targetId.slice(0, 14) : "—"}</td>
+                  <td style={{ color: "#cbd5e1" }}>{e.admin ?? "—"}</td>
+                  <td className="cs-num" style={{ paddingRight: 19, color: "#94a3b8", whiteSpace: "nowrap" }}>{relativeTime(e.createdAt)}</td>
                 </tr>
               ))}
             </tbody>
@@ -304,18 +304,18 @@ function familyOf(action: string): string {
 }
 
 const OWNER_AUDIT_CSS = `
-.cs-owner-banner{display:flex;gap:11px;align-items:flex-start;border:1px solid #f6d5d8;background:#fff5f5;border-radius:12px;padding:14px 16px;margin-bottom:16px;color:#a32732}
+.cs-owner-banner{display:flex;gap:11px;align-items:flex-start;border:1px solid rgba(244,63,94,.32);background:rgba(244,63,94,.12);border-radius:12px;padding:14px 16px;margin-bottom:16px;color:#fda4af}
 .cs-owner-banner b{display:block;font-size:13px;margin-bottom:4px}
 .cs-owner-banner span{font-size:11.5px;line-height:19px;color:#8d3a41;display:block}
 .cs-owner-donut-wrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
-.cs-owner-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
-.cs-owner-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 19px;border-bottom:1px solid #eef0f5}
+.cs-owner-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
+.cs-owner-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 19px;border-bottom:1px solid rgba(255,255,255,.07)}
 .cs-owner-name{font-size:12.5px;font-weight:660;color:#11162d}
-.cs-owner-sub{font-size:10.5px;color:#8891a8;margin-top:2px}
-.cs-owner-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 19px;border-top:1px solid #eef0f5}
-.cs-owner-pager span{font-size:11px;color:#69738c}
+.cs-owner-sub{font-size:10.5px;color:#94a3b8;margin-top:2px}
+.cs-owner-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 19px;border-top:1px solid rgba(255,255,255,.07)}
+.cs-owner-pager span{font-size:11px;color:#94a3b8}
 .cs-owner-pager div{display:flex;gap:7px}
-.cs-owner-prov-line{margin:0 0 9px;font-size:11.5px;line-height:19px;color:#4c5470}
+.cs-owner-prov-line{margin:0 0 9px;font-size:11.5px;line-height:19px;color:#cbd5e1}
 .cs-owner-prov-line:last-child{margin-bottom:0}
 .cs-owner-prov-line b{color:#11162d}
 `;

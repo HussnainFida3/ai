@@ -82,7 +82,7 @@ export default function ProfileProfilesPage({ params }: { params: Promise<{ plat
         .map((k) => ({
           label: k === "user" ? "Users" : "Providers",
           value: rows.filter((r) => r.kind === k).length,
-          color: k === "user" ? "#3b7fd1" : "#0f9e69",
+          color: k === "user" ? "#3b7fd1" : "#4ade80",
         }))
         .filter((k) => k.value > 0),
     [rows],
@@ -277,33 +277,33 @@ export default function ProfileProfilesPage({ params }: { params: Promise<{ plat
                   </td>
                   {ghrfix && (
                     <td>
-                      <span style={{ fontSize: 11.5, fontWeight: 650, color: r.kind === "provider" ? "#0f9e69" : "#3b7fd1" }}>
+                      <span style={{ fontSize: 11.5, fontWeight: 650, color: r.kind === "provider" ? "#4ade80" : "#3b7fd1" }}>
                         {r.kind === "provider" ? "Provider" : "User"}
                       </span>
                     </td>
                   )}
                   {ghrfix ? (
-                    <td style={{ color: "#4c5470", whiteSpace: "nowrap" }}>{r.accountStatus ? humanStatus(r.accountStatus) : "—"}</td>
+                    <td style={{ color: "#cbd5e1", whiteSpace: "nowrap" }}>{r.accountStatus ? humanStatus(r.accountStatus) : "—"}</td>
                   ) : (
-                    <td style={{ color: "#4c5470", whiteSpace: "nowrap" }}>{r.city ?? "—"}</td>
+                    <td style={{ color: "#cbd5e1", whiteSpace: "nowrap" }}>{r.city ?? "—"}</td>
                   )}
                   <td><VerificationMark state={r.verification} /></td>
                   {ghrfix ? (
                     <>
                       <td><FieldMark ok={r.hasPhone} unknownLabel="Not returned" /></td>
                       <td><FieldMark ok={r.hasEmail} unknownLabel="Not returned" /></td>
-                      <td style={{ color: "#4c5470", maxWidth: 240 }}>
+                      <td style={{ color: "#cbd5e1", maxWidth: 240 }}>
                         {r.kind === "provider" ? (r.services.length > 0 ? r.services.join(", ") : "None listed") : "—"}
                       </td>
-                      <td className="ps-num" style={{ color: "#4c5470" }}>{r.rating === null ? "—" : `${r.rating} / 5`}</td>
+                      <td className="ps-num" style={{ color: "#cbd5e1" }}>{r.rating === null ? "—" : `${r.rating} / 5`}</td>
                     </>
                   ) : (
                     <>
                       <td><FieldMark ok={r.hasPhoto} /></td>
                       <td><FieldMark ok={r.hasBio} /></td>
-                      <td style={{ color: "#4c5470", maxWidth: 260 }}>{r.gap ?? (r.audited ? "None found" : "—")}</td>
-                      <td className="ps-num" style={{ color: "#4c5470" }}>{r.qualityScore === null ? "—" : `${r.qualityScore}/10`}</td>
-                      <td className="ps-num" style={{ color: "#69738c", whiteSpace: "nowrap" }}>
+                      <td style={{ color: "#cbd5e1", maxWidth: 260 }}>{r.gap ?? (r.audited ? "None found" : "—")}</td>
+                      <td className="ps-num" style={{ color: "#cbd5e1" }}>{r.qualityScore === null ? "—" : `${r.qualityScore}/10`}</td>
+                      <td className="ps-num" style={{ color: "#94a3b8", whiteSpace: "nowrap" }}>
                         {r.submittedAt ? new Date(r.submittedAt).toLocaleDateString() : "—"}
                       </td>
                     </>
@@ -316,7 +316,7 @@ export default function ProfileProfilesPage({ params }: { params: Promise<{ plat
         </div>
 
         {rows.length > PAGE_SIZE && (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "14px 19px", borderTop: "1px solid #eef0f5", fontSize: 11.5, color: "#4c5470", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "14px 19px", borderTop: "1px solid rgba(255,255,255,.07)", fontSize: 11.5, color: "#cbd5e1", flexWrap: "wrap" }}>
             <span className="ps-num">
               Showing {(current - 1) * PAGE_SIZE + 1}–{Math.min(current * PAGE_SIZE, rows.length)} of {rows.length}
             </span>
@@ -336,17 +336,17 @@ export default function ProfileProfilesPage({ params }: { params: Promise<{ plat
       </Card>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        <p style={{ margin: 0, fontSize: 11, lineHeight: "18px", color: "#69738c" }}>{p.rosterNote}</p>
+        <p style={{ margin: 0, fontSize: 11, lineHeight: "18px", color: "#94a3b8" }}>{p.rosterNote}</p>
         {ghrfix ? (
           <>
-            <p style={{ margin: 0, fontSize: 11, lineHeight: "18px", color: "#69738c" }}>
+            <p style={{ margin: 0, fontSize: 11, lineHeight: "18px", color: "#94a3b8" }}>
               “Coverage” is the share of the fields named under each row that are actually populated on that record —
               GhrFix reports no completion percentage of its own, so none is shown.
             </p>
             <NotTracked what="profile photo, bio or city field" platform={platform} />
           </>
         ) : (
-          <p style={{ margin: 0, fontSize: 11, lineHeight: "18px", color: "#69738c" }}>
+          <p style={{ margin: 0, fontSize: 11, lineHeight: "18px", color: "#94a3b8" }}>
             “Submitted” is the date the member entered the verification review queue — the only real date these endpoints
             return. There is no join date to show.
           </p>

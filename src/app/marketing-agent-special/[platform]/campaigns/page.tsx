@@ -58,7 +58,7 @@ const NAV: NavItem[] = [
 const PAGE_SIZE = 12;
 const PROMO_TABS = ["All", "Active", "Expired", "Disabled"] as const;
 const EVENT_TABS = ["All", "AI calls", "Suggestions"] as const;
-const STATUS_COLOR: Record<string, string> = { Active: "#0f9e69", Expired: "#c9860f", Disabled: "#69738c" };
+const STATUS_COLOR: Record<string, string> = { Active: "#4ade80", Expired: "#fbbf24", Disabled: "#94a3b8" };
 
 type PromoTab = (typeof PROMO_TABS)[number];
 type EventTab = (typeof EVENT_TABS)[number];
@@ -228,7 +228,7 @@ export default function MarketingCampaignsPage({ params }: { params: Promise<{ p
     };
   }
 
-  const statusSlices = m.byPromoStatus.map((s) => ({ ...s, color: STATUS_COLOR[s.label] ?? "#69738c" }));
+  const statusSlices = m.byPromoStatus.map((s) => ({ ...s, color: STATUS_COLOR[s.label] ?? "#94a3b8" }));
   const typeSlices = m.byPromoType.map((s, i) => ({ ...s, color: SERIES[i] }));
   const kindSlices = m.byEventKind.map((s, i) => ({ ...s, color: SERIES[i] }));
 
@@ -542,11 +542,11 @@ export default function MarketingCampaignsPage({ params }: { params: Promise<{ p
                       <div className="title">{p.code}</div>
                       {p.createdAt && <div className="sub">Created {new Date(p.createdAt).toLocaleDateString()}</div>}
                     </td>
-                    <td style={{ color: "#4c5470", whiteSpace: "nowrap" }}>{p.type === "FLAT" ? "Flat" : "Percent"}</td>
+                    <td style={{ color: "#cbd5e1", whiteSpace: "nowrap" }}>{p.type === "FLAT" ? "Flat" : "Percent"}</td>
                     <td className="cs-num">{p.valueNum === null ? "—" : p.type === "PERCENT" ? `${p.valueNum}%` : p.valueNum.toLocaleString()}</td>
-                    <td className="cs-num" style={{ color: "#69738c" }}>{p.minOrder === null ? "—" : p.minOrder.toLocaleString()}</td>
+                    <td className="cs-num" style={{ color: "#94a3b8" }}>{p.minOrder === null ? "—" : p.minOrder.toLocaleString()}</td>
                     <td className="cs-num">{p.usedCount.toLocaleString()}</td>
-                    <td className="cs-num" style={{ color: "#69738c" }}>
+                    <td className="cs-num" style={{ color: "#94a3b8" }}>
                       {p.usageLimit === null ? "Uncapped" : `${p.usageLimit.toLocaleString()}${p.usagePct === null ? "" : ` (${p.usagePct}%)`}`}
                     </td>
                     <td>
@@ -558,7 +558,7 @@ export default function MarketingCampaignsPage({ params }: { params: Promise<{ p
                         <Pill tone="red"><Icon name="alert" size={12} />Disabled</Pill>
                       )}
                     </td>
-                    <td className="cs-num" style={{ paddingRight: 19, color: "#69738c", whiteSpace: "nowrap" }}>
+                    <td className="cs-num" style={{ paddingRight: 19, color: "#94a3b8", whiteSpace: "nowrap" }}>
                       {p.validTo ? new Date(p.validTo).toLocaleDateString() : "No end date"}
                     </td>
                   </tr>
@@ -595,9 +595,9 @@ export default function MarketingCampaignsPage({ params }: { params: Promise<{ p
                         <Pill tone="purple"><Icon name="sparkle" size={12} />Suggestion</Pill>
                       )}
                     </td>
-                    <td style={{ color: "#4c5470" }}>{e.status ?? "—"}</td>
+                    <td style={{ color: "#cbd5e1" }}>{e.status ?? "—"}</td>
                     <td className="cs-num">{e.costUsd === null ? "—" : `$${e.costUsd.toFixed(4)}`}</td>
-                    <td className="cs-num" style={{ paddingRight: 19, color: "#69738c", whiteSpace: "nowrap" }}>
+                    <td className="cs-num" style={{ paddingRight: 19, color: "#94a3b8", whiteSpace: "nowrap" }}>
                       {e.createdAt ? new Date(e.createdAt).toLocaleString() : "—"}
                     </td>
                   </tr>
@@ -630,7 +630,7 @@ export default function MarketingCampaignsPage({ params }: { params: Promise<{ p
       {caps.broadcasts && (
         <Card
           title="Broadcast Log"
-          action={<span style={{ fontSize: 11, color: "#69738c" }}>{m.broadcasts.length} returned{m.broadcastsLoggedTotal !== null ? ` of ${m.broadcastsLoggedTotal} logged` : ""}</span>}
+          action={<span style={{ fontSize: 11, color: "#94a3b8" }}>{m.broadcasts.length} returned{m.broadcastsLoggedTotal !== null ? ` of ${m.broadcastsLoggedTotal} logged` : ""}</span>}
           pad={false}
         >
           <div className="cs-table-wrap">
@@ -660,9 +660,9 @@ export default function MarketingCampaignsPage({ params }: { params: Promise<{ p
                       {b.body && <div className="sub">{b.body.slice(0, 90)}{b.body.length > 90 ? "…" : ""}</div>}
                     </td>
                     <td><Pill tone="purple"><Icon name="users" size={12} />{AUDIENCE_LABEL[b.audience]}</Pill></td>
-                    <td style={{ color: "#4c5470" }}>{b.sentByName ?? "—"}</td>
+                    <td style={{ color: "#cbd5e1" }}>{b.sentByName ?? "—"}</td>
                     <td className="cs-num">{b.recipientCount.toLocaleString()}</td>
-                    <td className="cs-num" style={{ paddingRight: 19, color: "#69738c", whiteSpace: "nowrap" }}>
+                    <td className="cs-num" style={{ paddingRight: 19, color: "#94a3b8", whiteSpace: "nowrap" }}>
                       {b.createdAt ? new Date(b.createdAt).toLocaleDateString() : "—"}
                     </td>
                   </tr>
@@ -682,16 +682,16 @@ export default function MarketingCampaignsPage({ params }: { params: Promise<{ p
 
 /* Page-local styles only, all `cs-marketing-*` prefixed. */
 const CSS = `
-.cs-marketing-readonly{display:flex;align-items:center;gap:8px;margin:0;font-size:11.5px;color:#69738c;background:#fff;border:1px solid #eef0f5;border-radius:10px;padding:10px 13px}
+.cs-marketing-readonly{display:flex;align-items:center;gap:8px;margin:0;font-size:11.5px;color:#94a3b8;background:#0b1220;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 13px}
 .cs-marketing-toolbar{display:flex;align-items:center;gap:12px;padding:14px 19px 0;flex-wrap:wrap}
-.cs-marketing-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 19px;border-top:1px solid #eef0f5;font-size:11.5px;color:#4c5470;flex-wrap:wrap}
-.cs-marketing-form label{display:flex;flex-direction:column;gap:5px;font-size:11.5px;color:#4c5470;font-weight:600}
-.cs-marketing-form input,.cs-marketing-form select,.cs-marketing-form textarea{height:36px;padding:0 11px;border:1px solid #dfe2ea;border-radius:8px;background:#fff;font-size:12.5px;color:#11162d;font-family:inherit}
+.cs-marketing-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 19px;border-top:1px solid rgba(255,255,255,.07);font-size:11.5px;color:#cbd5e1;flex-wrap:wrap}
+.cs-marketing-form label{display:flex;flex-direction:column;gap:5px;font-size:11.5px;color:#cbd5e1;font-weight:600}
+.cs-marketing-form input,.cs-marketing-form select,.cs-marketing-form textarea{height:36px;padding:0 11px;border:1px solid rgba(255,255,255,.09);border-radius:8px;background:#0b1220;font-size:12.5px;color:#11162d;font-family:inherit}
 .cs-marketing-form textarea{height:auto;padding:9px 11px;resize:vertical}
 .cs-marketing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:13px}
 .cs-marketing-span2{grid-column:1 / -1}
 .cs-marketing-formactions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
 .cs-marketing-lastsend{margin:0 0 8px;font-size:12.5px;line-height:20px;color:#11162d}
-.cs-marketing-note{margin:0;font-size:11px;line-height:18px;color:#69738c}
+.cs-marketing-note{margin:0;font-size:11px;line-height:18px;color:#94a3b8}
 .cs-marketing-toast{position:fixed;right:22px;bottom:22px;max-width:380px;background:#11162f;color:#fff;border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:18px;box-shadow:0 14px 32px rgba(20,20,45,.28);z-index:50}
 `;

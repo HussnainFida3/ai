@@ -211,10 +211,10 @@ export default function ProfileOverviewPage({ params }: { params: Promise<{ plat
                   value={avg}
                   max={100}
                   label={ghrfix ? "% of fields set" : "% complete"}
-                  color={avg >= 80 ? "#0f9e69" : avg >= 60 ? "#3b7fd1" : avg >= 40 ? "#c9860f" : "#e04452"}
+                  color={avg >= 80 ? "#4ade80" : avg >= 60 ? "#3b7fd1" : avg >= 40 ? "#fbbf24" : "#e04452"}
                 />
               </div>
-              <p style={{ margin: 0, fontSize: 11.5, lineHeight: "19px", color: "#4c5470", textAlign: "center" }}>
+              <p style={{ margin: 0, fontSize: 11.5, lineHeight: "19px", color: "#cbd5e1", textAlign: "center" }}>
                 {strongPct}% of loaded records sit in the Strong band.
                 {ghrfix && " Coverage counts real fields present on /admin/users and /admin/providers — GhrFix has no completion score of its own."}
               </p>
@@ -313,7 +313,7 @@ export default function ProfileOverviewPage({ params }: { params: Promise<{ plat
           ) : (
             <>
               <BarRows rows={fieldRows.map((r) => ({ ...r, color: SERIES[2] }))} colored={false} />
-              <p style={{ margin: "12px 0 0", fontSize: 11, lineHeight: "18px", color: "#69738c" }}>
+              <p style={{ margin: "12px 0 0", fontSize: 11, lineHeight: "18px", color: "#94a3b8" }}>
                 Counted across the {p.audited} profile(s) the quality audit covered — the rest have no verdict.
               </p>
             </>
@@ -333,7 +333,7 @@ export default function ProfileOverviewPage({ params }: { params: Promise<{ plat
               <div style={{ marginTop: 12 }}>
                 <Legend data={fieldRows.map((r, i) => ({ ...r, color: SERIES[i % SERIES.length] }))} showPct={false} />
               </div>
-              <p style={{ margin: "12px 0 0", fontSize: 11, lineHeight: "18px", color: "#69738c" }}>
+              <p style={{ margin: "12px 0 0", fontSize: 11, lineHeight: "18px", color: "#94a3b8" }}>
                 Out of {p.total} loaded record(s).
                 {ghrfix && " Photo and bio are absent from this list because GhrFix's admin directories return neither."}
               </p>
@@ -357,7 +357,7 @@ export default function ProfileOverviewPage({ params }: { params: Promise<{ plat
                   >
                     <Icon name={i.icon} size={15} />
                   </span>
-                  <p style={{ margin: 0, fontSize: 11.5, lineHeight: "19px", color: "#4c5470" }}>{i.text}</p>
+                  <p style={{ margin: 0, fontSize: 11.5, lineHeight: "19px", color: "#cbd5e1" }}>{i.text}</p>
                 </div>
               ))
             )}
@@ -367,7 +367,7 @@ export default function ProfileOverviewPage({ params }: { params: Promise<{ plat
 
       <Card
         title={ghrfix ? "Weakest Records" : "Weakest Profiles"}
-        action={<span style={{ fontSize: 11, color: "#69738c" }}>{p.weakest.length} of {p.total}</span>}
+        action={<span style={{ fontSize: 11, color: "#94a3b8" }}>{p.weakest.length} of {p.total}</span>}
         pad={false}
       >
         <div className="ps-table-wrap">
@@ -405,11 +405,11 @@ export default function ProfileOverviewPage({ params }: { params: Promise<{ plat
                     {r.rating !== null && <div className="sub">Rating {r.rating} / 5</div>}
                   </td>
                   {p.hasKinds && (
-                    <td style={{ color: "#4c5470" }}>{r.kind === "provider" ? "Provider" : "User"}</td>
+                    <td style={{ color: "#cbd5e1" }}>{r.kind === "provider" ? "Provider" : "User"}</td>
                   )}
-                  <td style={{ color: "#4c5470" }}>{ghrfix ? r.accountStatus ?? "—" : r.city ?? "—"}</td>
+                  <td style={{ color: "#cbd5e1" }}>{ghrfix ? r.accountStatus ?? "—" : r.city ?? "—"}</td>
                   <td><VerificationMark state={r.verification} /></td>
-                  <td style={{ color: "#4c5470", maxWidth: 300 }}>
+                  <td style={{ color: "#cbd5e1", maxWidth: 300 }}>
                     {ghrfix
                       ? r.kind === "provider"
                         ? r.services.length > 0 ? r.services.join(", ") : "None listed"
@@ -426,7 +426,7 @@ export default function ProfileOverviewPage({ params }: { params: Promise<{ plat
         </div>
       </Card>
 
-      <p style={{ margin: 0, fontSize: 11, lineHeight: "18px", color: "#69738c" }}>{p.rosterNote}</p>
+      <p style={{ margin: 0, fontSize: 11, lineHeight: "18px", color: "#94a3b8" }}>{p.rosterNote}</p>
     </ProfileShell>
   );
 }

@@ -64,8 +64,8 @@ export default function MarketingAudiencePage({ params }: { params: Promise<{ pl
     return [...map.entries()].map(([label2, value]) => ({ label: label2, value })).sort((a, b) => b.value - a.value);
   })();
 
-  const sendSlices = m.byAudience.map((s) => ({ ...s, color: AUDIENCE_COLOR[s.label] ?? "#69738c" }));
-  const reachSlices = recipientsByAudience.map((s) => ({ ...s, color: AUDIENCE_COLOR[s.label] ?? "#69738c" }));
+  const sendSlices = m.byAudience.map((s) => ({ ...s, color: AUDIENCE_COLOR[s.label] ?? "#94a3b8" }));
+  const reachSlices = recipientsByAudience.map((s) => ({ ...s, color: AUDIENCE_COLOR[s.label] ?? "#94a3b8" }));
   const kindSlices = m.byEventKind.map((s, i) => ({ ...s, color: SERIES[i] }));
   const endpointSlices = m.byEndpoint.map((s, i) => ({ ...s, color: SERIES[i] }));
 
@@ -193,7 +193,7 @@ export default function MarketingAudiencePage({ params }: { params: Promise<{ pl
       </div>
 
       <div className="cs-row-2">
-        <Card title="Reach Volume Over Time" action={<span style={{ fontSize: 11, color: "#69738c" }}>Last 8 months</span>}>
+        <Card title="Reach Volume Over Time" action={<span style={{ fontSize: 11, color: "#94a3b8" }}>Last 8 months</span>}>
           {m.loading ? (
             <Empty>Loading…</Empty>
           ) : m.error ? (
@@ -318,13 +318,13 @@ function Fact({ label, value }: { label: string; value: string }) {
 
 /* Page-local styles only, all `cs-marketing-*` prefixed. */
 const CSS = `
-.cs-marketing-note{margin:10px 0 0;font-size:11px;line-height:18px;color:#69738c}
-.cs-marketing-callout{display:flex;gap:10px;align-items:flex-start;margin:0;background:#fff;border:1px solid #eef0f5;border-radius:11px;padding:13px 15px;font-size:11.5px;line-height:19px;color:#4c5470}
+.cs-marketing-note{margin:10px 0 0;font-size:11px;line-height:18px;color:#94a3b8}
+.cs-marketing-callout{display:flex;gap:10px;align-items:flex-start;margin:0;background:#0b1220;border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:13px 15px;font-size:11.5px;line-height:19px;color:#cbd5e1}
 .cs-marketing-callout b{color:#11162d}
 .cs-marketing-seglist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-.cs-marketing-seglist li{display:flex;align-items:center;gap:9px;font-size:12px;color:#4c5470}
+.cs-marketing-seglist li{display:flex;align-items:center;gap:9px;font-size:12px;color:#cbd5e1}
 .cs-marketing-facts{display:flex;flex-direction:column;gap:2px}
-.cs-marketing-fact{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:11.5px;padding:7px 0;border-bottom:1px solid #f4f5f9}
-.cs-marketing-fact span{color:#4c5470;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cs-marketing-fact{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:11.5px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.cs-marketing-fact span{color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cs-marketing-fact b{font-weight:730;white-space:nowrap}
 `;

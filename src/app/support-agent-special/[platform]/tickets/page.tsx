@@ -454,19 +454,19 @@ export default function SupportTicketsPage({ params }: { params: Promise<{ platf
 /* Page-local styles only. Every selector is `cs-support-` prefixed so nothing
    here can leak into the shared kit or any other special workspace. */
 const PAGE_CSS = `
-.cs-support-source{margin:0;display:flex;gap:9px;align-items:flex-start;font-size:11.5px;line-height:19px;color:#4c5470}
+.cs-support-source{margin:0;display:flex;gap:9px;align-items:flex-start;font-size:11.5px;line-height:19px;color:#cbd5e1}
 .cs-support-source svg{color:#7c3aed;flex:0 0 auto;margin-top:3px}
 .cs-support-source b{color:#11162d}
-.cs-support-meta{font-size:11px;color:#69738c}
+.cs-support-meta{font-size:11px;color:#94a3b8}
 .cs-support-toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:12px 19px 0}
 .cs-support-controls{display:flex;gap:9px;flex-wrap:wrap;padding-bottom:10px}
-.cs-support-select{height:36px;padding:0 10px;border:1px solid #dfe2ea;border-radius:8px;background:#fff;font-size:12px;color:#11162d;max-width:220px}
+.cs-support-select{height:36px;padding:0 10px;border:1px solid rgba(255,255,255,.09);border-radius:8px;background:#0b1220;font-size:12px;color:#11162d;max-width:220px}
 .cs-support-pad{padding:14px 19px}
-.cs-support-dash{color:#8891a8;font-size:10.5px}
+.cs-support-dash{color:#94a3b8;font-size:10.5px}
 .cs-support-pager{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:12px 19px}
 .cs-support-pager-btns{display:flex;gap:10px;align-items:center}
-.cs-support-readonly{display:flex;gap:9px;align-items:flex-start;margin:0;padding:12px 19px 16px;border-top:1px solid #eef0f5;font-size:11px;line-height:18px;color:#69738c}
-.cs-support-readonly svg{color:#69738c;flex:0 0 auto;margin-top:2px}
+.cs-support-readonly{display:flex;gap:9px;align-items:flex-start;margin:0;padding:12px 19px 16px;border-top:1px solid rgba(255,255,255,.07);font-size:11px;line-height:18px;color:#94a3b8}
+.cs-support-readonly svg{color:#94a3b8;flex:0 0 auto;margin-top:2px}
 .cs-support-actions{display:flex;gap:6px;flex-wrap:wrap}
 .cs-support-inert{opacity:.55;cursor:not-allowed;white-space:nowrap}
 .cs-support-toast{position:fixed;right:22px;bottom:22px;max-width:380px;background:#11162f;color:#fff;border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:18px;box-shadow:0 14px 32px rgba(20,20,45,.28);z-index:50}

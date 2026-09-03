@@ -50,7 +50,7 @@ export default function WalletOverviewPage({ params }: { params: Promise<{ platf
 
   const measured = w.metrics.filter((m) => m.value !== null).length;
   const ring = w.approvalRate;
-  const ringColor = ring.value === null ? "#69738c" : ring.value >= 66 ? "#0f9e69" : ring.value >= 33 ? "#c9860f" : "#e04452";
+  const ringColor = ring.value === null ? "#94a3b8" : ring.value >= 66 ? "#4ade80" : ring.value >= 33 ? "#fbbf24" : "#e04452";
 
   return (
     <SpecialShell
@@ -375,17 +375,17 @@ function buildInsights(w: WalletSnapshot): Insight[] {
 }
 
 const WALLET_CSS = `
-.cs-wallet-meta{font-size:11px;color:#69738c}
-.cs-wallet-note{margin:12px 0 0;font-size:11px;line-height:18px;color:#8891a8}
+.cs-wallet-meta{font-size:11px;color:#94a3b8}
+.cs-wallet-note{margin:12px 0 0;font-size:11px;line-height:18px;color:#94a3b8}
 .cs-wallet-ring{display:flex;flex-direction:column;align-items:center;gap:12px}
 .cs-wallet-insights{display:flex;flex-direction:column;gap:14px}
 .cs-wallet-insight{display:flex;gap:11px;align-items:flex-start}
 .cs-wallet-insight>span{width:29px;height:29px;border-radius:9px;flex:0 0 auto;display:grid;place-items:center}
 .cs-wallet-insight b{font-size:11.5px;font-weight:700;display:block;margin-bottom:3px}
-.cs-wallet-insight p{margin:0;font-size:11.5px;line-height:19px;color:#4c5470}
+.cs-wallet-insight p{margin:0;font-size:11.5px;line-height:19px;color:#cbd5e1}
 .cs-wallet-facts{display:flex;flex-direction:column;gap:2px}
-.cs-wallet-facts-head{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#8891a8;margin-top:10px}
+.cs-wallet-facts-head{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#94a3b8;margin-top:10px}
 .cs-wallet-unsupported{display:flex;gap:13px;align-items:flex-start}
-.cs-wallet-unsupported>span{width:34px;height:34px;border-radius:10px;flex:0 0 auto;display:grid;place-items:center;background:#fff6e6;color:#c9860f}
-.cs-wallet-unsupported p{margin:0 0 10px;font-size:12px;line-height:20px;color:#4c5470;max-width:640px}
+.cs-wallet-unsupported>span{width:34px;height:34px;border-radius:10px;flex:0 0 auto;display:grid;place-items:center;background:rgba(245,158,11,.13);color:#fbbf24}
+.cs-wallet-unsupported p{margin:0 0 10px;font-size:12px;line-height:20px;color:#cbd5e1;max-width:640px}
 `;

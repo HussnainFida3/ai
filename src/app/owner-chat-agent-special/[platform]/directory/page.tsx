@@ -210,7 +210,7 @@ export default function OwnerChatDirectoryPage({ params }: { params: Promise<{ p
       <Card
         title="Roster"
         pad={false}
-        action={<span style={{ fontSize: 11, color: "#69738c" }}>{active ? active.route : "—"}</span>}
+        action={<span style={{ fontSize: 11, color: "#94a3b8" }}>{active ? active.route : "—"}</span>}
       >
         <div className="cs-owner-controls">
           <div className="cs-tabs" style={{ border: 0, flex: 1, minWidth: 220 }}>
@@ -300,17 +300,17 @@ export default function OwnerChatDirectoryPage({ params }: { params: Promise<{ p
                     <div className="cs-owner-name">{r.name}</div>
                     <div className="cs-owner-sub">{r.id.slice(0, 12)}</div>
                   </td>
-                  <td style={{ color: "#4c5470" }}>{r.handle ?? "—"}</td>
+                  <td style={{ color: "#cbd5e1" }}>{r.handle ?? "—"}</td>
                   <td>
                     <Pill tone={r.statusTone}>
                       {STATUS_GLYPH[r.statusTone] ?? "○"} {r.statusLabel}
                     </Pill>
                   </td>
-                  <td style={{ color: "#4c5470" }}>{r.group}</td>
-                  <td className="cs-num" style={{ color: "#4c5470" }}>
+                  <td style={{ color: "#cbd5e1" }}>{r.group}</td>
+                  <td className="cs-num" style={{ color: "#cbd5e1" }}>
                     {active?.metricLabel === null || r.metric === null ? "—" : r.metric.toLocaleString()}
                   </td>
-                  <td className="cs-num" style={{ paddingRight: 19, color: "#69738c", whiteSpace: "nowrap" }}>
+                  <td className="cs-num" style={{ paddingRight: 19, color: "#94a3b8", whiteSpace: "nowrap" }}>
                     {r.createdAt ? relativeTime(r.createdAt) : "—"}
                   </td>
                 </tr>
@@ -348,18 +348,18 @@ export default function OwnerChatDirectoryPage({ params }: { params: Promise<{ p
 }
 
 const OWNER_DIR_CSS = `
-.cs-owner-partial{display:flex;gap:10px;align-items:flex-start;border:1px solid #f2dfb4;background:#fffaf0;border-radius:12px;padding:12px 14px;margin-bottom:16px;color:#7a5410}
+.cs-owner-partial{display:flex;gap:10px;align-items:flex-start;border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.13);border-radius:12px;padding:12px 14px;margin-bottom:16px;color:#7a5410}
 .cs-owner-partial b{display:block;font-size:12.5px;margin-bottom:3px}
 .cs-owner-partial span{font-size:11.5px;line-height:18px;color:#8a6520}
 .cs-owner-donut-wrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
-.cs-owner-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
-.cs-owner-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 19px;border-bottom:1px solid #eef0f5}
+.cs-owner-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
+.cs-owner-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 19px;border-bottom:1px solid rgba(255,255,255,.07)}
 .cs-owner-name{font-size:12.5px;font-weight:660;color:#11162d}
-.cs-owner-sub{font-size:10.5px;color:#8891a8;margin-top:2px;font-variant-numeric:tabular-nums}
-.cs-owner-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 19px;border-top:1px solid #eef0f5}
-.cs-owner-pager span{font-size:11px;color:#69738c}
+.cs-owner-sub{font-size:10.5px;color:#94a3b8;margin-top:2px;font-variant-numeric:tabular-nums}
+.cs-owner-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 19px;border-top:1px solid rgba(255,255,255,.07)}
+.cs-owner-pager span{font-size:11px;color:#94a3b8}
 .cs-owner-pager div{display:flex;gap:7px}
-.cs-owner-prov-line{margin:0 0 9px;font-size:11.5px;line-height:19px;color:#4c5470}
+.cs-owner-prov-line{margin:0 0 9px;font-size:11.5px;line-height:19px;color:#cbd5e1}
 .cs-owner-prov-line:last-child{margin-bottom:0}
 .cs-owner-prov-line b{color:#11162d}
 `;

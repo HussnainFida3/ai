@@ -52,7 +52,7 @@ interface Nudge {
 }
 
 const IMPACT_ORDER: Record<Impact, number> = { High: 0, Medium: 1, Low: 2 };
-const IMPACT_COLOR: Record<Impact, string> = { High: "#e04452", Medium: "#c9860f", Low: "#3b7fd1" };
+const IMPACT_COLOR: Record<Impact, string> = { High: "#e04452", Medium: "#fbbf24", Low: "#3b7fd1" };
 const IMPACT_TONE: Record<Impact, keyof typeof TONE> = { High: "red", Medium: "amber", Low: "blue" };
 
 export default function ProfileRecommendationsPage({ params }: { params: Promise<{ platform: string }> }) {
@@ -111,7 +111,7 @@ export default function ProfileRecommendationsPage({ params }: { params: Promise
                 <span style={{ width: 34, height: 34, borderRadius: 10, flex: "0 0 auto", display: "grid", placeItems: "center", background: TONE.amber.bg, color: TONE.amber.fg }}>
                   <Icon name="alert" size={18} />
                 </span>
-                <p style={{ margin: 0, fontSize: 12.5, lineHeight: "21px", color: "#4c5470" }}>
+                <p style={{ margin: 0, fontSize: 12.5, lineHeight: "21px", color: "#cbd5e1" }}>
                   No recommendations can be produced while the {label} roster is unreachable. This is not a clean bill of
                   health — the agent simply has no data to reason over yet.
                 </p>
@@ -123,7 +123,7 @@ export default function ProfileRecommendationsPage({ params }: { params: Promise
                 <span style={{ width: 34, height: 34, borderRadius: 10, flex: "0 0 auto", display: "grid", placeItems: "center", background: TONE.green.bg, color: TONE.green.fg }}>
                   <Icon name="check" size={18} />
                 </span>
-                <p style={{ margin: 0, fontSize: 12.5, lineHeight: "21px", color: "#4c5470" }}>
+                <p style={{ margin: 0, fontSize: 12.5, lineHeight: "21px", color: "#cbd5e1" }}>
                   {p.total === 0
                     ? `${label} returned an empty roster, so there is nothing to prioritise. No claim is made about records the agent cannot see.`
                     : ghrfix
@@ -149,22 +149,22 @@ export default function ProfileRecommendationsPage({ params }: { params: Promise
                       {n.impact} impact
                     </Pill>
                   }>
-                    <p style={{ margin: "0 0 12px", fontSize: 12, lineHeight: "20px", color: "#4c5470" }}>{n.rationale}</p>
-                    <div style={{ fontSize: 11, fontWeight: 650, color: "#69738c", marginBottom: 8 }}>
+                    <p style={{ margin: "0 0 12px", fontSize: 12, lineHeight: "20px", color: "#cbd5e1" }}>{n.rationale}</p>
+                    <div style={{ fontSize: 11, fontWeight: 650, color: "#94a3b8", marginBottom: 8 }}>
                       {n.affected.length} record{n.affected.length === 1 ? "" : "s"} affected
                     </div>
                     <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
                       {n.affected.slice(0, 5).map((r) => (
                         <span
                           key={`${r.kind}-${r.userId}`}
-                          style={{ fontSize: 11, padding: "5px 10px", borderRadius: 7, background: "#f6f7fb", color: "#4c5470", border: "1px solid #eef0f5" }}
+                          style={{ fontSize: 11, padding: "5px 10px", borderRadius: 7, background: "#0d1526", color: "#cbd5e1", border: "1px solid rgba(255,255,255,.07)" }}
                         >
                           {r.fullName}
                           {r.strengthPct !== null && <b className="ps-num" style={{ marginLeft: 6, color: "#11162d" }}>{r.strengthPct}%</b>}
                         </span>
                       ))}
                       {n.affected.length > 5 && (
-                        <span style={{ fontSize: 11, padding: "5px 10px", borderRadius: 7, background: "#fff", color: "#69738c", border: "1px dashed #dfe2ea" }}>
+                        <span style={{ fontSize: 11, padding: "5px 10px", borderRadius: 7, background: "#0b1220", color: "#94a3b8", border: "1px dashed rgba(255,255,255,.09)" }}>
                           +{n.affected.length - 5} more
                         </span>
                       )}
@@ -198,7 +198,7 @@ export default function ProfileRecommendationsPage({ params }: { params: Promise
                 )}
 
                 <Card title="How this is computed">
-                  <p style={{ margin: 0, fontSize: 11.5, lineHeight: "19px", color: "#4c5470" }}>
+                  <p style={{ margin: 0, fontSize: 11.5, lineHeight: "19px", color: "#cbd5e1" }}>
                     {ghrfix
                       ? "Every rule below reads GhrFix's real admin directories: /admin/users (name, phone, email, account status) and /admin/providers (verificationStatus, rating, services). GhrFix reports no profile completion score and runs no quality audit, so no photo or bio rule exists here — their absence is unknown, not zero."
                       : "Completion scores come from the real Profile.completionPct query; photo and bio gaps come from the deterministic quality audit, which covers only the most recently updated profiles; review state comes from the verification queue. Profiles the audit did not cover are never counted as missing anything."}

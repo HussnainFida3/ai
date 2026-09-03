@@ -189,7 +189,7 @@ export default function MasterOverviewPage({ params }: { params: Promise<{ platf
                       value={Math.round(s.budgetUsedPct)}
                       max={100}
                       label="% used"
-                      color={s.budgetUsedPct >= 90 ? "#e04452" : s.budgetUsedPct >= 70 ? "#c9860f" : "#0f9e69"}
+                      color={s.budgetUsedPct >= 90 ? "#e04452" : s.budgetUsedPct >= 70 ? "#fbbf24" : "#4ade80"}
                     />
                     <div className="cs-master-ring-facts">
                       <div><span>Spent</span><b className="cs-num">{usd(s.totalSpendUsd)}</b></div>
@@ -252,14 +252,14 @@ function insights(s: MasterSnapshot, label: string): string[] {
 }
 
 const CSS = `
-.cs-master-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
-.cs-master-note-inline{font-size:10.5px;color:#8891a8}
+.cs-master-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
+.cs-master-note-inline{font-size:10.5px;color:#94a3b8}
 .cs-master-ring{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
 .cs-master-ring-facts{display:flex;flex-direction:column;gap:9px;flex:1;min-width:150px}
 .cs-master-ring-facts div{display:flex;justify-content:space-between;gap:12px;font-size:11.5px}
-.cs-master-ring-facts span{color:#4c5470}
+.cs-master-ring-facts span{color:#cbd5e1}
 .cs-master-ring-facts b{font-weight:730}
 .cs-master-insights{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
-.cs-master-insights li{display:flex;gap:10px;font-size:12px;line-height:19px;color:#4c5470}
+.cs-master-insights li{display:flex;gap:10px;font-size:12px;line-height:19px;color:#cbd5e1}
 .cs-master-dot{width:6px;height:6px;border-radius:50%;background:#7c3aed;flex:0 0 auto;margin-top:6px}
 `;

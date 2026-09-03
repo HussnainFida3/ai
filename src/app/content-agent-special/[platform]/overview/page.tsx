@@ -27,7 +27,7 @@ import {
   TONE,
 } from "@/components/content-special/kit";
 
-const STATUS_COLOR: Record<string, string> = { Published: "#0f9e69", Draft: "#c9860f", Other: "#69738c" };
+const STATUS_COLOR: Record<string, string> = { Published: "#4ade80", Draft: "#fbbf24", Other: "#94a3b8" };
 
 export default function ContentOverviewPage({ params }: { params: Promise<{ platform: string }> }) {
   const platform = usePlatformParam(params);
@@ -45,7 +45,7 @@ export default function ContentOverviewPage({ params }: { params: Promise<{ plat
     { label: "Cover image", value: c.posts.filter((p) => p.hasCover).length },
   ];
 
-  const statusSlices = c.byStatus.map((s) => ({ ...s, color: STATUS_COLOR[s.label] ?? "#69738c" }));
+  const statusSlices = c.byStatus.map((s) => ({ ...s, color: STATUS_COLOR[s.label] ?? "#94a3b8" }));
 
   const recent = [...c.posts]
     .sort((a, b) => (b.publishedAt ?? b.createdAt ?? "").localeCompare(a.publishedAt ?? a.createdAt ?? ""))
@@ -112,7 +112,7 @@ export default function ContentOverviewPage({ params }: { params: Promise<{ plat
       <div className="cs-row-2">
         <Card
           title="Publishing Trend"
-          action={<span style={{ fontSize: 11, color: "#69738c" }}>Last 8 months</span>}
+          action={<span style={{ fontSize: 11, color: "#94a3b8" }}>Last 8 months</span>}
         >
           {c.loading ? (
             <Empty>Loading live data…</Empty>
@@ -148,7 +148,7 @@ export default function ContentOverviewPage({ params }: { params: Promise<{ plat
           ) : (
             <>
               <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
-                <ScoreRing value={optimisedPct} max={100} label="% complete" color={optimisedPct >= 70 ? "#0f9e69" : optimisedPct >= 40 ? "#c9860f" : "#e04452"} />
+                <ScoreRing value={optimisedPct} max={100} label="% complete" color={optimisedPct >= 70 ? "#4ade80" : optimisedPct >= 40 ? "#fbbf24" : "#e04452"} />
               </div>
               <BarRows rows={completeness.map((r) => ({ ...r, color: SERIES[1] }))} colored={false} />
             </>
@@ -170,7 +170,7 @@ export default function ContentOverviewPage({ params }: { params: Promise<{ plat
                   >
                     <Icon name={i.icon} size={15} />
                   </span>
-                  <p style={{ margin: 0, fontSize: 11.5, lineHeight: "19px", color: "#4c5470" }}>{i.text}</p>
+                  <p style={{ margin: 0, fontSize: 11.5, lineHeight: "19px", color: "#cbd5e1" }}>{i.text}</p>
                 </div>
               ))
             )}
@@ -178,7 +178,7 @@ export default function ContentOverviewPage({ params }: { params: Promise<{ plat
         </Card>
       </div>
 
-      <Card title="Recently Touched" action={<span style={{ fontSize: 11, color: "#69738c" }}>{recent.length} of {total}</span>} pad={false}>
+      <Card title="Recently Touched" action={<span style={{ fontSize: 11, color: "#94a3b8" }}>{recent.length} of {total}</span>} pad={false}>
         <div className="cs-table-wrap">
           <table className="cs-table">
             <thead>
@@ -203,10 +203,10 @@ export default function ContentOverviewPage({ params }: { params: Promise<{ plat
                       <div className="title">{p.title}</div>
                       {p.slug && <div className="sub">/{p.slug}</div>}
                     </td>
-                    <td style={{ color: "#4c5470" }}>{p.category}</td>
+                    <td style={{ color: "#cbd5e1" }}>{p.category}</td>
                     <td><Pill tone={p.status === "PUBLISHED" ? "green" : p.status === "DRAFT" ? "amber" : "purple"}>{p.status === "OTHER" ? "Other" : p.status[0] + p.status.slice(1).toLowerCase()}</Pill></td>
                     <td><Pill tone={done === 4 ? "green" : done >= 2 ? "amber" : "red"}>{done}/4 fields</Pill></td>
-                    <td className="cs-num" style={{ paddingRight: 19, color: "#69738c" }}>
+                    <td className="cs-num" style={{ paddingRight: 19, color: "#94a3b8" }}>
                       {(p.publishedAt ?? p.createdAt) ? new Date((p.publishedAt ?? p.createdAt) as string).toLocaleDateString() : "—"}
                     </td>
                   </tr>

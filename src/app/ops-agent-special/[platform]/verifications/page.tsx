@@ -223,7 +223,7 @@ export default function OpsVerificationsPage({ params }: { params: Promise<{ pla
               value={o.loading || o.error || freshShare === null ? 0 : freshShare}
               max={100}
               label={freshShare === null ? "No data" : "%"}
-              color={freshShare === null ? "#69738c" : freshShare >= 80 ? "#0f9e69" : freshShare >= 50 ? "#c9860f" : "#e04452"}
+              color={freshShare === null ? "#94a3b8" : freshShare >= 80 ? "#4ade80" : freshShare >= 50 ? "#fbbf24" : "#e04452"}
             />
             <p>
               {o.error
@@ -326,7 +326,7 @@ export default function OpsVerificationsPage({ params }: { params: Promise<{ pla
                     <div className="title">{i.title}</div>
                     <div className="sub">{i.sub}</div>
                   </td>
-                  <td style={{ color: "#4c5470" }}>{i.category}</td>
+                  <td style={{ color: "#cbd5e1" }}>{i.category}</td>
                   <td>
                     <Pill tone={i.tone}>
                       <Icon name={i.glyph} size={12} />
@@ -334,7 +334,7 @@ export default function OpsVerificationsPage({ params }: { params: Promise<{ pla
                     </Pill>
                   </td>
                   <td className="cs-num">{ageLabel(i)}</td>
-                  <td className="cs-num" style={{ color: "#69738c" }}>
+                  <td className="cs-num" style={{ color: "#94a3b8" }}>
                     {i.timestamp ? new Date(i.timestamp).toLocaleDateString() : "Not recorded"}
                   </td>
                   <td style={{ paddingRight: 19 }}>
@@ -379,14 +379,14 @@ export default function OpsVerificationsPage({ params }: { params: Promise<{ pla
 
 /* Page-local styles only, all `cs-ops-*` prefixed. */
 const VER_CSS = `
-.cs-ops-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
-.cs-ops-src{font-size:11px;color:#69738c}
-.cs-ops-lead{margin:0;font-size:12px;line-height:20px;color:#4c5470}
+.cs-ops-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
+.cs-ops-src{font-size:11px;color:#94a3b8}
+.cs-ops-lead{margin:0;font-size:12px;line-height:20px;color:#cbd5e1}
 .cs-ops-ring{display:flex;flex-direction:column;align-items:center;gap:12px}
-.cs-ops-ring p{margin:0;font-size:11.5px;line-height:19px;color:#4c5470;text-align:center}
+.cs-ops-ring p{margin:0;font-size:11.5px;line-height:19px;color:#cbd5e1;text-align:center}
 .cs-ops-toolbar{display:flex;align-items:center;gap:12px;padding:16px 19px 0;flex-wrap:wrap;justify-content:space-between}
 .cs-ops-tabletitle{margin:0;font-size:13px;font-weight:750;letter-spacing:-.2px}
-.cs-ops-readonly{margin:0;padding:12px 19px 16px;font-size:10.5px;line-height:17px;color:#8891a8;border-top:1px solid #eef0f5}
+.cs-ops-readonly{margin:0;padding:12px 19px 16px;font-size:10.5px;line-height:17px;color:#94a3b8;border-top:1px solid rgba(255,255,255,.07)}
 .cs-ops-actions{display:flex;gap:6px;flex-wrap:wrap}
 .cs-ops-inert{opacity:.55;cursor:not-allowed;white-space:nowrap}
 .cs-ops-toast{position:fixed;right:22px;bottom:22px;max-width:360px;background:#11162f;color:#fff;border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:18px;box-shadow:0 14px 32px rgba(20,20,45,.28);z-index:50}

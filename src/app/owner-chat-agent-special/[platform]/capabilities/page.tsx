@@ -192,7 +192,7 @@ export default function OwnerChatCapabilitiesPage({ params }: { params: Promise<
                   <tr key={c.key}>
                     <td style={{ paddingLeft: 19 }}><div className="cs-owner-name">{c.title}</div></td>
                     <td><code className="cs-owner-route">{c.route}</code></td>
-                    <td style={{ color: "#4c5470", maxWidth: 380 }}>{c.description}</td>
+                    <td style={{ color: "#cbd5e1", maxWidth: 380 }}>{c.description}</td>
                     <td style={{ paddingRight: 19 }}>
                       {st === "ok" ? (
                         <Pill tone="green">● Loaded</Pill>
@@ -225,8 +225,8 @@ export default function OwnerChatCapabilitiesPage({ params }: { params: Promise<
               {s.writes.map((c) => (
                 <tr key={c.key}>
                   <td style={{ paddingLeft: 19 }}><div className="cs-owner-name">{c.title}</div></td>
-                  <td style={{ color: "#69738c", maxWidth: 300, fontSize: 11 }}>{c.route}</td>
-                  <td style={{ color: "#4c5470", maxWidth: 360 }}>{c.description}</td>
+                  <td style={{ color: "#94a3b8", maxWidth: 300, fontSize: 11 }}>{c.route}</td>
+                  <td style={{ color: "#cbd5e1", maxWidth: 360 }}>{c.description}</td>
                   <td style={{ paddingRight: 19 }}>
                     <button type="button" className="cs-btn" disabled title="Not wired up in this workspace" aria-label={`${c.title} — disabled, not wired up in this workspace`}>
                       <Icon name="edit" size={13} />Disabled
@@ -259,15 +259,15 @@ export default function OwnerChatCapabilitiesPage({ params }: { params: Promise<
 }
 
 const OWNER_CAP_CSS = `
-.cs-owner-banner{display:flex;gap:11px;align-items:flex-start;border:1px solid #f6d5d8;background:#fff5f5;border-radius:12px;padding:14px 16px;margin-bottom:16px;color:#a32732}
+.cs-owner-banner{display:flex;gap:11px;align-items:flex-start;border:1px solid rgba(244,63,94,.32);background:rgba(244,63,94,.12);border-radius:12px;padding:14px 16px;margin-bottom:16px;color:#fda4af}
 .cs-owner-banner b{display:block;font-size:13px;margin-bottom:4px}
 .cs-owner-banner span{font-size:11.5px;line-height:19px;color:#8d3a41;display:block}
 .cs-owner-donut-wrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
-.cs-owner-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
+.cs-owner-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
 .cs-owner-name{font-size:12.5px;font-weight:660;color:#11162d}
-.cs-owner-route{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;background:#f5f6fa;border:1px solid #eef0f5;border-radius:6px;padding:3px 6px;color:#4c5470;white-space:nowrap}
-.cs-owner-foot{margin:0;padding:13px 19px;border-top:1px solid #eef0f5;font-size:11px;line-height:18px;color:#8891a8}
-.cs-owner-prov-line{margin:0 0 9px;font-size:11.5px;line-height:19px;color:#4c5470}
+.cs-owner-route{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;background:#0d1526;border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:3px 6px;color:#cbd5e1;white-space:nowrap}
+.cs-owner-foot{margin:0;padding:13px 19px;border-top:1px solid rgba(255,255,255,.07);font-size:11px;line-height:18px;color:#94a3b8}
+.cs-owner-prov-line{margin:0 0 9px;font-size:11.5px;line-height:19px;color:#cbd5e1}
 .cs-owner-prov-line:last-child{margin-bottom:0}
 .cs-owner-prov-line b{color:#11162d}
 `;

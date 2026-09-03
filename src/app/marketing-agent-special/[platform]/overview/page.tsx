@@ -42,7 +42,7 @@ const NAV: NavItem[] = [
 ];
 
 /* Fixed status colors so a segment keeps its color when the set shrinks. */
-const STATUS_COLOR: Record<string, string> = { Active: "#0f9e69", Expired: "#c9860f", Disabled: "#69738c" };
+const STATUS_COLOR: Record<string, string> = { Active: "#4ade80", Expired: "#fbbf24", Disabled: "#94a3b8" };
 
 export default function MarketingOverviewPage({ params }: { params: Promise<{ platform: string }> }) {
   const platform = usePlatformParam(params);
@@ -52,7 +52,7 @@ export default function MarketingOverviewPage({ params }: { params: Promise<{ pl
 
   const dash = (v: number | null) => (m.loading ? "—" : v === null ? "Not exposed" : v.toLocaleString());
 
-  const statusSlices = m.byPromoStatus.map((s) => ({ ...s, color: STATUS_COLOR[s.label] ?? "#69738c" }));
+  const statusSlices = m.byPromoStatus.map((s) => ({ ...s, color: STATUS_COLOR[s.label] ?? "#94a3b8" }));
   const typeSlices = m.byPromoType.map((s, i) => ({ ...s, color: SERIES[i] }));
   const audienceSlices = m.byAudience.map((s, i) => ({ ...s, color: SERIES[i] }));
   const kindSlices = m.byEventKind.map((s, i) => ({ ...s, color: SERIES[i] }));
@@ -135,7 +135,7 @@ export default function MarketingOverviewPage({ params }: { params: Promise<{ pl
       <div className="cs-row-2">
         <Card
           title="Marketing Activity Trend"
-          action={<span style={{ fontSize: 11, color: "#69738c" }}>Last 8 months</span>}
+          action={<span style={{ fontSize: 11, color: "#94a3b8" }}>Last 8 months</span>}
         >
           {m.loading ? (
             <Empty>Loading live data…</Empty>
@@ -223,7 +223,7 @@ export default function MarketingOverviewPage({ params }: { params: Promise<{ pl
                   value={m.redemptionRatePct}
                   max={100}
                   label="% of capacity"
-                  color={m.redemptionRatePct >= 70 ? "#0f9e69" : m.redemptionRatePct >= 30 ? "#c9860f" : "#e04452"}
+                  color={m.redemptionRatePct >= 70 ? "#4ade80" : m.redemptionRatePct >= 30 ? "#fbbf24" : "#e04452"}
                 />
               </div>
               <p className="cs-marketing-note">
@@ -379,11 +379,11 @@ function buildInsights(m: MarketingSnapshot, label: string) {
 /* Page-local styles only. Every selector is `cs-marketing-*` prefixed so
    nothing here can leak onto the other special workspaces. */
 const CSS = `
-.cs-marketing-note{margin:10px 0 0;font-size:11px;line-height:18px;color:#69738c}
+.cs-marketing-note{margin:10px 0 0;font-size:11px;line-height:18px;color:#94a3b8}
 .cs-marketing-insights{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
 .cs-marketing-insight{display:flex;gap:11px;align-items:flex-start}
 .cs-marketing-insight span{width:29px;height:29px;border-radius:9px;flex:0 0 auto;display:grid;place-items:center}
-.cs-marketing-insight p{margin:0;font-size:11.5px;line-height:19px;color:#4c5470}
+.cs-marketing-insight p{margin:0;font-size:11.5px;line-height:19px;color:#cbd5e1}
 .cs-marketing-seglist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-.cs-marketing-seglist li{display:flex;align-items:center;gap:9px;font-size:12px;color:#4c5470}
+.cs-marketing-seglist li{display:flex;align-items:center;gap:9px;font-size:12px;color:#cbd5e1}
 `;

@@ -254,11 +254,11 @@ const CHAT_CSS = `
 .cs-analytics-log{padding:18px 19px;display:flex;flex-direction:column;gap:15px;min-height:340px;max-height:52vh;overflow-y:auto}
 .cs-analytics-intro{text-align:center;margin:auto;max-width:340px}
 .cs-analytics-intro b{display:block;font-size:13px;margin-top:6px}
-.cs-analytics-intro p{margin:6px 0 0;font-size:11.5px;line-height:19px;color:#69738c}
+.cs-analytics-intro p{margin:6px 0 0;font-size:11.5px;line-height:19px;color:#94a3b8}
 .cs-analytics-turn{display:flex;flex-direction:column;align-items:flex-start;gap:4px;max-width:78%}
 .cs-analytics-turn-user{align-self:flex-end;align-items:flex-end}
-.cs-analytics-who{font-size:10px;font-weight:650;color:#8891a8}
-.cs-analytics-bubble{background:#f5f6fb;border:1px solid #eef0f5;border-radius:13px 13px 13px 4px;padding:11px 14px;font-size:12px;line-height:20px;color:#28304d;white-space:pre-wrap;word-break:break-word}
+.cs-analytics-who{font-size:10px;font-weight:650;color:#94a3b8}
+.cs-analytics-bubble{background:#0d1526;border:1px solid rgba(255,255,255,.07);border-radius:13px 13px 13px 4px;padding:11px 14px;font-size:12px;line-height:20px;color:#f1f5f9;white-space:pre-wrap;word-break:break-word}
 .cs-analytics-bubble-user{background:linear-gradient(90deg,#7440df,#8b5cf6);border:0;color:#fff;border-radius:13px 13px 4px 13px}
 .cs-analytics-typing{display:flex;gap:5px;align-items:center;padding:14px}
 .cs-analytics-typing i{width:6px;height:6px;border-radius:50%;background:#a9b0c6;animation:cs-analytics-blink 1.2s infinite}
@@ -266,19 +266,19 @@ const CHAT_CSS = `
 .cs-analytics-typing i:nth-child(3){animation-delay:.36s}
 @keyframes cs-analytics-blink{0%,80%,100%{opacity:.3}40%{opacity:1}}
 .cs-analytics-chat-error{padding:0 19px 4px}
-.cs-analytics-chips{display:flex;flex-wrap:wrap;gap:7px;padding:12px 19px 0;border-top:1px solid #eef0f5}
-.cs-analytics-chip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:999px;border:1px solid #e4e7ef;background:#fff;color:#4c5470;font-size:11px;font-weight:600}
-.cs-analytics-chip:hover:not(:disabled){background:#faf8ff;border-color:#d9cdf7;color:#5b2ca8}
+.cs-analytics-chips{display:flex;flex-wrap:wrap;gap:7px;padding:12px 19px 0;border-top:1px solid rgba(255,255,255,.07)}
+.cs-analytics-chip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:999px;border:1px solid rgba(255,255,255,.07);background:#0b1220;color:#cbd5e1;font-size:11px;font-weight:600}
+.cs-analytics-chip:hover:not(:disabled){background:rgba(139,92,246,.14);border-color:rgba(139,92,246,.45);color:#c4b5fd}
 .cs-analytics-chip:disabled{opacity:.5;cursor:not-allowed}
 .cs-analytics-input{display:flex;gap:9px;align-items:center;padding:13px 19px 16px}
-.cs-analytics-input input{flex:1;height:40px;border:1px solid #dfe2ea;border-radius:10px;padding:0 13px;font-size:12px;background:#fff;outline:0}
+.cs-analytics-input input{flex:1;height:40px;border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:0 13px;font-size:12px;background:#0b1220;outline:0}
 .cs-analytics-input input:focus{border-color:#8b5cf6}
-.cs-analytics-input input:disabled{background:#f7f8fc;color:#8891a8}
+.cs-analytics-input input:disabled{background:#0d1526;color:#94a3b8}
 .cs-analytics-input .cs-btn:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
 .cs-analytics-facts{display:flex;flex-direction:column;gap:2px}
-.cs-analytics-fact{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:11.5px;padding:7px 0;border-bottom:1px solid #f4f5f9}
-.cs-analytics-fact span{color:#4c5470;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cs-analytics-fact{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:11.5px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.cs-analytics-fact span{color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cs-analytics-fact b{font-weight:730;white-space:nowrap}
-.cs-analytics-facts-head{font-size:10.5px;font-weight:650;color:#69738c;margin-top:14px;padding-bottom:4px}
-.cs-analytics-chat-note{margin:12px 0 0;font-size:11px;line-height:18px;color:#69738c}
+.cs-analytics-facts-head{font-size:10.5px;font-weight:650;color:#94a3b8;margin-top:14px;padding-bottom:4px}
+.cs-analytics-chat-note{margin:12px 0 0;font-size:11px;line-height:18px;color:#94a3b8}
 `;

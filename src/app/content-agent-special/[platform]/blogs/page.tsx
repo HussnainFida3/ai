@@ -130,16 +130,16 @@ export default function ContentBlogsPage({ params }: { params: Promise<{ platfor
                     <div className="title">{p.title}</div>
                     {p.slug && <div className="sub">/{p.slug}</div>}
                   </td>
-                  <td style={{ color: "#4c5470", whiteSpace: "nowrap" }}>{p.category}</td>
+                  <td style={{ color: "#cbd5e1", whiteSpace: "nowrap" }}>{p.category}</td>
                   <td><Pill tone={p.status === "PUBLISHED" ? "green" : p.status === "DRAFT" ? "amber" : "purple"}>{p.status === "OTHER" ? "Other" : p.status[0] + p.status.slice(1).toLowerCase()}</Pill></td>
                   <td><FieldMark ok={p.hasMetaTitle} /></td>
                   <td><FieldMark ok={p.hasMetaDescription} /></td>
                   <td><FieldMark ok={p.hasKeywords} /></td>
                   <td><FieldMark ok={p.hasCover} /></td>
-                  <td className="cs-num" style={{ color: "#4c5470" }}>
+                  <td className="cs-num" style={{ color: "#cbd5e1" }}>
                     {c.totalViews === null ? (p.words?.toLocaleString() ?? "—") : (p.views?.toLocaleString() ?? "—")}
                   </td>
-                  <td className="cs-num" style={{ paddingRight: 19, color: "#69738c", whiteSpace: "nowrap" }}>
+                  <td className="cs-num" style={{ paddingRight: 19, color: "#94a3b8", whiteSpace: "nowrap" }}>
                     {(p.publishedAt ?? p.createdAt) ? new Date((p.publishedAt ?? p.createdAt) as string).toLocaleDateString() : "—"}
                   </td>
                 </tr>
@@ -149,7 +149,7 @@ export default function ContentBlogsPage({ params }: { params: Promise<{ platfor
         </div>
 
         {rows.length > PAGE_SIZE && (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "14px 19px", borderTop: "1px solid #eef0f5", fontSize: 11.5, color: "#4c5470", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "14px 19px", borderTop: "1px solid rgba(255,255,255,.07)", fontSize: 11.5, color: "#cbd5e1", flexWrap: "wrap" }}>
             <span>
               Showing {(current - 1) * PAGE_SIZE + 1}–{Math.min(current * PAGE_SIZE, rows.length)} of {rows.length}
             </span>

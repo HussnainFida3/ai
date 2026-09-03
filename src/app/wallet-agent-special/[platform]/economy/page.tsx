@@ -319,7 +319,7 @@ export default function WalletEconomyPage({ params }: { params: Promise<{ platfo
                   value={w.loading || w.error || feeShare === null ? 0 : Math.min(100, Math.round(feeShare))}
                   max={100}
                   label={feeShare === null || w.error ? "Not computable" : "%"}
-                  color={feeShare === null ? "#69738c" : feeShare >= 50 ? "#e04452" : feeShare >= 20 ? "#c9860f" : "#0f9e69"}
+                  color={feeShare === null ? "#94a3b8" : feeShare >= 50 ? "#e04452" : feeShare >= 20 ? "#fbbf24" : "#4ade80"}
                 />
                 <p className="cs-wallet-note" style={{ textAlign: "center" }}>
                   {w.error
@@ -428,28 +428,28 @@ function UnsupportedNotice({ snapshot, label }: { snapshot: WalletSnapshot; labe
 }
 
 const ECONOMY_CSS = `
-.cs-wallet-meta{font-size:11px;color:#69738c}
-.cs-wallet-note{margin:12px 0 0;font-size:11px;line-height:18px;color:#8891a8}
-.cs-wallet-banner{display:flex;gap:10px;align-items:flex-start;border:1px solid #f0e0bd;background:#fffaef;color:#7a5a12;border-radius:11px;padding:12px 14px;font-size:11.5px;line-height:19px;margin-bottom:12px}
+.cs-wallet-meta{font-size:11px;color:#94a3b8}
+.cs-wallet-note{margin:12px 0 0;font-size:11px;line-height:18px;color:#94a3b8}
+.cs-wallet-banner{display:flex;gap:10px;align-items:flex-start;border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.13);color:#fbbf24;border-radius:11px;padding:12px 14px;font-size:11.5px;line-height:19px;margin-bottom:12px}
 .cs-wallet-banner svg{flex:0 0 auto;margin-top:2px}
 .cs-wallet-banner b{font-weight:750}
-.cs-wallet-banner code{font-size:11px;background:#fff3d9;border-radius:4px;padding:1px 4px}
+.cs-wallet-banner code{font-size:11px;background:rgba(245,158,11,.13);border-radius:4px;padding:1px 4px}
 .cs-wallet-ring{display:flex;flex-direction:column;align-items:center;gap:12px}
 .cs-wallet-config{display:flex;flex-direction:column}
-.cs-wallet-config-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #f4f5f9}
+.cs-wallet-config-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05)}
 .cs-wallet-config-row:last-child{border-bottom:0}
 .cs-wallet-config-row b{font-size:12px;font-weight:700;display:block}
-.cs-wallet-config-row p{margin:3px 0 0;font-size:10.5px;line-height:17px;color:#8891a8;max-width:340px}
+.cs-wallet-config-row p{margin:3px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8;max-width:340px}
 .cs-wallet-config-row>span{font-size:12.5px;font-weight:730;white-space:nowrap;text-align:right}
 .cs-wallet-unsupported{display:flex;gap:13px;align-items:flex-start}
-.cs-wallet-unsupported>span{width:34px;height:34px;border-radius:10px;flex:0 0 auto;display:grid;place-items:center;background:#fff6e6;color:#c9860f}
-.cs-wallet-unsupported p{margin:0 0 10px;font-size:12px;line-height:20px;color:#4c5470;max-width:640px}
-.cs-wallet-input{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 6px 0 10px;border:1px solid #dfe2ea;border-radius:8px;background:#fff;flex:0 0 auto}
+.cs-wallet-unsupported>span{width:34px;height:34px;border-radius:10px;flex:0 0 auto;display:grid;place-items:center;background:rgba(245,158,11,.13);color:#fbbf24}
+.cs-wallet-unsupported p{margin:0 0 10px;font-size:12px;line-height:20px;color:#cbd5e1;max-width:640px}
+.cs-wallet-input{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 6px 0 10px;border:1px solid rgba(255,255,255,.09);border-radius:8px;background:#0b1220;flex:0 0 auto}
 .cs-wallet-input:focus-within{border-color:#7c3aed}
 .cs-wallet-input input{width:84px;border:0;outline:0;text-align:right;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;background:transparent;color:inherit}
 .cs-wallet-input input:disabled{color:#9aa3b8}
 .cs-wallet-input input::-webkit-inner-spin-button,.cs-wallet-input input::-webkit-outer-spin-button{margin-left:4px}
-.cs-wallet-input span{font-size:11px;color:#8891a8;font-weight:650}
+.cs-wallet-input span{font-size:11px;color:#94a3b8;font-weight:650}
 .cs-economy-save:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
 .cs-wallet-save-error{display:flex;align-items:flex-start;gap:6px;margin:12px 0 0;font-size:11.5px;line-height:17px;color:#c0323e}
 .cs-wallet-save-error svg{flex:0 0 auto;margin-top:2px}

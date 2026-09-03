@@ -820,59 +820,42 @@ export default function HubPage() {
           flex: 1;
         }
 
-        .hub-special-platforms {
+        .hub-special-owner {
           position: relative;
           z-index: 1;
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 7px;
-          margin-top: 14px;
-        }
-
-        .hub-special-platform {
-          display: flex;
+          display: inline-flex;
           align-items: center;
-          justify-content: center;
           gap: 6px;
-          min-width: 0;
-          padding: 9px 8px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 10px;
-          color: #c6d0e4;
-          background: rgba(255, 255, 255, 0.03);
-          text-decoration: none;
-          font-size: 10.5px;
+          align-self: flex-start;
+          margin: 0 0 9px;
+          padding: 4px 9px 4px 5px;
+          border: 1px solid color-mix(in srgb, var(--platform) 30%, transparent);
+          border-radius: 999px;
+          color: #d7deec;
+          background: color-mix(in srgb, var(--platform) 14%, transparent);
+          font-size: 10px;
           font-weight: 750;
           white-space: nowrap;
-          transition:
-            color 0.2s ease,
-            border-color 0.2s ease,
-            background 0.2s ease,
-            transform 0.2s ease;
         }
 
-        .hub-special-platform img {
-          width: 14px;
-          height: 14px;
+        .hub-special-owner img {
+          width: 15px;
+          height: 15px;
           flex: 0 0 auto;
           border-radius: 4px;
           object-fit: contain;
         }
 
-        .hub-special-platform svg {
-          opacity: 0;
-          transition: opacity 0.2s ease;
-        }
-
-        .hub-special-platform:hover {
-          color: #ffffff;
-          border-color: color-mix(in srgb, var(--platform) 55%, transparent);
-          background: color-mix(in srgb, var(--platform) 16%, transparent);
-          transform: translateY(-1px);
-        }
-
-        .hub-special-platform:hover svg {
-          opacity: 1;
+        .hub-special-bottom {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-top: 12px;
+          color: var(--accent);
+          font-size: 10.5px;
+          font-weight: 750;
         }
 
         .hub-platform-section {
@@ -1460,43 +1443,45 @@ export default function HubPage() {
         </section>
 
         {/* SPECIAL WORKSPACES — one pixel-perfect experience per agent, both platforms */}
+        {/* One box per agent PER PLATFORM — "SEO Agent · ShadiLife" is its own
+            card, and the whole card is the link. No nested buttons to aim at. */}
         <section className="hub-special-grid">
-          {SPECIAL_WORKSPACES.map((w) => (
-            <div
-              key={w.href}
-              className="hub-special-card"
-              style={{ ["--accent" as string]: w.accent }}
-            >
-              <div className="hub-special-glow" />
+          {SPECIAL_WORKSPACES.flatMap((w) =>
+            PLATFORM_LIST.map((platform) => (
+              <Link
+                key={`${w.href}-${platform.key}`}
+                href={`${w.href}/${platform.key}/${w.landing}`}
+                className="hub-special-card"
+                style={{
+                  ["--accent" as string]: w.accent,
+                  ["--platform" as string]: platform.color,
+                }}
+              >
+                <div className="hub-special-glow" />
 
-              <div className="hub-special-top">
-                <div className="hub-special-icon">
-                  <w.icon size={19} />
+                <div className="hub-special-top">
+                  <div className="hub-special-icon">
+                    <w.icon size={19} />
+                  </div>
+
+                  <span className="hub-special-pill">{w.count} pages</span>
                 </div>
 
-                <span className="hub-special-pill">{w.count} pages</span>
-              </div>
+                <h2>{w.label}</h2>
 
-              <h2>{w.label}</h2>
+                <div className="hub-special-owner">
+                  <img src={platform.logoUrl} alt="" aria-hidden="true" />
+                  {platform.label}
+                </div>
 
-              <p>{w.desc}</p>
+                <p>{w.desc}</p>
 
-              <div className="hub-special-platforms">
-                {PLATFORM_LIST.map((platform) => (
-                  <Link
-                    key={platform.key}
-                    href={`${w.href}/${platform.key}/${w.landing}`}
-                    className="hub-special-platform"
-                    style={{ ["--platform" as string]: platform.color }}
-                  >
-                    <img src={platform.logoUrl} alt="" aria-hidden="true" />
-                    {platform.label}
-                    <ArrowRight size={11} />
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ))}
+                <div className="hub-special-bottom">
+                  Open workspace <ArrowRight size={12} />
+                </div>
+              </Link>
+            )),
+          )}
         </section>
 
         {/* PLATFORMS */}

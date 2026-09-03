@@ -133,7 +133,7 @@ export default function AnalyticsBreakdownPage({ params }: { params: Promise<{ p
         <>
           <div className="cs-row-half">
             {a.dimensions.slice(0, 4).map((d) => (
-              <Card key={d.key} title={d.title} action={<span style={{ fontSize: 11, color: "#69738c" }}>{d.rows.length} segments</span>}>
+              <Card key={d.key} title={d.title} action={<span style={{ fontSize: 11, color: "#94a3b8" }}>{d.rows.length} segments</span>}>
                 <div className="cs-donut-row">
                   <Donut data={d.rows.slice(0, 6)} center={d.total.toLocaleString()} centerLabel={d.unit} />
                   <Legend data={d.rows.slice(0, 6)} />
@@ -213,7 +213,7 @@ export default function AnalyticsBreakdownPage({ params }: { params: Promise<{ p
                     <div className="title">{r.label}</div>
                     <div className="sub">{r.unit}</div>
                   </td>
-                  <td style={{ color: "#4c5470" }}>{r.dimension}</td>
+                  <td style={{ color: "#cbd5e1" }}>{r.dimension}</td>
                   <td>
                     <Pill tone={r.rank === 1 ? "green" : r.rank <= 3 ? "blue" : "purple"}>
                       <Icon name={r.rank === 1 ? "trend" : "tag"} size={12} />
@@ -221,7 +221,7 @@ export default function AnalyticsBreakdownPage({ params }: { params: Promise<{ p
                     </Pill>
                   </td>
                   <td className="cs-num">{r.value.toLocaleString()}</td>
-                  <td className="cs-num" style={{ paddingRight: 19, color: "#69738c" }}>{r.sharePct}%</td>
+                  <td className="cs-num" style={{ paddingRight: 19, color: "#94a3b8" }}>{r.sharePct}%</td>
                 </tr>
               ))}
             </tbody>
@@ -236,8 +236,8 @@ export default function AnalyticsBreakdownPage({ params }: { params: Promise<{ p
 
 /* Page-local styles only, all `cs-analytics-*` prefixed. */
 const BREAKDOWN_CSS = `
-.cs-analytics-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
+.cs-analytics-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
 .cs-analytics-toolbar{display:flex;align-items:center;gap:12px;padding:14px 19px 0;flex-wrap:wrap}
-.cs-analytics-sort{border:0;background:none;padding:0;font:inherit;font-size:10.5px;font-weight:650;color:#69738c}
+.cs-analytics-sort{border:0;background:none;padding:0;font:inherit;font-size:10.5px;font-weight:650;color:#94a3b8}
 .cs-analytics-sort:hover{color:#7c3aed}
 `;

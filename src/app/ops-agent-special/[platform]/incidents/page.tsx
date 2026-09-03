@@ -374,7 +374,7 @@ export default function OpsIncidentsPage({ params }: { params: Promise<{ platfor
                     <div className="title">{r.title}</div>
                     <div className="sub">{r.sub}</div>
                   </td>
-                  <td style={{ color: "#4c5470" }}>{r.category}</td>
+                  <td style={{ color: "#cbd5e1" }}>{r.category}</td>
                   <td>
                     <Pill tone={r.urgency >= 3 ? "red" : r.urgency === 2 ? "amber" : "blue"}>
                       <Icon name={r.urgency >= 3 ? "alert" : r.urgency === 2 ? "clock" : "eye"} size={12} />
@@ -438,18 +438,18 @@ function Fact({ label, value }: { label: string; value: number | null }) {
 
 /* Page-local styles only, all `cs-ops-*` prefixed. */
 const INC_CSS = `
-.cs-ops-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
-.cs-ops-src{font-size:11px;color:#69738c}
-.cs-ops-callout{margin:0;font-size:12px;line-height:20px;color:#4c5470}
+.cs-ops-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
+.cs-ops-src{font-size:11px;color:#94a3b8}
+.cs-ops-callout{margin:0;font-size:12px;line-height:20px;color:#cbd5e1}
 .cs-ops-sec{display:flex;flex-direction:column;gap:14px}
 .cs-ops-facts{display:flex;flex-direction:column;gap:2px}
-.cs-ops-fact{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:11.5px;padding:7px 0;border-bottom:1px solid #f4f5f9}
-.cs-ops-fact span{color:#4c5470;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cs-ops-fact{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:11.5px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.cs-ops-fact span{color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cs-ops-fact b{font-weight:730;white-space:nowrap}
 .cs-ops-toolbar{display:flex;align-items:center;gap:12px;padding:16px 19px 0;flex-wrap:wrap;justify-content:space-between}
 .cs-ops-tabletitle{margin:0;font-size:13px;font-weight:750;letter-spacing:-.2px}
 .cs-ops-inert{opacity:.55;cursor:not-allowed;white-space:nowrap}
 .cs-ops-actions{display:flex;gap:6px;flex-wrap:wrap}
-.cs-ops-readonly{margin:0;padding:12px 19px 16px;font-size:10.5px;line-height:17px;color:#8891a8;border-top:1px solid #eef0f5}
+.cs-ops-readonly{margin:0;padding:12px 19px 16px;font-size:10.5px;line-height:17px;color:#94a3b8;border-top:1px solid rgba(255,255,255,.07)}
 .cs-ops-toast{position:fixed;right:22px;bottom:22px;max-width:360px;background:#11162f;color:#fff;border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:18px;box-shadow:0 14px 32px rgba(20,20,45,.28);z-index:50}
 `;

@@ -103,12 +103,12 @@ export default function ContentEngagementPage({ params }: { params: Promise<{ pl
       {c.error && <ErrorNote error={c.error} platform={platform} />}
 
       {!c.loading && !tracksViews && (
-        <div className="cs-error" style={{ borderColor: "#e6dcfa", background: "#faf8ff" }}>
-          <span className="cs-error-icon" style={{ background: "#f2edff", color: "#7c3aed" }}>
+        <div className="cs-error" style={{ borderColor: "rgba(139,92,246,.32)", background: "rgba(139,92,246,.14)" }}>
+          <span className="cs-error-icon" style={{ background: "rgba(139,92,246,.14)", color: "#7c3aed" }}>
             <Icon name="eye" size={15} />
           </span>
           <div>
-            <b style={{ color: "#5b2ca8" }}>{label} does not record per-post views.</b>
+            <b style={{ color: "#c4b5fd" }}>{label} does not record per-post views.</b>
             <span>
               The panels below use publishing reach signals the library genuinely stores — reading time, word
               count, publishing cadence, category spread and metadata completeness. No view numbers are
@@ -151,7 +151,7 @@ export default function ContentEngagementPage({ params }: { params: Promise<{ pl
       </div>
 
       <div className="cs-row-2">
-        <Card title="Publishing Cadence" action={<span style={{ fontSize: 11, color: "#69738c" }}>Last 8 months</span>}>
+        <Card title="Publishing Cadence" action={<span style={{ fontSize: 11, color: "#94a3b8" }}>Last 8 months</span>}>
           {c.loading ? (
             <Empty>Loading live data…</Empty>
           ) : total === 0 ? (
@@ -208,7 +208,7 @@ export default function ContentEngagementPage({ params }: { params: Promise<{ pl
 
         <Card
           title="Discoverability Signals"
-          action={<span style={{ fontSize: 11, color: "#69738c" }}>of {total} posts</span>}
+          action={<span style={{ fontSize: 11, color: "#94a3b8" }}>of {total} posts</span>}
         >
           {c.loading ? (
             <Empty>Loading…</Empty>
@@ -216,7 +216,7 @@ export default function ContentEngagementPage({ params }: { params: Promise<{ pl
             <Empty>No posts to measure.</Empty>
           ) : (
             <>
-              <p style={{ margin: "0 0 12px", fontSize: 11.5, lineHeight: "19px", color: "#4c5470" }}>
+              <p style={{ margin: "0 0 12px", fontSize: 11.5, lineHeight: "19px", color: "#cbd5e1" }}>
                 Metadata completeness is the closest honest stand-in for how findable a post is — it is what
                 search and social actually read.
               </p>
@@ -228,7 +228,7 @@ export default function ContentEngagementPage({ params }: { params: Promise<{ pl
 
       <Card
         title={tracksViews ? "Engagement by Post" : "Reach Signals by Post"}
-        action={<span style={{ fontSize: 11, color: "#69738c" }}>{Math.min(12, total)} of {total}</span>}
+        action={<span style={{ fontSize: 11, color: "#94a3b8" }}>{Math.min(12, total)} of {total}</span>}
         pad={false}
       >
         <div className="cs-table-wrap">
@@ -254,18 +254,18 @@ export default function ContentEngagementPage({ params }: { params: Promise<{ pl
                     <div className="title">{p.title}</div>
                     {p.slug && <div className="sub">/{p.slug}</div>}
                   </td>
-                  <td style={{ color: "#4c5470", whiteSpace: "nowrap" }}>{p.category}</td>
+                  <td style={{ color: "#cbd5e1", whiteSpace: "nowrap" }}>{p.category}</td>
                   <td>
                     <Pill tone={p.status === "PUBLISHED" ? "green" : p.status === "DRAFT" ? "amber" : "purple"}>
                       <Icon name={p.status === "PUBLISHED" ? "check" : "edit"} size={12} />
                       {p.status === "OTHER" ? "Other" : p.status[0] + p.status.slice(1).toLowerCase()}
                     </Pill>
                   </td>
-                  <td className="cs-num" style={{ color: "#4c5470" }}>
+                  <td className="cs-num" style={{ color: "#cbd5e1" }}>
                     {tracksViews ? (p.views?.toLocaleString() ?? "—") : p.readMinutes !== null ? `${p.readMinutes} min` : "—"}
                   </td>
-                  <td className="cs-num" style={{ color: "#4c5470" }}>{p.words?.toLocaleString() ?? "—"}</td>
-                  <td className="cs-num" style={{ paddingRight: 19, color: "#69738c", whiteSpace: "nowrap" }}>
+                  <td className="cs-num" style={{ color: "#cbd5e1" }}>{p.words?.toLocaleString() ?? "—"}</td>
+                  <td className="cs-num" style={{ paddingRight: 19, color: "#94a3b8", whiteSpace: "nowrap" }}>
                     {p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : "—"}
                   </td>
                 </tr>

@@ -215,7 +215,7 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
         .avatar:after{content:"";width:22px;height:14px;background:#94a3b8;border-radius:12px 12px 4px 4px;position:absolute;margin-top:16px}
         .profileText{line-height:16px}.profileText b{font-size:12px}.profileText span{display:block;color:#94a3b8;font-size:11px}
         .profile svg{color:#94a3b8;margin-left:5px}
-        .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-top:7px}
+        .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:11px;margin-top:7px}
         .card{background:#0b1220;border:1px solid rgba(255,255,255,.07);border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.3)}
         .stat{height:170px;padding:19px 20px 13px;position:relative;overflow:hidden}
         .statLabel{font-size:13px;font-weight:650;margin-bottom:8px}
@@ -234,16 +234,16 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
         .excellent b{font-size:12px;color:#22c55e}.excellent span{display:block;color:#94a3b8;font-size:11px;margin-top:5px}
         .excellent .pts{color:#22c55e;font-weight:700}
         .row2{display:grid;grid-template-columns:2fr 1.12fr;gap:11px;margin-top:10px}
-        .overview{height:253px;padding:19px 18px;display:flex;position:relative;overflow:hidden}
-        .overviewCopy{width:56%;padding-left:1px}
+        .overview{min-height:253px;padding:19px 18px;display:flex;gap:16px;align-items:center;position:relative;overflow:hidden}
+        .overviewCopy{flex:1 1 300px;min-width:0;padding-left:1px}
         .sectionTitle{font-size:16px;font-weight:750;display:flex;align-items:center;gap:9px}
         .sectionTitle .robotIcon{width:29px;height:29px;border-radius:50%;background:rgba(139,92,246,.16);display:flex;align-items:center;justify-content:center;color:#8b5cf6}
         .overviewText{font-size:12px;line-height:22px;color:#94a3b8;margin:17px 0 12px;max-width:570px}
         .overviewText strong{color:#f1f5f9}
         .insightBtn{height:35px;padding:0 14px;font-size:12px}
-        .overviewArt{position:absolute;right:5px;bottom:9px;width:430px;height:220px}
+        .overviewArt{flex:0 1 auto;width:min(430px,45%);height:220px;pointer-events:none}
         .topPages{height:253px;padding:18px 19px}
-        .cardHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+        .cardHeader{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
         .cardHeader h3{margin:0;font-size:15px}
         .viewBtn{height:28px;border:1px solid rgba(139,92,246,.35);background:#0b1220;border-radius:6px;padding:0 11px;color:#8b5cf6;font-size:11px}
         .pagesTable{width:100%;border-collapse:collapse;font-size:12px}

@@ -299,8 +299,8 @@ export default function MasterActivityPage({ params }: { params: Promise<{ platf
 }
 
 const CSS = `
-.cs-master-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
-.cs-master-scope{margin:0;font-size:12px;line-height:20px;color:#4c5470}
-.cs-master-pager{display:flex;align-items:center;gap:12px;justify-content:flex-end;margin-top:14px;font-size:11.5px;color:#69738c}
+.cs-master-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
+.cs-master-scope{margin:0;font-size:12px;line-height:20px;color:#cbd5e1}
+.cs-master-pager{display:flex;align-items:center;gap:12px;justify-content:flex-end;margin-top:14px;font-size:11.5px;color:#94a3b8}
 .cs-master-pager .cs-btn:disabled{opacity:.45;cursor:default}
 `;

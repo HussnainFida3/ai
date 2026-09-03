@@ -265,11 +265,11 @@ const CHAT_CSS = `
 .cs-wallet-log{height:430px;overflow-y:auto;padding:18px 19px;display:flex;flex-direction:column;gap:16px}
 .cs-wallet-intro{margin:auto;text-align:center;max-width:340px}
 .cs-wallet-intro b{font-size:13px;display:block;margin-bottom:6px}
-.cs-wallet-intro p{margin:0;font-size:11.5px;line-height:19px;color:#69738c}
+.cs-wallet-intro p{margin:0;font-size:11.5px;line-height:19px;color:#94a3b8}
 .cs-wallet-turn{display:flex;flex-direction:column;gap:5px;align-items:flex-start}
 .cs-wallet-turn-user{align-items:flex-end}
-.cs-wallet-who{font-size:10px;font-weight:650;color:#69738c;letter-spacing:.02em}
-.cs-wallet-bubble{max-width:82%;background:#f5f6fa;border:1px solid #eef0f5;border-radius:12px;padding:11px 13px;font-size:12.5px;line-height:20px;white-space:pre-wrap;word-break:break-word}
+.cs-wallet-who{font-size:10px;font-weight:650;color:#94a3b8;letter-spacing:.02em}
+.cs-wallet-bubble{max-width:82%;background:#0d1526;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:11px 13px;font-size:12.5px;line-height:20px;white-space:pre-wrap;word-break:break-word}
 .cs-wallet-bubble-user{background:linear-gradient(90deg,#7238df,#8b5cf6);border-color:transparent;color:#fff}
 .cs-wallet-typing{display:inline-flex;gap:4px;align-items:center;height:14px}
 .cs-wallet-typing i{width:6px;height:6px;border-radius:50%;background:#a9b0c4;animation:cs-wallet-bounce 1.1s infinite ease-in-out}
@@ -277,21 +277,21 @@ const CHAT_CSS = `
 .cs-wallet-typing i:nth-child(3){animation-delay:.3s}
 @keyframes cs-wallet-bounce{0%,60%,100%{transform:translateY(0);opacity:.55}30%{transform:translateY(-4px);opacity:1}}
 .cs-wallet-chips{display:flex;flex-wrap:wrap;gap:7px;padding:0 19px 14px}
-.cs-wallet-chip{border:1px solid #dfe2ea;background:#fff;border-radius:20px;padding:7px 12px;font-size:11.5px;color:#4c5470}
-.cs-wallet-chip:hover:not(:disabled){background:#f7f8fc;border-color:#c9cede}
+.cs-wallet-chip{border:1px solid rgba(255,255,255,.09);background:#0b1220;border-radius:20px;padding:7px 12px;font-size:11.5px;color:#cbd5e1}
+.cs-wallet-chip:hover:not(:disabled){background:#0d1526;border-color:#c9cede}
 .cs-wallet-chip:disabled{opacity:.5;cursor:default}
-.cs-wallet-chat-error{margin:0 19px 12px;border:1px solid #f6d5d8;background:#fff5f5;color:#a32732;border-radius:10px;padding:10px 13px;font-size:11.5px}
-.cs-wallet-input{display:flex;gap:9px;padding:14px 19px;border-top:1px solid #eef0f5}
-.cs-wallet-input input{flex:1;height:38px;border:1px solid #dfe2ea;border-radius:9px;padding:0 13px;font-size:12.5px;background:#fff;color:#11162d}
+.cs-wallet-chat-error{margin:0 19px 12px;border:1px solid rgba(244,63,94,.32);background:rgba(244,63,94,.12);color:#fda4af;border-radius:10px;padding:10px 13px;font-size:11.5px}
+.cs-wallet-input{display:flex;gap:9px;padding:14px 19px;border-top:1px solid rgba(255,255,255,.07)}
+.cs-wallet-input input{flex:1;height:38px;border:1px solid rgba(255,255,255,.09);border-radius:9px;padding:0 13px;font-size:12.5px;background:#0b1220;color:#11162d}
 .cs-wallet-input input:focus{outline:2px solid #7c3aed;outline-offset:1px}
-.cs-wallet-input input:disabled{background:#f7f8fc}
+.cs-wallet-input input:disabled{background:#0d1526}
 .cs-wallet-facts{display:flex;flex-direction:column;gap:9px}
-.cs-wallet-facts-head{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#8891a8;margin-top:8px}
+.cs-wallet-facts-head{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#94a3b8;margin-top:8px}
 .cs-wallet-fact{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:11.5px}
-.cs-wallet-fact span{color:#4c5470;min-width:0}
+.cs-wallet-fact span{color:#cbd5e1;min-width:0}
 .cs-wallet-fact b{font-weight:730;white-space:nowrap}
-.cs-wallet-note{margin:10px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
+.cs-wallet-note{margin:10px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
 .cs-wallet-unsupported{display:flex;gap:13px;align-items:flex-start}
-.cs-wallet-unsupported>span{width:34px;height:34px;border-radius:10px;flex:0 0 auto;display:grid;place-items:center;background:#fff6e6;color:#c9860f}
-.cs-wallet-unsupported p{margin:0 0 10px;font-size:12px;line-height:20px;color:#4c5470;max-width:640px}
+.cs-wallet-unsupported>span{width:34px;height:34px;border-radius:10px;flex:0 0 auto;display:grid;place-items:center;background:rgba(245,158,11,.13);color:#fbbf24}
+.cs-wallet-unsupported p{margin:0 0 10px;font-size:12px;line-height:20px;color:#cbd5e1;max-width:640px}
 `;

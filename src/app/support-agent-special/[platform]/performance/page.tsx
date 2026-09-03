@@ -49,7 +49,7 @@ export default function SupportPerformancePage({ params }: { params: Promise<{ p
   const label = platformLabel(platform);
 
   const rate = s.resolutionRate;
-  const ringColor = rate.value === null ? "#69738c" : rate.value >= 70 ? "#0f9e69" : rate.value >= 40 ? "#c9860f" : "#e04452";
+  const ringColor = rate.value === null ? "#94a3b8" : rate.value >= 70 ? "#4ade80" : rate.value >= 40 ? "#fbbf24" : "#e04452";
 
   /* Per-category resolution, ranked worst-first so the weak spots lead. */
   const worstCategories = [...s.categoryResolution]
@@ -109,7 +109,7 @@ export default function SupportPerformancePage({ params }: { params: Promise<{ p
       <div className="cs-row-2">
         <Card
           title="Throughput"
-          action={<span style={{ fontSize: 11, color: "#69738c" }}>{s.series ? s.series.granularity : "None available"}</span>}
+          action={<span style={{ fontSize: 11, color: "#94a3b8" }}>{s.series ? s.series.granularity : "None available"}</span>}
         >
           {s.loading ? (
             <Empty>Loading live queue…</Empty>
@@ -137,7 +137,7 @@ export default function SupportPerformancePage({ params }: { params: Promise<{ p
               <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
                 <ScoreRing value={rate.value} max={rate.max} label="% resolved" color={ringColor} />
               </div>
-              <p style={{ margin: 0, fontSize: 11.5, lineHeight: "19px", color: "#69738c", textAlign: "center" }}>
+              <p style={{ margin: 0, fontSize: 11.5, lineHeight: "19px", color: "#94a3b8", textAlign: "center" }}>
                 {rate.note}
               </p>
             </>
@@ -146,7 +146,7 @@ export default function SupportPerformancePage({ params }: { params: Promise<{ p
       </div>
 
       <div className="cs-row-2">
-        <Card title="Resolution by Category" action={<span style={{ fontSize: 11, color: "#69738c" }}>Weakest first</span>}>
+        <Card title="Resolution by Category" action={<span style={{ fontSize: 11, color: "#94a3b8" }}>Weakest first</span>}>
           {s.loading ? (
             <Empty>Loading…</Empty>
           ) : s.error ? (
@@ -196,7 +196,7 @@ export default function SupportPerformancePage({ params }: { params: Promise<{ p
                 <div key={r.label} style={{ display: "flex", justifyContent: "space-between", gap: 14, alignItems: "baseline" }}>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 12, fontWeight: 640, color: "#11162d" }}>{r.label}</div>
-                    <div style={{ fontSize: 10.5, color: "#69738c", marginTop: 2 }}>{r.note}</div>
+                    <div style={{ fontSize: 10.5, color: "#94a3b8", marginTop: 2 }}>{r.note}</div>
                   </div>
                   <strong className="cs-num" style={{ fontSize: 17, fontWeight: 780, letterSpacing: "-0.4px", whiteSpace: "nowrap" }}>
                     {r.value === null ? "—" : `${r.value}%`}
@@ -233,10 +233,10 @@ export default function SupportPerformancePage({ params }: { params: Promise<{ p
                       <div className="sub">{p.note}</div>
                     </td>
                     <td className="cs-num">{p.current === null ? "—" : p.current.toLocaleString()}</td>
-                    <td className="cs-num" style={{ color: "#69738c" }}>{p.previous === null ? "—" : p.previous.toLocaleString()}</td>
+                    <td className="cs-num" style={{ color: "#94a3b8" }}>{p.previous === null ? "—" : p.previous.toLocaleString()}</td>
                     <td style={{ paddingRight: 19 }}>
                       {p.deltaPct === null ? (
-                        <span style={{ color: "#69738c", fontSize: 11.5 }}>—</span>
+                        <span style={{ color: "#94a3b8", fontSize: 11.5 }}>—</span>
                       ) : (
                         <Pill tone={p.deltaPct >= 0 ? "green" : "red"}>
                           <Icon name={p.deltaPct >= 0 ? "trend" : "alert"} size={12} />
@@ -281,7 +281,7 @@ function Note({ icon, tone, children }: { icon: string; tone: keyof typeof TONE;
       >
         <Icon name={icon} size={14} />
       </span>
-      <p style={{ margin: 0, fontSize: 11.5, lineHeight: "19px", color: "#4c5470" }}>{children}</p>
+      <p style={{ margin: 0, fontSize: 11.5, lineHeight: "19px", color: "#cbd5e1" }}>{children}</p>
     </div>
   );
 }

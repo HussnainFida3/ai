@@ -244,11 +244,11 @@ export default function SiteChatConversationsPage({ params }: { params: Promise<
                     )}
                     {!s.loading && !s.error && s.callers.map((c, i) => (
                       <tr key={c.id}>
-                        <td style={{ paddingLeft: 19, color: "#8891a8", fontWeight: 700 }}>{i + 1}</td>
+                        <td style={{ paddingLeft: 19, color: "#94a3b8", fontWeight: 700 }}>{i + 1}</td>
                         <td><span className="title">{c.name}</span></td>
-                        <td style={{ color: "#4c5470" }}>{c.phone ?? "—"}</td>
+                        <td style={{ color: "#cbd5e1" }}>{c.phone ?? "—"}</td>
                         <td className="cs-num">{c.calls.toLocaleString()}</td>
-                        <td className="cs-num" style={{ paddingRight: 19, color: "#69738c" }}>{c.share === null ? "—" : `${c.share}%`}</td>
+                        <td className="cs-num" style={{ paddingRight: 19, color: "#94a3b8" }}>{c.share === null ? "—" : `${c.share}%`}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -309,7 +309,7 @@ export default function SiteChatConversationsPage({ params }: { params: Promise<
                     return (
                       <tr key={e.id}>
                         <td style={{ paddingLeft: 19, maxWidth: 340 }}><span className="title">{e.action}</span></td>
-                        <td style={{ color: "#4c5470", whiteSpace: "nowrap" }}>{e.targetType ?? "—"}</td>
+                        <td style={{ color: "#cbd5e1", whiteSpace: "nowrap" }}>{e.targetType ?? "—"}</td>
                         <td>
                           {costed ? (
                             <Pill tone="green"><Icon name="check" size={12} />{`$${(e.costUsd as number).toFixed(4)}`}</Pill>
@@ -317,8 +317,8 @@ export default function SiteChatConversationsPage({ params }: { params: Promise<
                             <Pill tone="cyan"><Icon name="alert" size={12} />None recorded</Pill>
                           )}
                         </td>
-                        <td className="cs-num" style={{ color: "#4c5470", whiteSpace: "nowrap" }}>{formatAge(e.ageDays)}</td>
-                        <td className="cs-num" style={{ paddingRight: 19, color: "#69738c", whiteSpace: "nowrap" }}>{formatWhen(e.createdAt)}</td>
+                        <td className="cs-num" style={{ color: "#cbd5e1", whiteSpace: "nowrap" }}>{formatAge(e.ageDays)}</td>
+                        <td className="cs-num" style={{ paddingRight: 19, color: "#94a3b8", whiteSpace: "nowrap" }}>{formatWhen(e.createdAt)}</td>
                       </tr>
                     );
                   })}
@@ -373,15 +373,15 @@ function UnsupportedNotice({ reason, label }: { reason: string | null; label: st
 }
 
 const CONVERSATIONS_CSS = `
-.cs-sitechat-meta{font-size:11px;color:#69738c}
-.cs-sitechat-note{margin:10px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
-.cs-sitechat-callout{margin:0;font-size:12.5px;line-height:21px;color:#4c5470}
-.cs-sitechat-warn{margin:0 0 12px;border:1px solid #f2e2c2;background:#fff9ee;color:#8a6412;border-radius:10px;padding:10px 13px;font-size:11.5px;line-height:18px}
+.cs-sitechat-meta{font-size:11px;color:#94a3b8}
+.cs-sitechat-note{margin:10px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
+.cs-sitechat-callout{margin:0;font-size:12.5px;line-height:21px;color:#cbd5e1}
+.cs-sitechat-warn{margin:0 0 12px;border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.13);color:#fbbf24;border-radius:10px;padding:10px 13px;font-size:11.5px;line-height:18px}
 .cs-sitechat-toolbar{display:flex;align-items:center;gap:12px;padding:14px 19px 0;flex-wrap:wrap}
-.cs-sitechat-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 19px;border-top:1px solid #eef0f5;font-size:11.5px;color:#4c5470;flex-wrap:wrap}
+.cs-sitechat-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 19px;border-top:1px solid rgba(255,255,255,.07);font-size:11.5px;color:#cbd5e1;flex-wrap:wrap}
 .cs-sitechat-pager>div{display:flex;gap:6px}
 .cs-sitechat-pageno{display:grid;place-items:center;padding:0 10px;font-weight:650}
 .cs-sitechat-unsupported{display:flex;gap:14px;align-items:flex-start}
-.cs-sitechat-unsupported>span{width:36px;height:36px;border-radius:11px;flex:0 0 auto;display:grid;place-items:center;background:#fff6e6;color:#c9860f}
-.cs-sitechat-unsupported p{margin:0 0 10px;font-size:12.5px;line-height:21px;color:#4c5470}
+.cs-sitechat-unsupported>span{width:36px;height:36px;border-radius:11px;flex:0 0 auto;display:grid;place-items:center;background:rgba(245,158,11,.13);color:#fbbf24}
+.cs-sitechat-unsupported p{margin:0 0 10px;font-size:12.5px;line-height:21px;color:#cbd5e1}
 `;

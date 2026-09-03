@@ -52,7 +52,7 @@ export default function OpsOverviewPage({ params }: { params: Promise<{ platform
      fixed SERIES order and every chart carries its own direct labels. */
   const donuts = o.distributions.slice(0, 2);
   const ring = o.clearedRate;
-  const ringColor = ring.value === null ? "#69738c" : ring.value >= 80 ? "#0f9e69" : ring.value >= 50 ? "#c9860f" : "#e04452";
+  const ringColor = ring.value === null ? "#94a3b8" : ring.value >= 80 ? "#4ade80" : ring.value >= 50 ? "#fbbf24" : "#e04452";
   const measured = o.metrics.filter((m) => m.value !== null).length;
 
   return (
@@ -315,22 +315,22 @@ function buildInsights(o: OpsSnapshot, label: string): Array<{ icon: string; ton
 /* Page-local styles only. Every selector is `cs-ops-*` prefixed so nothing
    escapes this page onto the other special workspaces. */
 const OVERVIEW_CSS = `
-.cs-ops-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
-.cs-ops-src{font-size:11px;color:#69738c}
+.cs-ops-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
+.cs-ops-src{font-size:11px;color:#94a3b8}
 .cs-ops-ring{display:flex;flex-direction:column;align-items:center;gap:12px}
-.cs-ops-ring p{margin:0;font-size:11.5px;line-height:19px;color:#4c5470;text-align:center}
+.cs-ops-ring p{margin:0;font-size:11.5px;line-height:19px;color:#cbd5e1;text-align:center}
 .cs-ops-rates{display:flex;flex-direction:column;gap:11px}
 .cs-ops-rate-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-size:11.5px}
-.cs-ops-rate-head span{color:#4c5470;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cs-ops-rate-head span{color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cs-ops-rate-head b{font-weight:730;white-space:nowrap}
-.cs-ops-rate p{margin:3px 0 0;font-size:10.5px;line-height:16px;color:#8891a8}
+.cs-ops-rate p{margin:3px 0 0;font-size:10.5px;line-height:16px;color:#94a3b8}
 .cs-ops-insights{display:flex;flex-direction:column;gap:13px}
 .cs-ops-insight{display:flex;gap:11px;align-items:flex-start}
 .cs-ops-insight>span{width:29px;height:29px;border-radius:9px;flex:0 0 auto;display:grid;place-items:center}
-.cs-ops-insight p{margin:0;font-size:11.5px;line-height:19px;color:#4c5470}
+.cs-ops-insight p{margin:0;font-size:11.5px;line-height:19px;color:#cbd5e1}
 .cs-ops-sources{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
 .cs-ops-source{display:flex;gap:10px;align-items:flex-start}
 .cs-ops-source b{display:block;font-size:12px}
 .cs-ops-source code{display:block;font-size:10.5px;color:#7c3aed;margin-top:2px;word-break:break-all}
-.cs-ops-source span{display:block;font-size:10.5px;color:#8891a8;margin-top:3px;line-height:16px}
+.cs-ops-source span{display:block;font-size:10.5px;color:#94a3b8;margin-top:3px;line-height:16px}
 `;

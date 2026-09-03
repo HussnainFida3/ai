@@ -50,7 +50,7 @@ export default function SiteChatUsagePage({ params }: { params: Promise<{ platfo
   const callerDim = s.dimensions.find((d) => d.key === "callers");
 
   const budget = s.budgetUsedPct;
-  const budgetColor = budget === null ? "#69738c" : budget >= 80 ? "#e04452" : budget >= 50 ? "#c9860f" : "#0f9e69";
+  const budgetColor = budget === null ? "#94a3b8" : budget >= 80 ? "#e04452" : budget >= 50 ? "#fbbf24" : "#4ade80";
 
   /* Runtime facts, each stated as unknown rather than zero when /stats missed. */
   const runtime: Array<{ label: string; value: string; note: string }> = [
@@ -306,15 +306,15 @@ function UnsupportedNotice({ reason, label }: { reason: string | null; label: st
 }
 
 const USAGE_CSS = `
-.cs-sitechat-meta{font-size:11px;color:#69738c}
-.cs-sitechat-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
-.cs-sitechat-warn{margin:0 0 12px;border:1px solid #f2e2c2;background:#fff9ee;color:#8a6412;border-radius:10px;padding:10px 13px;font-size:11.5px;line-height:18px}
+.cs-sitechat-meta{font-size:11px;color:#94a3b8}
+.cs-sitechat-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
+.cs-sitechat-warn{margin:0 0 12px;border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.13);color:#fbbf24;border-radius:10px;padding:10px 13px;font-size:11.5px;line-height:18px}
 .cs-sitechat-ring{display:flex;flex-direction:column;align-items:center;gap:12px}
-.cs-sitechat-ring p{margin:0;font-size:11.5px;line-height:19px;color:#4c5470;text-align:center}
+.cs-sitechat-ring p{margin:0;font-size:11.5px;line-height:19px;color:#cbd5e1;text-align:center}
 .cs-sitechat-rates,.cs-sitechat-keys{display:flex;flex-direction:column;gap:12px}
 .cs-sitechat-rate-head,.cs-sitechat-key-head{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:12px;font-weight:600;color:#11162d}
-.cs-sitechat-rate p,.cs-sitechat-key p{margin:3px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
+.cs-sitechat-rate p,.cs-sitechat-key p{margin:3px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
 .cs-sitechat-unsupported{display:flex;gap:14px;align-items:flex-start}
-.cs-sitechat-unsupported>span{width:36px;height:36px;border-radius:11px;flex:0 0 auto;display:grid;place-items:center;background:#fff6e6;color:#c9860f}
-.cs-sitechat-unsupported p{margin:0 0 10px;font-size:12.5px;line-height:21px;color:#4c5470}
+.cs-sitechat-unsupported>span{width:36px;height:36px;border-radius:11px;flex:0 0 auto;display:grid;place-items:center;background:rgba(245,158,11,.13);color:#fbbf24}
+.cs-sitechat-unsupported p{margin:0 0 10px;font-size:12.5px;line-height:21px;color:#cbd5e1}
 `;

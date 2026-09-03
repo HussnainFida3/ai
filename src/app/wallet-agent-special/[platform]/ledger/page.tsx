@@ -314,14 +314,14 @@ export default function WalletLedgerPage({ params }: { params: Promise<{ platfor
                         <div className="sub">{r.contact}</div>
                       </td>
                       <td><DirectionPill type={r.type} /></td>
-                      <td style={{ color: "#4c5470" }}>
+                      <td style={{ color: "#cbd5e1" }}>
                         {r.reasonLabel}
                         {r.note && <div className="sub">{r.note}</div>}
                       </td>
                       <td className="cs-num" style={{ fontWeight: 700, whiteSpace: "nowrap" }}>{coins(r.amount)}</td>
-                      <td className="cs-num" style={{ whiteSpace: "nowrap", color: "#4c5470" }}>{coins(r.balanceAfter)}</td>
-                      <td className="cs-num" style={{ color: "#69738c", whiteSpace: "nowrap" }}>{formatAge(r.ageDays)}</td>
-                      <td className="cs-num" style={{ paddingRight: 19, color: "#69738c", whiteSpace: "nowrap" }}>{dateTime(r.createdAt)}</td>
+                      <td className="cs-num" style={{ whiteSpace: "nowrap", color: "#cbd5e1" }}>{coins(r.balanceAfter)}</td>
+                      <td className="cs-num" style={{ color: "#94a3b8", whiteSpace: "nowrap" }}>{formatAge(r.ageDays)}</td>
+                      <td className="cs-num" style={{ paddingRight: 19, color: "#94a3b8", whiteSpace: "nowrap" }}>{dateTime(r.createdAt)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -383,15 +383,15 @@ function UnsupportedNotice({ snapshot, label }: { snapshot: WalletSnapshot; labe
 }
 
 const LEDGER_CSS = `
-.cs-wallet-meta{font-size:11px;color:#69738c}
-.cs-wallet-note{margin:12px 0 0;font-size:11px;line-height:18px;color:#8891a8}
-.cs-wallet-banner{display:flex;gap:10px;align-items:flex-start;border:1px solid #f0e0bd;background:#fffaef;color:#7a5a12;border-radius:11px;padding:12px 14px;font-size:11.5px;line-height:19px;margin-bottom:12px}
-.cs-wallet-banner-bad{border-color:#f6d5d8;background:#fff5f5;color:#a32732}
+.cs-wallet-meta{font-size:11px;color:#94a3b8}
+.cs-wallet-note{margin:12px 0 0;font-size:11px;line-height:18px;color:#94a3b8}
+.cs-wallet-banner{display:flex;gap:10px;align-items:flex-start;border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.13);color:#fbbf24;border-radius:11px;padding:12px 14px;font-size:11.5px;line-height:19px;margin-bottom:12px}
+.cs-wallet-banner-bad{border-color:rgba(244,63,94,.32);background:rgba(244,63,94,.12);color:#fda4af}
 .cs-wallet-banner svg{flex:0 0 auto;margin-top:2px}
 .cs-wallet-banner b{font-weight:750}
 .cs-wallet-toolbar{display:flex;align-items:center;gap:12px;padding:14px 19px 0;flex-wrap:wrap}
-.cs-wallet-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 19px;border-top:1px solid #eef0f5;font-size:11.5px;color:#4c5470;flex-wrap:wrap}
+.cs-wallet-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 19px;border-top:1px solid rgba(255,255,255,.07);font-size:11.5px;color:#cbd5e1;flex-wrap:wrap}
 .cs-wallet-unsupported{display:flex;gap:13px;align-items:flex-start}
-.cs-wallet-unsupported>span{width:34px;height:34px;border-radius:10px;flex:0 0 auto;display:grid;place-items:center;background:#fff6e6;color:#c9860f}
-.cs-wallet-unsupported p{margin:0 0 10px;font-size:12px;line-height:20px;color:#4c5470;max-width:640px}
+.cs-wallet-unsupported>span{width:34px;height:34px;border-radius:10px;flex:0 0 auto;display:grid;place-items:center;background:rgba(245,158,11,.13);color:#fbbf24}
+.cs-wallet-unsupported p{margin:0 0 10px;font-size:12px;line-height:20px;color:#cbd5e1;max-width:640px}
 `;

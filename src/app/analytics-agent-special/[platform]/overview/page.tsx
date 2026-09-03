@@ -50,7 +50,7 @@ export default function AnalyticsOverviewPage({ params }: { params: Promise<{ pl
   const barDims = a.dimensions.slice(2, 4);
 
   const ring = a.headlineRate;
-  const ringColor = ring.value === null ? "#69738c" : ring.value >= 66 ? "#0f9e69" : ring.value >= 33 ? "#c9860f" : "#e04452";
+  const ringColor = ring.value === null ? "#94a3b8" : ring.value >= 66 ? "#4ade80" : ring.value >= 33 ? "#fbbf24" : "#e04452";
 
   const measured = a.metrics.filter((m) => m.value !== null).length;
 
@@ -91,7 +91,7 @@ export default function AnalyticsOverviewPage({ params }: { params: Promise<{ pl
       <div className="cs-row-2">
         <Card
           title={a.series ? "Activity Trend" : "Time Series"}
-          action={<span style={{ fontSize: 11, color: "#69738c" }}>{a.series ? a.series.granularity : "None returned"}</span>}
+          action={<span style={{ fontSize: 11, color: "#94a3b8" }}>{a.series ? a.series.granularity : "None returned"}</span>}
         >
           {a.loading ? (
             <Empty>Loading live snapshot…</Empty>
@@ -115,7 +115,7 @@ export default function AnalyticsOverviewPage({ params }: { params: Promise<{ pl
               label={ring.value === null ? "Not tracked" : "%"}
               color={ringColor}
             />
-            <p style={{ margin: 0, fontSize: 11.5, lineHeight: "19px", color: "#4c5470", textAlign: "center" }}>
+            <p style={{ margin: 0, fontSize: 11.5, lineHeight: "19px", color: "#cbd5e1", textAlign: "center" }}>
               {a.error
                 ? `Could not be computed — the ${label} snapshot failed to load.`
                 : ring.value === null
@@ -128,7 +128,7 @@ export default function AnalyticsOverviewPage({ params }: { params: Promise<{ pl
 
       <div className="cs-row-half">
         {donutDims.map((d) => (
-          <Card key={d.key} title={d.title} action={<span style={{ fontSize: 11, color: "#69738c" }}>{d.total.toLocaleString()} {d.unit}</span>}>
+          <Card key={d.key} title={d.title} action={<span style={{ fontSize: 11, color: "#94a3b8" }}>{d.total.toLocaleString()} {d.unit}</span>}>
             <div className="cs-donut-row">
               <Donut data={d.rows} center={d.total.toLocaleString()} centerLabel={d.unit} />
               <Legend data={d.rows} />
@@ -202,7 +202,7 @@ export default function AnalyticsOverviewPage({ params }: { params: Promise<{ pl
                   >
                     <Icon name={i.icon} size={15} />
                   </span>
-                  <p style={{ margin: 0, fontSize: 11.5, lineHeight: "19px", color: "#4c5470" }}>{i.text}</p>
+                  <p style={{ margin: 0, fontSize: 11.5, lineHeight: "19px", color: "#cbd5e1" }}>{i.text}</p>
                 </div>
               ))}
             </div>
@@ -211,7 +211,7 @@ export default function AnalyticsOverviewPage({ params }: { params: Promise<{ pl
       </div>
 
       {a.recent.length > 0 && (
-        <Card title="Most Recent Records" action={<span style={{ fontSize: 11, color: "#69738c" }}>From the snapshot's own recent list</span>} pad={false}>
+        <Card title="Most Recent Records" action={<span style={{ fontSize: 11, color: "#94a3b8" }}>From the snapshot's own recent list</span>} pad={false}>
           <div className="cs-table-wrap">
             <table className="cs-table">
               <thead>
@@ -226,14 +226,14 @@ export default function AnalyticsOverviewPage({ params }: { params: Promise<{ pl
                 {a.recent.map((r) => (
                   <tr key={r.id}>
                     <td style={{ paddingLeft: 19 }}><span className="title">{r.title}</span></td>
-                    <td style={{ color: "#4c5470" }}>{r.sub}</td>
+                    <td style={{ color: "#cbd5e1" }}>{r.sub}</td>
                     <td>
                       <Pill tone={r.status === "COMPLETED" ? "green" : r.status === "CANCELLED" ? "red" : "amber"}>
                         <Icon name={r.status === "COMPLETED" ? "check" : r.status === "CANCELLED" ? "alert" : "clock"} size={12} />
                         {r.status}
                       </Pill>
                     </td>
-                    <td className="cs-num" style={{ paddingRight: 19, color: "#69738c" }}>
+                    <td className="cs-num" style={{ paddingRight: 19, color: "#94a3b8" }}>
                       {r.when ? new Date(r.when).toLocaleDateString() : "—"}
                     </td>
                   </tr>
@@ -292,10 +292,10 @@ function buildInsights(a: AnalyticsSnapshot, label: string): Array<{ icon: strin
 /* Page-local styles only. Every selector is `cs-analytics-*` prefixed so
    nothing escapes this page onto the other special workspaces. */
 const OVERVIEW_CSS = `
-.cs-analytics-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
+.cs-analytics-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
 .cs-analytics-rates{display:flex;flex-direction:column;gap:11px}
 .cs-analytics-rate-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-size:11.5px}
-.cs-analytics-rate-head span{color:#4c5470;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cs-analytics-rate-head span{color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cs-analytics-rate-head b{font-weight:730;white-space:nowrap}
-.cs-analytics-rate p{margin:3px 0 0;font-size:10.5px;line-height:16px;color:#8891a8}
+.cs-analytics-rate p{margin:3px 0 0;font-size:10.5px;line-height:16px;color:#94a3b8}
 `;

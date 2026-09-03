@@ -55,7 +55,7 @@ export default function OwnerChatOverviewPage({ params }: { params: Promise<{ pl
   const barDims = s.dimensions.slice(2, 4);
 
   const ring = s.headlineRate;
-  const ringColor = ring.value === null ? "#69738c" : ring.value >= 66 ? "#0f9e69" : ring.value >= 33 ? "#c9860f" : "#e04452";
+  const ringColor = ring.value === null ? "#94a3b8" : ring.value >= 66 ? "#4ade80" : ring.value >= 33 ? "#fbbf24" : "#e04452";
 
   const measured = s.metrics.filter((m) => m.value !== null).length;
 
@@ -119,7 +119,7 @@ export default function OwnerChatOverviewPage({ params }: { params: Promise<{ pl
       <div className="cs-row-2">
         <Card
           title={s.series ? "Live Trend" : "Time Series"}
-          action={<span style={{ fontSize: 11, color: "#69738c" }}>{s.series ? s.series.granularity : "None returned"}</span>}
+          action={<span style={{ fontSize: 11, color: "#94a3b8" }}>{s.series ? s.series.granularity : "None returned"}</span>}
         >
           {s.loading ? (
             <Empty>Loading the live series…</Empty>
@@ -296,21 +296,21 @@ function insights(s: OwnerChatSnapshot, label: string): string[] {
 }
 
 const OWNER_OVERVIEW_CSS = `
-.cs-owner-partial{display:flex;gap:10px;align-items:flex-start;border:1px solid #f2dfb4;background:#fffaf0;border-radius:12px;padding:12px 14px;margin-bottom:16px;color:#7a5410}
+.cs-owner-partial{display:flex;gap:10px;align-items:flex-start;border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.13);border-radius:12px;padding:12px 14px;margin-bottom:16px;color:#7a5410}
 .cs-owner-partial b{display:block;font-size:12.5px;margin-bottom:3px}
 .cs-owner-partial span{font-size:11.5px;line-height:18px;color:#8a6520}
 .cs-owner-ring{display:flex;flex-direction:column;align-items:center;gap:12px}
-.cs-owner-ring p{margin:0;font-size:11.5px;line-height:19px;color:#4c5470;text-align:center}
+.cs-owner-ring p{margin:0;font-size:11.5px;line-height:19px;color:#cbd5e1;text-align:center}
 .cs-owner-donut-wrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
-.cs-owner-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
+.cs-owner-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
 .cs-owner-insights{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px}
-.cs-owner-insights li{display:flex;gap:9px;align-items:flex-start;font-size:11.5px;line-height:19px;color:#4c5470}
+.cs-owner-insights li{display:flex;gap:9px;align-items:flex-start;font-size:11.5px;line-height:19px;color:#cbd5e1}
 .cs-owner-insights li svg{flex:0 0 auto;margin-top:3px;color:#7c3aed}
 .cs-owner-facts{display:flex;flex-direction:column;gap:9px}
 .cs-owner-fact{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:11.5px}
-.cs-owner-fact span{color:#4c5470}
+.cs-owner-fact span{color:#cbd5e1}
 .cs-owner-fact b{font-weight:730;white-space:nowrap}
-.cs-owner-prov p{margin:0 0 9px;font-size:11.5px;line-height:19px;color:#4c5470}
+.cs-owner-prov p{margin:0 0 9px;font-size:11.5px;line-height:19px;color:#cbd5e1}
 .cs-owner-prov p:last-child{margin-bottom:0}
 .cs-owner-prov b{color:#11162d}
 `;

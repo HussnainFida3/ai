@@ -57,7 +57,7 @@ export default function SupportOverviewPage({ params }: { params: Promise<{ plat
   const barDim = s.dimensions[2] ?? null;
 
   const ring = s.resolutionRate;
-  const ringColor = ring.value === null ? "#69738c" : ring.value >= 66 ? "#0f9e69" : ring.value >= 33 ? "#c9860f" : "#e04452";
+  const ringColor = ring.value === null ? "#94a3b8" : ring.value >= 66 ? "#4ade80" : ring.value >= 33 ? "#fbbf24" : "#e04452";
 
   const measured = s.metrics.filter((m) => m.value !== null).length;
   const oldest = s.tickets.filter((t) => t.statusGroup === "open" || t.statusGroup === "investigating").reduce<number | null>(
@@ -317,19 +317,19 @@ function buildInsights(s: SupportSnapshot, label: string, oldest: number | null)
 /* Page-local styles only. Every selector is `cs-support-` prefixed so nothing
    here can leak into the shared kit or any other special workspace. */
 const PAGE_CSS = `
-.cs-support-source{margin:0;display:flex;gap:9px;align-items:flex-start;font-size:11.5px;line-height:19px;color:#4c5470}
+.cs-support-source{margin:0;display:flex;gap:9px;align-items:flex-start;font-size:11.5px;line-height:19px;color:#cbd5e1}
 .cs-support-source svg{color:#7c3aed;flex:0 0 auto;margin-top:3px}
 .cs-support-source b{color:#11162d}
-.cs-support-meta{font-size:11px;color:#69738c}
-.cs-support-note{margin:11px 0 0;font-size:11px;line-height:18px;color:#69738c}
+.cs-support-meta{font-size:11px;color:#94a3b8}
+.cs-support-note{margin:11px 0 0;font-size:11px;line-height:18px;color:#94a3b8}
 .cs-support-note.center{text-align:center}
 .cs-support-ring{display:flex;flex-direction:column;align-items:center;gap:12px}
 .cs-support-rates{display:flex;flex-direction:column;gap:12px}
-.cs-support-rate-head{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;color:#4c5470}
+.cs-support-rate-head{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;color:#cbd5e1}
 .cs-support-rate-head b{font-weight:730}
-.cs-support-rate p{margin:3px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
+.cs-support-rate p{margin:3px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
 .cs-support-insights{display:flex;flex-direction:column;gap:13px}
 .cs-support-insight{display:flex;gap:11px;align-items:flex-start}
 .cs-support-insight-icon{width:29px;height:29px;border-radius:9px;flex:0 0 auto;display:grid;place-items:center}
-.cs-support-insight p{margin:0;font-size:11.5px;line-height:19px;color:#4c5470}
+.cs-support-insight p{margin:0;font-size:11.5px;line-height:19px;color:#cbd5e1}
 `;

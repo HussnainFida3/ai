@@ -345,8 +345,8 @@ export default function OpsQueuePage({ params }: { params: Promise<{ platform: s
                     <div className="title">{i.title}</div>
                     <div className="sub">{i.sub}</div>
                   </td>
-                  <td style={{ color: "#4c5470" }}>{i.kindLabel}</td>
-                  <td style={{ color: "#4c5470" }}>{i.category}</td>
+                  <td style={{ color: "#cbd5e1" }}>{i.kindLabel}</td>
+                  <td style={{ color: "#cbd5e1" }}>{i.category}</td>
                   <td>
                     <Pill tone={i.tone}>
                       <Icon name={i.glyph} size={12} />
@@ -354,7 +354,7 @@ export default function OpsQueuePage({ params }: { params: Promise<{ platform: s
                     </Pill>
                   </td>
                   <td className="cs-num">{ageLabel(i)}</td>
-                  <td style={{ color: "#69738c" }}>
+                  <td style={{ color: "#94a3b8" }}>
                     {i.timestamp ? `${i.ageBasis} ${new Date(i.timestamp).toLocaleDateString()}` : "Not recorded"}
                   </td>
                   <td style={{ paddingRight: 19 }}>
@@ -426,14 +426,14 @@ export default function OpsQueuePage({ params }: { params: Promise<{ platform: s
 
 /* Page-local styles only, all `cs-ops-*` prefixed. */
 const QUEUE_CSS = `
-.cs-ops-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#8891a8}
-.cs-ops-src{font-size:11px;color:#69738c}
+.cs-ops-note{margin:12px 0 0;font-size:10.5px;line-height:17px;color:#94a3b8}
+.cs-ops-src{font-size:11px;color:#94a3b8}
 .cs-ops-toolbar{display:flex;align-items:center;gap:12px;padding:14px 19px 0;flex-wrap:wrap}
 .cs-ops-inert{opacity:.55;cursor:not-allowed;white-space:nowrap}
 .cs-ops-actions{display:flex;gap:6px;flex-wrap:wrap}
 .cs-ops-toast{position:fixed;right:22px;bottom:22px;max-width:360px;background:#11162f;color:#fff;border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:18px;box-shadow:0 14px 32px rgba(20,20,45,.28);z-index:50}
-.cs-ops-readonly{margin:0;padding:12px 19px;font-size:10.5px;line-height:17px;color:#8891a8;border-top:1px solid #eef0f5}
-.cs-ops-pager{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 19px 16px;border-top:1px solid #eef0f5;font-size:11px;color:#69738c;flex-wrap:wrap}
+.cs-ops-readonly{margin:0;padding:12px 19px;font-size:10.5px;line-height:17px;color:#94a3b8;border-top:1px solid rgba(255,255,255,.07)}
+.cs-ops-pager{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 19px 16px;border-top:1px solid rgba(255,255,255,.07);font-size:11px;color:#94a3b8;flex-wrap:wrap}
 .cs-ops-pager>div{display:flex;align-items:center;gap:8px}
 .cs-ops-pagenum{font-weight:650;color:#11162d}
 `;

@@ -39,7 +39,7 @@ interface Recommendation {
 }
 
 const PRIORITY_TONE: Record<Priority, string> = { High: "red", Medium: "amber", Low: "blue" };
-const PRIORITY_COLOR: Record<Priority, string> = { High: "#e04452", Medium: "#c9860f", Low: "#3b7fd1" };
+const PRIORITY_COLOR: Record<Priority, string> = { High: "#e04452", Medium: "#fbbf24", Low: "#3b7fd1" };
 const PRIORITY_ICON: Record<Priority, string> = { High: "alert", Medium: "clock", Low: "check" };
 const PRIORITY_ORDER: Priority[] = ["High", "Medium", "Low"];
 
@@ -114,7 +114,7 @@ export default function ContentRecommendationsPage({ params }: { params: Promise
       <div className="cs-row-2">
         <Card
           title="Prioritised Fixes"
-          action={<span style={{ fontSize: 11, color: "#69738c" }}>{recs.length} open</span>}
+          action={<span style={{ fontSize: 11, color: "#94a3b8" }}>{recs.length} open</span>}
         >
           {c.loading ? (
             <Empty>Loading live library…</Empty>
@@ -128,10 +128,10 @@ export default function ContentRecommendationsPage({ params }: { params: Promise
             <Empty>No posts in the library yet — there is nothing to recommend against.</Empty>
           ) : recs.length === 0 ? (
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "6px 0" }}>
-              <span style={{ width: 32, height: 32, borderRadius: 10, flex: "0 0 auto", display: "grid", placeItems: "center", background: "#e9faf3", color: "#0f9e69" }}>
+              <span style={{ width: 32, height: 32, borderRadius: 10, flex: "0 0 auto", display: "grid", placeItems: "center", background: "rgba(34,197,94,.13)", color: "#4ade80" }}>
                 <Icon name="check" size={17} />
               </span>
-              <p style={{ margin: 0, fontSize: 12.5, lineHeight: "20px", color: "#4c5470" }}>
+              <p style={{ margin: 0, fontSize: 12.5, lineHeight: "20px", color: "#cbd5e1" }}>
                 <b>Nothing to fix.</b> All {total} post{total === 1 ? "" : "s"} in the {label} library have full
                 metadata, cover images, no stale drafts and no thin content. This is a genuine clean bill of
                 health, not an empty list.
@@ -204,7 +204,7 @@ function RecRow({ rec, open, onToggle }: { rec: Recommendation; open: boolean; o
   const hidden = rec.affected.length - preview.length;
 
   return (
-    <div style={{ border: "1px solid #eef0f5", borderRadius: 11, padding: "13px 14px" }}>
+    <div style={{ border: "1px solid rgba(255,255,255,.07)", borderRadius: 11, padding: "13px 14px" }}>
       <div style={{ display: "flex", alignItems: "flex-start", gap: 11 }}>
         <span
           style={{
@@ -221,15 +221,15 @@ function RecRow({ rec, open, onToggle }: { rec: Recommendation; open: boolean; o
               <Icon name={PRIORITY_ICON[rec.priority]} size={12} />
               {rec.priority}
             </Pill>
-            <span className="cs-num" style={{ fontSize: 11, color: "#69738c" }}>
+            <span className="cs-num" style={{ fontSize: 11, color: "#94a3b8" }}>
               {rec.affected.length} post{rec.affected.length === 1 ? "" : "s"}
             </span>
           </div>
-          <p style={{ margin: "5px 0 0", fontSize: 11.5, lineHeight: "19px", color: "#4c5470" }}>{rec.why}</p>
+          <p style={{ margin: "5px 0 0", fontSize: 11.5, lineHeight: "19px", color: "#cbd5e1" }}>{rec.why}</p>
 
           <ul style={{ margin: "9px 0 0", padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 5 }}>
             {preview.map((t) => (
-              <li key={t} style={{ fontSize: 11, color: "#69738c", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <li key={t} style={{ fontSize: 11, color: "#94a3b8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 • {t}
               </li>
             ))}

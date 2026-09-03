@@ -25,7 +25,7 @@ const shadilife = PLATFORMS.shadilife;
 
 export default function SiteChatAgentSpecialIndex() {
   return (
-    <div style={{ minHeight: "100vh", background: "#fafbfe", padding: "48px 24px", fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#0d1526", padding: "48px 24px", fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}>
       <div style={{ maxWidth: 900, margin: "0 auto" }}>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#7c3aed", marginBottom: 8 }}>
           Site Chat Agent Special
@@ -33,22 +33,22 @@ export default function SiteChatAgentSpecialIndex() {
         <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em", margin: "0 0 8px", color: "#11162d" }}>
           Runs on GhrFix only
         </h1>
-        <p style={{ fontSize: 14, color: "#4c5470", margin: "0 0 32px", lineHeight: 1.6, maxWidth: 660 }}>
+        <p style={{ fontSize: 14, color: "#cbd5e1", margin: "0 0 32px", lineHeight: 1.6, maxWidth: 660 }}>
           The Site Chat Agent reports on the customer-facing website assistant — how many conversations it served, how
           many of those never reached the model, and what it costs. Only GhrFix registers this agent, so it is the only
           platform with a workspace to open.
         </p>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 20 }}>
-          <div style={{ border: "1px solid #eef0f5", borderRadius: 16, background: "#fff", padding: 20, boxShadow: "0 2px 10px rgba(25,34,75,0.035)" }}>
+          <div style={{ border: "1px solid rgba(255,255,255,.07)", borderRadius: 16, background: "#0b1220", padding: 20, boxShadow: "0 2px 10px rgba(25,34,75,0.035)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
               <img src={ghrfix.logoUrl} alt={`${ghrfix.label} logo`} style={{ width: 22, height: 22, borderRadius: 6, objectFit: "contain" }} />
               <strong style={{ fontSize: 16, color: "#11162d" }}>{ghrfix.label}</strong>
-              <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: "#0f9e69", background: "#e9faf3", border: "1px solid #0f9e6933", borderRadius: 20, padding: "3px 9px" }}>
+              <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: "#4ade80", background: "rgba(34,197,94,.13)", border: "1px solid #4ade8033", borderRadius: 20, padding: "3px 9px" }}>
                 ✓ Agent registered
               </span>
             </div>
-            <p style={{ fontSize: 11.5, color: "#69738c", margin: "0 0 14px", lineHeight: 1.6 }}>
+            <p style={{ fontSize: 11.5, color: "#94a3b8", margin: "0 0 14px", lineHeight: 1.6 }}>
               Backend base <code>/ai-agents/site-chat</code> — summary, conversations, stats and activity.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -56,37 +56,37 @@ export default function SiteChatAgentSpecialIndex() {
                 <Link
                   key={page.slug}
                   href={`/sitechat-agent-special/${ghrfix.key}/${page.slug}`}
-                  style={{ display: "block", padding: "12px 14px", borderRadius: 10, border: "1px solid #f0f2f7", textDecoration: "none", color: "inherit" }}
+                  style={{ display: "block", padding: "12px 14px", borderRadius: 10, border: "1px solid #0d1526", textDecoration: "none", color: "inherit" }}
                 >
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#11162d" }}>{page.label}</div>
-                  <div style={{ fontSize: 11, color: "#69738c", marginTop: 2 }}>{page.desc}</div>
+                  <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>{page.desc}</div>
                 </Link>
               ))}
             </div>
           </div>
 
-          <div style={{ border: "1px solid #eef0f5", borderRadius: 16, background: "#fff", padding: 20, boxShadow: "0 2px 10px rgba(25,34,75,0.035)" }}>
+          <div style={{ border: "1px solid rgba(255,255,255,.07)", borderRadius: 16, background: "#0b1220", padding: 20, boxShadow: "0 2px 10px rgba(25,34,75,0.035)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
               <img src={shadilife.logoUrl} alt={`${shadilife.label} logo`} style={{ width: 22, height: 22, borderRadius: 6, objectFit: "contain" }} />
               <strong style={{ fontSize: 16, color: "#11162d" }}>{shadilife.label}</strong>
-              <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: "#c9860f", background: "#fff6e6", border: "1px solid #c9860f33", borderRadius: 20, padding: "3px 9px" }}>
+              <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: "#fbbf24", background: "rgba(245,158,11,.13)", border: "1px solid #fbbf2433", borderRadius: 20, padding: "3px 9px" }}>
                 ⚠ Not registered
               </span>
             </div>
-            <p style={{ fontSize: 12, color: "#4c5470", margin: "0 0 12px", lineHeight: 1.7 }}>
+            <p style={{ fontSize: 12, color: "#cbd5e1", margin: "0 0 12px", lineHeight: 1.7 }}>
               ShadiLife&apos;s agent list contains no <code>site-chat</code> key, so there is no{" "}
               <code>/ai-agents/site-chat</code> backend on that platform. Its member conversations are covered by the
               Chat &amp; Safety Agent instead, which is a different agent with different data.
             </p>
-            <p style={{ fontSize: 11.5, color: "#69738c", margin: "0 0 14px", lineHeight: 1.7 }}>
+            <p style={{ fontSize: 11.5, color: "#94a3b8", margin: "0 0 14px", lineHeight: 1.7 }}>
               The routes below still render — they explain the gap rather than showing zeros or a 404.
             </p>
             <Link
               href={`/sitechat-agent-special/${shadilife.key}/overview`}
-              style={{ display: "block", padding: "12px 14px", borderRadius: 10, border: "1px dashed #dfe2ea", textDecoration: "none", color: "inherit" }}
+              style={{ display: "block", padding: "12px 14px", borderRadius: 10, border: "1px dashed rgba(255,255,255,.09)", textDecoration: "none", color: "inherit" }}
             >
               <div style={{ fontSize: 13, fontWeight: 700, color: "#11162d" }}>See why it is unavailable</div>
-              <div style={{ fontSize: 11, color: "#69738c", marginTop: 2 }}>Opens the unsupported-platform state.</div>
+              <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>Opens the unsupported-platform state.</div>
             </Link>
           </div>
         </div>
