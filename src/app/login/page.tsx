@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldCheck, Lock, Eye, EyeOff, TriangleAlert, CircleCheck } from "lucide-react";
-import { PLATFORMS } from "@/lib/platforms";
+import { PLATFORM_LIST } from "@/lib/platforms";
 import { setTokens } from "@/lib/api";
 
 export default function LoginPage() {
@@ -29,8 +29,14 @@ export default function LoginPage() {
         setError(data.error ?? "Incorrect email or password.");
         return;
       }
-      if (data.ghrfix?.accessToken) {
-        setTokens(PLATFORMS.ghrfix.tokenNs, data.ghrfix.accessToken, data.ghrfix.refreshToken);
+      // The server establishes both platforms' admin sessions as part of this
+      // one sign-in, so the console lands already connected to everything —
+      // there is no separate "Connect platform" step to go through.
+      for (const platform of PLATFORM_LIST) {
+        const session = data[platform.key];
+        if (session?.accessToken) {
+          setTokens(platform.tokenNs, session.accessToken, session.refreshToken);
+        }
       }
       router.push("/ai-agents");
       router.refresh();

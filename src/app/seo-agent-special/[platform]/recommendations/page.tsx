@@ -415,7 +415,7 @@ export default function AIRecommendationsPage({ params }: { params: Promise<{ pl
         *{box-sizing:border-box}
         html,body{margin:0;padding:0;background:#030712;color:#f1f5f9;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
         button{font:inherit}
-        .app{width:1536px;min-width:1536px;min-height:1024px;background:#030712;display:flex;overflow:hidden}
+        .app{width:100%;min-height:100vh;background:#030712;display:flex;overflow:hidden}
         .sidebar{width:242px;min-width:242px;border-right:1px solid rgba(255,255,255,.07);background:#05080f;position:relative;padding:39px 14px 28px}
         .brand{height:67px;display:flex;align-items:center;padding-left:12px;gap:8px}
         .brandMark{width:35px;height:35px;display:flex;align-items:center}
@@ -433,7 +433,7 @@ export default function AIRecommendationsPage({ params }: { params: Promise<{ pl
         .agentText{font-size:12px;line-height:21px;color:#94a3b8;margin-top:5px}
         .primaryButton{border:0;border-radius:6px;background:linear-gradient(90deg,#7c3aed,#8b5cf6);color:#fff;height:33px;padding:0 16px;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:0 5px 12px rgba(139,92,246,.3)}
         .agentButton{position:absolute;left:16px;right:16px;bottom:15px;width:calc(100% - 32px)}
-        .main{width:1294px;padding:31px 24px 18px 29px;background:#030712}
+        .main{flex:1;min-width:0;padding:31px 24px 18px 29px;background:#030712}
         .header{height:96px;display:flex;justify-content:space-between}
         .header h1{margin:2px 0 4px;font-size:26px;line-height:32px;letter-spacing:-.7px;font-weight:750;color:#f1f5f9}
         .header p{margin:0;color:#94a3b8;font-size:13.5px}
@@ -457,7 +457,8 @@ export default function AIRecommendationsPage({ params }: { params: Promise<{ pl
         .statSub.positive{color:#22c55e}
         .statIcon{width:56px;height:56px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-top:9px}
         .statIcon.purple{color:#8b5cf6;background:rgba(139,92,246,.16)}.statIcon.red{color:#f43f5e;background:rgba(244,63,94,.16)}.statIcon.green{color:#22c55e;background:rgba(34,197,94,.16)}.statIcon.blue{color:#38bdf8;background:rgba(56,189,248,.16)}
-        .workspace{display:grid;grid-template-columns:902px 313px;gap:26px;align-items:start}
+        .workspace{display:grid;grid-template-columns:minmax(0,1fr) 313px;gap:26px;align-items:start}
+        @media(max-width:1180px){.workspace{grid-template-columns:minmax(0,1fr)}}
         .recommendationCard,.sideCard,.bottomHelp{border:1px solid rgba(255,255,255,.07);background:#0b1220;border-radius:10px;box-shadow:0 3px 14px rgba(0,0,0,.35)}
         .recommendationCard{height:666px;overflow:hidden}
         .tabsRow{height:67px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:flex-end;justify-content:space-between;padding:0 10px 0 13px}
@@ -541,7 +542,7 @@ export default function AIRecommendationsPage({ params }: { params: Promise<{ pl
         .robotCore{width:14px;height:14px;border-radius:50%;background:#8b5cf6;position:absolute;left:15px;top:8px;box-shadow:inset 0 2px 4px rgba(255,255,255,.2)}
         .robotSmall{transform:scale(.62);transform-origin:center;margin:-10px 0 0 -12px;width:100px;height:106px}
         .toast{position:fixed;z-index:100;left:50%;bottom:25px;transform:translateX(-50%);background:#0b1220;color:#fff;border-radius:7px;padding:10px 17px;font-size:11px;box-shadow:0 10px 25px rgba(0,0,0,.45)}
-        @media(max-width:1535px){.app{transform-origin:top left}}
+        
       `}</style>
     </div>
   );

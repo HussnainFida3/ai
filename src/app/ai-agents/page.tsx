@@ -41,7 +41,7 @@ import {
 
 import { AgentOrb } from "@/components/agents/AgentOrb";
 import { PLATFORM_LIST, agentTitle } from "@/lib/platforms";
-import { isConnected, onAuthChanged } from "@/lib/api";
+import { ensureConnected, isConnected, onAuthChanged } from "@/lib/api";
 
 interface SpecialWorkspace {
   href: string;
@@ -50,24 +50,31 @@ interface SpecialWorkspace {
   count: number;
   desc: string;
   accent: string;
+  /** First page of the workspace — the platform buttons link straight here. */
+  landing: string;
 }
 
 /** One card per "-agent-special" workspace. Accent colours are pulled straight from
  * that agent's own entry in src/lib/platforms.ts, so a workspace card and its matching
- * tile in the Agent Directory below always share the same colour. */
+ * tile in the Agent Directory below always share the same colour.
+ *
+ * Each card links directly into a platform rather than to the workspace's own
+ * "pick a platform" screen: choosing GhrFix vs ShadiLife is the very first
+ * decision every time, so it belongs here on the hub instead of behind an
+ * extra click that every visit had to pass through. */
 const SPECIAL_WORKSPACES: SpecialWorkspace[] = [
-  { href: "/seo-agent-special", icon: Search, label: "SEO Agent", count: 5, desc: "Real scores, site-wide issue tracking and one-click AI fixes.", accent: "#f5b942" },
-  { href: "/finance-agent-special", icon: Zap, label: "Finance Agent", count: 5, desc: "Live revenue, cash-flow breakdowns and downloadable reports.", accent: "#fb923c" },
-  { href: "/analytics-agent-special", icon: LineChart, label: "Analytics Agent", count: 4, desc: "Users, providers and bookings, broken down by city and category.", accent: "#38bdf8" },
-  { href: "/content-agent-special", icon: FileText, label: "Content Agent", count: 5, desc: "Blog performance, engagement and AI content recommendations.", accent: "#3b82f6" },
-  { href: "/marketing-agent-special", icon: Megaphone, label: "Marketing Agent", count: 4, desc: "Campaign performance, audience segments and broadcast reach.", accent: "#d946ef" },
-  { href: "/master-agent-special", icon: BrainCircuit, label: "Master AI", count: 5, desc: "Fleet-wide view of every agent — activity, spend and health.", accent: "#facc15" },
-  { href: "/ops-agent-special", icon: ClipboardList, label: "Ops Agent", count: 5, desc: "The daily queue — verifications, incidents and open work.", accent: "#f43f5e" },
-  { href: "/owner-chat-agent-special", icon: Bot, label: "Owner Chat", count: 5, desc: "What this agent can read, and the audited writes it holds.", accent: "#8b5cf6" },
-  { href: "/profile-agent-special", icon: UserCircle, label: "Profile Agent", count: 4, desc: "Profile strength, completeness and improvement suggestions.", accent: "#0ea5e9" },
-  { href: "/sitechat-agent-special", icon: MessagesSquare, label: "Site Chat Agent", count: 5, desc: "Customer-facing chat volume, quality and usage.", accent: "#10b981" },
-  { href: "/support-agent-special", icon: LifeBuoy, label: "Support Agent", count: 5, desc: "Tickets, escalations and resolution performance.", accent: "#06b6d4" },
-  { href: "/wallet-agent-special", icon: Wallet, label: "Payment & Wallet", count: 5, desc: "Wallet economy, top-up requests and the ledger.", accent: "#22d3a3" },
+  { href: "/seo-agent-special", icon: Search, label: "SEO Agent", count: 5, desc: "Real scores, site-wide issue tracking and one-click AI fixes.", accent: "#f5b942", landing: "overview" },
+  { href: "/finance-agent-special", icon: Zap, label: "Finance Agent", count: 5, desc: "Live revenue, cash-flow breakdowns and downloadable reports.", accent: "#fb923c", landing: "dashboard" },
+  { href: "/analytics-agent-special", icon: LineChart, label: "Analytics Agent", count: 4, desc: "Users, providers and bookings, broken down by city and category.", accent: "#38bdf8", landing: "overview" },
+  { href: "/content-agent-special", icon: FileText, label: "Content Agent", count: 5, desc: "Blog performance, engagement and AI content recommendations.", accent: "#3b82f6", landing: "overview" },
+  { href: "/marketing-agent-special", icon: Megaphone, label: "Marketing Agent", count: 4, desc: "Campaign performance, audience segments and broadcast reach.", accent: "#d946ef", landing: "overview" },
+  { href: "/master-agent-special", icon: BrainCircuit, label: "Master AI", count: 5, desc: "Fleet-wide view of every agent — activity, spend and health.", accent: "#facc15", landing: "overview" },
+  { href: "/ops-agent-special", icon: ClipboardList, label: "Ops Agent", count: 5, desc: "The daily queue — verifications, incidents and open work.", accent: "#f43f5e", landing: "overview" },
+  { href: "/owner-chat-agent-special", icon: Bot, label: "Owner Chat", count: 5, desc: "What this agent can read, and the audited writes it holds.", accent: "#8b5cf6", landing: "overview" },
+  { href: "/profile-agent-special", icon: UserCircle, label: "Profile Agent", count: 4, desc: "Profile strength, completeness and improvement suggestions.", accent: "#0ea5e9", landing: "overview" },
+  { href: "/sitechat-agent-special", icon: MessagesSquare, label: "Site Chat Agent", count: 5, desc: "Customer-facing chat volume, quality and usage.", accent: "#10b981", landing: "overview" },
+  { href: "/support-agent-special", icon: LifeBuoy, label: "Support Agent", count: 5, desc: "Tickets, escalations and resolution performance.", accent: "#06b6d4", landing: "overview" },
+  { href: "/wallet-agent-special", icon: Wallet, label: "Payment & Wallet", count: 5, desc: "Wallet economy, top-up requests and the ledger.", accent: "#22d3a3", landing: "overview" },
 ];
 
 type AgentIconProps = {
@@ -157,6 +164,14 @@ export default function HubPage() {
 
     refresh();
     setMounted(true);
+
+    // Signing into the console is meant to connect everything, so anything
+    // still unconnected here (cleared storage, an expired session from a
+    // previous visit) is repaired now rather than shown as a dead badge.
+    // setTokens fires the auth-changed event, so `refresh` picks it up.
+    for (const platform of PLATFORM_LIST) {
+      if (!isConnected(platform.key)) void ensureConnected(platform.key);
+    }
 
     // Live-updates this the moment a session actually dies mid-use (apiFetch
     // signs a platform out automatically on a dead refresh token) — without
@@ -805,16 +820,59 @@ export default function HubPage() {
           flex: 1;
         }
 
-        .hub-special-bottom {
+        .hub-special-platforms {
           position: relative;
           z-index: 1;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 7px;
+          margin-top: 14px;
+        }
+
+        .hub-special-platform {
           display: flex;
           align-items: center;
+          justify-content: center;
           gap: 6px;
-          margin-top: 12px;
-          color: var(--accent);
+          min-width: 0;
+          padding: 9px 8px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 10px;
+          color: #c6d0e4;
+          background: rgba(255, 255, 255, 0.03);
+          text-decoration: none;
           font-size: 10.5px;
           font-weight: 750;
+          white-space: nowrap;
+          transition:
+            color 0.2s ease,
+            border-color 0.2s ease,
+            background 0.2s ease,
+            transform 0.2s ease;
+        }
+
+        .hub-special-platform img {
+          width: 14px;
+          height: 14px;
+          flex: 0 0 auto;
+          border-radius: 4px;
+          object-fit: contain;
+        }
+
+        .hub-special-platform svg {
+          opacity: 0;
+          transition: opacity 0.2s ease;
+        }
+
+        .hub-special-platform:hover {
+          color: #ffffff;
+          border-color: color-mix(in srgb, var(--platform) 55%, transparent);
+          background: color-mix(in srgb, var(--platform) 16%, transparent);
+          transform: translateY(-1px);
+        }
+
+        .hub-special-platform:hover svg {
+          opacity: 1;
         }
 
         .hub-platform-section {
@@ -1322,15 +1380,15 @@ export default function HubPage() {
               </p>
 
               <div className="hub-hero-actions">
-                <Link href="/connect" className="hub-primary-btn">
-                  <Plus size={15} />
-                  Connect platform
-                </Link>
-
-                <a href="#agent-directory" className="hub-secondary-btn">
+                <a href="#agent-directory" className="hub-primary-btn">
                   <Boxes size={15} />
                   Explore agents
                 </a>
+
+                <Link href="/" className="hub-secondary-btn">
+                  <LayoutDashboard size={15} />
+                  Command Centre
+                </Link>
               </div>
             </div>
           </div>
@@ -1404,9 +1462,8 @@ export default function HubPage() {
         {/* SPECIAL WORKSPACES — one pixel-perfect experience per agent, both platforms */}
         <section className="hub-special-grid">
           {SPECIAL_WORKSPACES.map((w) => (
-            <Link
+            <div
               key={w.href}
-              href={w.href}
               className="hub-special-card"
               style={{ ["--accent" as string]: w.accent }}
             >
@@ -1424,10 +1481,21 @@ export default function HubPage() {
 
               <p>{w.desc}</p>
 
-              <div className="hub-special-bottom">
-                Open workspace <ArrowRight size={12} />
+              <div className="hub-special-platforms">
+                {PLATFORM_LIST.map((platform) => (
+                  <Link
+                    key={platform.key}
+                    href={`${w.href}/${platform.key}/${w.landing}`}
+                    className="hub-special-platform"
+                    style={{ ["--platform" as string]: platform.color }}
+                  >
+                    <img src={platform.logoUrl} alt="" aria-hidden="true" />
+                    {platform.label}
+                    <ArrowRight size={11} />
+                  </Link>
+                ))}
               </div>
-            </Link>
+            </div>
           ))}
         </section>
 
@@ -1463,17 +1531,13 @@ export default function HubPage() {
                   </div>
 
                   <div className="hub-platform-meta">
-                    {mounted && !platformConnected ? (
-                      <Link href="/connect" className="hub-connection off" title={`Reconnect ${platform.label}`}>
-                        <span className="hub-connection-dot" />
-                        Not connected — Reconnect
-                      </Link>
-                    ) : (
-                      <span className={`hub-connection ${platformConnected ? "on" : "off"}`}>
-                        <span className="hub-connection-dot" />
-                        {mounted ? "Connected" : "Checking"}
-                      </span>
-                    )}
+                    {/* Signing into the console connects both platforms, so this
+                        is a health indicator, not an action — there is nothing
+                        for the operator to click to "connect" any more. */}
+                    <span className={`hub-connection ${platformConnected ? "on" : "off"}`}>
+                      <span className="hub-connection-dot" />
+                      {!mounted ? "Checking" : platformConnected ? "Connected" : "Reconnecting"}
+                    </span>
                   </div>
                 </div>
 

@@ -41,6 +41,14 @@ export interface PlatformDef {
   apiBase: string;
   /** localStorage namespace so the two sessions never collide. */
   tokenNs: string;
+  /**
+   * Endpoint that trades a refresh token in the request BODY for a new pair,
+   * callable straight from the browser. Only GhrFix has one; ShadiLife's
+   * admin refresh reads an httpOnly cookie the browser can't replay
+   * cross-origin, so it is left undefined and its renewals go through the
+   * console's own server instead (POST /api/session).
+   */
+  refreshPath?: string;
   agents: AgentDef[];
 }
 
@@ -88,6 +96,7 @@ export const PLATFORMS: Record<PlatformKey, PlatformDef> = {
     logoUrl: "https://res.cloudinary.com/dvu9enho7/image/upload/v1787162828/Gemini_Generated_Image_wiu67lwiu67lwiu6-removebg-preview_zaacfl.png",
     apiBase: process.env.NEXT_PUBLIC_GHRFIX_API ?? "http://localhost:5050/api",
     tokenNs: "cc_ghrfix",
+    refreshPath: "/auth/refresh",
     agents: GHRFIX_AGENTS,
   },
   shadilife: {

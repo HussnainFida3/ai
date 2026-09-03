@@ -270,11 +270,11 @@ export default function BlogOptimizationPage({ params }: { params: Promise<{ pla
     <style jsx global>{`
       *{box-sizing:border-box}
       html,body{margin:0;padding:0;background:#030712;color:#f1f5f9;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
-      body{min-width:1200px}
+      
       button,input,select{font:inherit}
       button{border:0;background:none;cursor:pointer;color:inherit}
-      .app{width:1535px;min-height:1024px;background:linear-gradient(135deg,#030712 0%,#05080f 44%,#030712 100%);display:flex;position:relative;overflow:hidden}
-      .sidebar{width:264px;min-width:264px;height:1024px;background:#05080f;border-right:1px solid rgba(255,255,255,.07);position:relative;padding:31px 17px 24px}
+      .app{width:100%;min-height:100vh;background:linear-gradient(135deg,#030712 0%,#05080f 44%,#030712 100%);display:flex;position:relative;overflow:hidden}
+      .sidebar{width:264px;min-width:264px;min-height:100vh;background:#05080f;border-right:1px solid rgba(255,255,255,.07);position:relative;padding:31px 17px 24px}
       .brand{height:69px;padding-left:14px;display:flex;align-items:center;gap:10px}
       .brand-logo{width:40px;height:40px;object-fit:contain;flex:0 0 auto}
       .brand-copy{display:flex;flex-direction:column;justify-content:center;min-width:0}
@@ -292,7 +292,7 @@ export default function BlogOptimizationPage({ params }: { params: Promise<{ pla
       .agent-copy{font-size:13px;line-height:22px;color:#94a3b8;display:flex;flex-direction:column;margin-top:3px}
       .agent-copy b{font-weight:500;color:#8b5cf6}
       .agent button{position:absolute;left:15px;right:15px;bottom:16px;height:35px;border-radius:8px;background:linear-gradient(100deg,#7c3aed,#8b5cf6);color:#fff;font-size:13px;font-weight:600;box-shadow:0 4px 9px rgba(139,92,246,.3)}
-      .main{width:1271px;min-width:1271px;padding:34px 22px 26px 32px;position:relative}
+      .main{flex:1;min-width:0;padding:34px 22px 26px 32px;position:relative}
       .topbar{height:67px;display:flex;justify-content:space-between;align-items:flex-start}
       .heading h1{font-size:25px;line-height:31px;margin:0;font-weight:700;letter-spacing:-.65px;display:flex;align-items:center;gap:7px}
       .heading h1 svg{color:#8b5cf6;fill:#8b5cf6;stroke:#8b5cf6}

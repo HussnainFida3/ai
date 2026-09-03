@@ -170,6 +170,7 @@ const inFlightRefresh = new Map<string, Promise<boolean>>();
 
 async function tryRefresh(p: PlatformDef): Promise<boolean> {
   if (!isBrowser()) return false;
+  if (!p.refreshPath) return false;
 
   const existing = inFlightRefresh.get(p.tokenNs);
   if (existing) return existing;
@@ -179,7 +180,7 @@ async function tryRefresh(p: PlatformDef): Promise<boolean> {
 
   const attempt = (async () => {
     try {
-      const { res, json } = await rawFetch<{ accessToken: string; refreshToken: string }>(p, "/auth/refresh", {
+      const { res, json } = await rawFetch<{ accessToken: string; refreshToken: string }>(p, p.refreshPath!, {
         method: "POST",
         body: { refreshToken },
         auth: false,
@@ -198,6 +199,65 @@ async function tryRefresh(p: PlatformDef): Promise<boolean> {
   } finally {
     inFlightRefresh.delete(p.tokenNs);
   }
+}
+
+/**
+ * Ask the console's own server to mint a fresh session for this platform.
+ *
+ * The server holds the long-lived credentials (GhrFix) and rotating refresh
+ * token (ShadiLife), so this recovers a session that the browser alone
+ * cannot — which is what keeps a dead token from ever surfacing as a
+ * "Reconnect" prompt. Deduped per platform for the same reason as
+ * tryRefresh: a page's parallel calls all 401 at once.
+ */
+const inFlightReissue = new Map<string, Promise<boolean>>();
+
+async function tryServerReissue(p: PlatformDef): Promise<boolean> {
+  if (!isBrowser()) return false;
+
+  const existing = inFlightReissue.get(p.tokenNs);
+  if (existing) return existing;
+
+  const attempt = (async () => {
+    try {
+      const res = await fetch("/api/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ platform: p.key }),
+      });
+      if (!res.ok) return false;
+      const json = await res.json().catch(() => null);
+      const accessToken = json?.tokens?.accessToken;
+      if (typeof accessToken !== "string") return false;
+      setTokens(p.tokenNs, accessToken, json?.tokens?.refreshToken);
+      return true;
+    } catch {
+      return false;
+    }
+  })();
+
+  inFlightReissue.set(p.tokenNs, attempt);
+  try {
+    return await attempt;
+  } finally {
+    inFlightReissue.delete(p.tokenNs);
+  }
+}
+
+/**
+ * Make sure this platform has a usable session, establishing one from the
+ * server if the browser is holding nothing. Safe to call on mount: it does
+ * nothing when already connected, and never throws.
+ *
+ * This is what closes the loop on "signing into the console connects
+ * everything" — it also covers the case where the console cookie is still
+ * valid but localStorage was cleared, which would otherwise leave the UI
+ * connected to nothing until the operator manually signed in again.
+ */
+export async function ensureConnected(key: PlatformKey, force = false): Promise<boolean> {
+  if (!isBrowser()) return false;
+  if (!force && isConnected(key)) return true;
+  return tryServerReissue(PLATFORMS[key]);
 }
 
 /**
@@ -222,8 +282,12 @@ export async function apiFetch<T, M = unknown>(
 
   let { res, json } = await rawFetch<T>(p, path, options);
 
-  if (res.status === 401 && auth && path !== "/auth/refresh") {
-    if (await tryRefresh(p)) {
+  // Two chances to recover before giving up, in cost order: rotate the
+  // browser's own refresh token, then fall back to asking the console's
+  // server to mint a completely new session from the credentials it holds.
+  // Only if BOTH fail is the session genuinely unrecoverable without a human.
+  if (res.status === 401 && auth && path !== p.refreshPath) {
+    if ((await tryRefresh(p)) || (await tryServerReissue(p))) {
       ({ res, json } = await rawFetch<T>(p, path, options));
     }
   }
@@ -231,7 +295,11 @@ export async function apiFetch<T, M = unknown>(
   if (!res.ok) {
     if (res.status === 401 && auth) {
       clearTokens(p.tokenNs);
-      throw new ApiError(`Your ${p.label} session expired. Reconnect it to keep going.`, "SESSION_EXPIRED", 401);
+      throw new ApiError(
+        `Your ${p.label} session could not be renewed automatically. It needs to be authorised once more.`,
+        "SESSION_EXPIRED",
+        401,
+      );
     }
     const msg = json?.error?.message ?? json?.message ?? `${p.label} request failed (${res.status}).`;
     throw new ApiError(msg, json?.error?.code ?? "ERROR", res.status);

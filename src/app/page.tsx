@@ -64,11 +64,13 @@ const TOTAL_AGENTS = PLATFORMS.ghrfix.agents.length + PLATFORMS.shadilife.agents
 /** The same six-colour palette every other spend donut in this app uses — see credit-usage-data.ts. */
 const PALETTE = ["#38bdf8", "#8b5cf6", "#22c55e", "#f59e0b", "#ec4899", "#64748b"];
 
+// No "Connect a Platform" action: both platforms are connected automatically
+// as part of signing into this console, so there is nothing to connect.
 const QUICK_ACTIONS = [
   { label: "Browse All Agents", href: "/ai-agents", icon: LayoutList },
-  { label: "Connect a Platform", href: "/connect", icon: Plug },
   { label: "View Credit Usage", href: "/credit-usage", icon: Coins },
   { label: "View Alerts", href: "/alerts", icon: Bell },
+  { label: "Settings", href: "/settings", icon: Plug },
 ];
 
 /* -------------------------------------------------------------------------- */

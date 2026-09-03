@@ -175,8 +175,8 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
         }
         body{margin:0;background:#030712;color:var(--ink)}
         button{font:inherit}
-        .app{width:1536px;min-height:1024px;background:#030712;display:flex;overflow:hidden}
-        .sidebar{width:260px;flex:0 0 260px;background:#05080f;border-right:1px solid rgba(255,255,255,.07);min-height:1024px;padding:33px 15px 20px;position:relative}
+        .app{width:100%;min-height:100vh;background:#030712;display:flex;overflow:hidden}
+        .sidebar{width:260px;flex:0 0 260px;background:#05080f;border-right:1px solid rgba(255,255,255,.07);min-height:100vh;padding:33px 15px 20px;position:relative}
         .brand{height:70px;padding-left:15px;display:flex;align-items:flex-start;gap:10px}
         .brandMark{width:39px;height:39px;object-fit:contain;margin-top:2px}
         .brandName{font-size:24px;line-height:28px;font-weight:750;letter-spacing:-.8px;color:#8b5cf6}
@@ -200,7 +200,7 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
         .assistantCopy{font-size:13px;line-height:23px;color:#94a3b8;margin:4px 0 13px}
         .askBtn,.purpleBtn{border:0;border-radius:7px;background:linear-gradient(90deg,#7c3aed,#8b5cf6);color:#fff;font-weight:650;cursor:pointer;box-shadow:0 5px 10px rgba(139,92,246,.25)}
         .askBtn{height:38px;width:181px}
-        .main{width:1276px;min-width:1276px;padding:25px 24px 23px 31px}
+        .main{flex:1;min-width:0;padding:25px 24px 23px 31px}
         .topbar{height:66px;display:flex;align-items:flex-start;justify-content:space-between}
         .heading h1{margin:0;font-size:27px;line-height:34px;letter-spacing:-.5px;font-weight:760}
         .heading p{margin:2px 0 0;color:#94a3b8;font-size:14px}
@@ -327,7 +327,7 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
         <header className="topbar">
           <div className="heading">
             <h1>SEO AI Agent <Sparkle/></h1>
-            <p>Intelligent SEO Automation for ShadiLife.com</p>
+            <p>Intelligent SEO Automation for {platformLabel(platform)}.com</p>
           </div>
           <div className="actions">
             <button className="dateBtn"><Icon name="calendar" size={16}/>May 22, 2025&nbsp; - &nbsp;Jun 22, 2025</button>
@@ -400,14 +400,33 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
 
           <div className="card topPages">
             <div className="cardHeader"><h3>Top Performing Pages</h3><button className="viewBtn">View All</button></div>
+            {/* Neither platform tracks per-page sessions or search position, so
+                this shows what the SEO audit genuinely returns — the real scored
+                posts — rather than invented traffic figures (which previously
+                also listed ShadiLife's own routes on GhrFix's dashboard). */}
             <table className="pagesTable">
-              <thead><tr><th>Page</th><th>Sessions</th><th>Position</th></tr></thead>
+              <thead><tr><th>Page</th><th>SEO score</th></tr></thead>
               <tbody>
-                <tr><td>/</td><td>12.4K</td><td className="greenUp">↑ 3</td></tr>
-                <tr><td>/rishta</td><td>8.9K</td><td className="greenUp">↑ 5</td></tr>
-                <tr><td>/search</td><td>7.2K</td><td className="greenUp">↑ 2</td></tr>
-                <tr><td>/success-stories</td><td>5.6K</td><td className="greenUp">↑ 4</td></tr>
-                <tr><td>/membership</td><td>4.3K</td><td className="greenUp">↑ 6</td></tr>
+                {seo.loading ? (
+                  <tr><td colSpan={2}>Loading…</td></tr>
+                ) : seo.needsImprovement.length > 0 ? (
+                  seo.needsImprovement.slice(0, 5).map((post) => (
+                    <tr key={post.id}>
+                      <td>{post.title}</td>
+                      <td className={post.score >= seo.maxScore * 0.8 ? "greenUp" : undefined}>
+                        {post.score}/{seo.maxScore}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={2}>
+                      {seo.publishedCount === 0
+                        ? `No published pages on ${platformLabel(platform)} yet.`
+                        : "Every published page is scoring well."}
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -473,7 +492,7 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
         <div className="modalShade" onClick={()=>setShowInsights(false)}>
           <div className="modal" onClick={e=>e.stopPropagation()}>
             <div className="modalHeader"><h2>AI SEO Insights</h2><button className="close" onClick={()=>setShowInsights(false)}><Icon name="close" size={16}/></button></div>
-            <p>Your SEO AI Agent has identified the highest-impact opportunities for ShadiLife.com.</p>
+            <p>Your SEO AI Agent has identified the highest-impact opportunities for {platformLabel(platform)}.com.</p>
             <div className="insightList">
               <div className="insight"><Icon name="trend" size={20}/><div><b>Organic growth is accelerating</b><span>Traffic is up 28.5% compared with the previous period.</span></div></div>
               <div className="insight"><Icon name="search" size={20}/><div><b>1,248 keyword opportunities</b><span>Prioritize high-intent queries where the site is already close to page one.</span></div></div>

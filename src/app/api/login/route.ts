@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getGhrfixSession } from "../_sessions/store";
+import { ensureAllSessions } from "@/lib/server/platform-sessions";
 
 export const COOKIE_NAME = "cc_auth";
 
@@ -56,14 +56,16 @@ export async function POST(req: Request) {
   // any real browser, which would make login appear to succeed and then loop.
   const isHttps = req.headers.get("x-forwarded-proto") === "https" || new URL(req.url).protocol === "https:";
 
-  // GhrFix uses portable bearer tokens, so a real admin session obtained once
-  // (see scripts/seed-shadilife-session) can be handed straight to the browser
-  // on console login — no separate manual "Connect" step needed for GhrFix.
-  const ghrfix = getGhrfixSession();
+  // Passing this login is the only sign-in the operator performs: both
+  // platforms' admin sessions are established (or silently refreshed) here on
+  // the server and handed to the browser, so there is no separate "Connect"
+  // step. Both backends accept these as `Authorization: Bearer`.
+  const sessions = await ensureAllSessions();
 
   const res = NextResponse.json({
     ok: true,
-    ghrfix: ghrfix ? { accessToken: ghrfix.accessToken, refreshToken: ghrfix.refreshToken } : null,
+    ghrfix: sessions.ghrfix,
+    shadilife: sessions.shadilife,
   });
   res.cookies.set(COOKIE_NAME, expectedPassword, {
     httpOnly: true,

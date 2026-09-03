@@ -233,7 +233,7 @@ export default function Page({ params }: { params: Promise<{ platform: string }>
 
   <style jsx global>{`
    *{box-sizing:border-box}html,body{margin:0;padding:0;background:#030712;color:#f1f5f9;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-   button,input{font:inherit}button{cursor:pointer}.screen{width:1536px;min-width:1536px;height:1024px;overflow:hidden;background:#030712}
+   button,input{font:inherit}button{cursor:pointer}.screen{width:100%;min-height:100vh;background:#030712}
    .topbar{height:88px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;padding:0 20px}
    .logo{width:226px;display:flex;align-items:center;gap:5px}.heartLogo{width:41px;height:45px;object-fit:contain;flex:0 0 auto}
    .logo strong{display:block;font-size:22px;letter-spacing:-.8px;background:linear-gradient(90deg,#8b5cf6,#38bdf8);color:transparent;background-clip:text;-webkit-background-clip:text}.logo small{display:block;font-size:10.5px;text-align:center;color:#8b5cf6;margin-top:2px}

@@ -16,8 +16,33 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/dashboard/AppShell";
-import { PLATFORMS } from "@/lib/platforms";
-import { clearTokens, useIsConnected } from "@/lib/api";
+import { PLATFORMS, type PlatformKey } from "@/lib/platforms";
+import { ensureConnected, useIsConnected } from "@/lib/api";
+
+/**
+ * Both platforms are connected automatically by signing into this console, so
+ * there is no "Disconnect" here any more — dropping a session would only be
+ * undone on the next page load. This just forces a renewal on demand, which
+ * is occasionally useful after a backend restart.
+ */
+function ReconnectButton({ platform, connected }: { platform: PlatformKey; connected: boolean }) {
+  const [busy, setBusy] = useState(false);
+
+  async function renew() {
+    setBusy(true);
+    try {
+      await ensureConnected(platform, true);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <button type="button" className="settings-secondary-button" onClick={renew} disabled={busy}>
+      {busy ? "Renewing..." : connected ? "Renew session" : "Reconnect"}
+    </button>
+  );
+}
 
 /* -------------------------------------------------------------------------- */
 /*                          LOCAL, GENUINELY REAL PREFS                       */
@@ -489,23 +514,11 @@ export default function SettingsPage() {
                       <div className="settings-row-description">
                         {ghrfixConnected
                           ? "Connected — agents can call GhrFix's API on your behalf."
-                          : "Not connected — GhrFix agents can't run until you connect."}
+                          : "Reconnecting automatically — the console re-establishes this on its own."}
                       </div>
                     </div>
 
-                    {ghrfixConnected ? (
-                      <button
-                        type="button"
-                        className="settings-secondary-button"
-                        onClick={() => clearTokens(PLATFORMS.ghrfix.tokenNs)}
-                      >
-                        Disconnect
-                      </button>
-                    ) : (
-                      <Link href="/connect" className="settings-secondary-button">
-                        Reconnect
-                      </Link>
-                    )}
+                    <ReconnectButton platform="ghrfix" connected={ghrfixConnected} />
                   </div>
 
                   <div className="settings-action-row">
@@ -526,23 +539,11 @@ export default function SettingsPage() {
                       <div className="settings-row-description">
                         {shadilifeConnected
                           ? "Connected — agents can call ShadiLife's API on your behalf."
-                          : "Not connected — ShadiLife agents can't run until you connect."}
+                          : "Not connected — ShadiLife's 2FA means it needs authorising once."}
                       </div>
                     </div>
 
-                    {shadilifeConnected ? (
-                      <button
-                        type="button"
-                        className="settings-secondary-button"
-                        onClick={() => clearTokens(PLATFORMS.shadilife.tokenNs)}
-                      >
-                        Disconnect
-                      </button>
-                    ) : (
-                      <Link href="/connect" className="settings-secondary-button">
-                        Reconnect
-                      </Link>
-                    )}
+                    <ReconnectButton platform="shadilife" connected={shadilifeConnected} />
                   </div>
 
                   <div className="settings-action-row">
