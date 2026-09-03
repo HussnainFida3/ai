@@ -41,12 +41,12 @@ export function TrendLine({
           </linearGradient>
         </defs>
         {[0.25, 0.5, 0.75].map((f) => (
-          <line key={f} x1={0} x2={width} y1={height * f} y2={height * f} stroke="rgba(20,22,43,0.06)" strokeWidth="1" />
+          <line key={f} x1={0} x2={width} y1={height * f} y2={height * f} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
         ))}
         <path d={areaPath} fill={`url(#${gid})`} />
         <path d={linePath} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
         {points.map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r={i === points.length - 1 ? 4 : 2.5} fill={i === points.length - 1 ? color : "#fff"} stroke={color} strokeWidth={i === points.length - 1 ? 0 : 1.5} />
+          <circle key={i} cx={x} cy={y} r={i === points.length - 1 ? 4 : 2.5} fill={i === points.length - 1 ? color : "#0b1220"} stroke={color} strokeWidth={i === points.length - 1 ? 0 : 1.5} />
         ))}
       </svg>
       {labels && (
@@ -86,7 +86,7 @@ export function RadialGauge({
             <stop offset="100%" stopColor={color} />
           </linearGradient>
         </defs>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(20,22,43,0.07)" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
         <circle
           cx={size / 2}
           cy={size / 2}

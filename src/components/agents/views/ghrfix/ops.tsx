@@ -86,9 +86,9 @@ export default function OpsView({ platform, agent, api }: AgentViewProps) {
   const providerStatusRows = s
     ? [
         { label: "Verified", value: s.providerStats.verified, color: "#22c55e" },
-        { label: "Pending", value: s.providerStats.pending, color: "#d68b00" },
-        { label: "Rejected", value: s.providerStats.rejected, color: "#e0393e" },
-        { label: "Suspended", value: s.providerStats.suspended, color: "#8b8ea3" },
+        { label: "Pending", value: s.providerStats.pending, color: "#f59e0b" },
+        { label: "Rejected", value: s.providerStats.rejected, color: "#f43f5e" },
+        { label: "Suspended", value: s.providerStats.suspended, color: "#5b6780" },
       ].filter((r) => r.value > 0)
     : [];
 

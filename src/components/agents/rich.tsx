@@ -10,7 +10,7 @@ import { Icons } from "./icons";
    insight rows, ranked bar lists, avatars) shared by every agent page.
    ══════════════════════════════════════════════════════════════════════ */
 
-export const SERIES_COLORS = ["#7c3aed", "#3b82f6", "#22c55e", "#f59e0b", "#ec4899", "#06b6d4", "#f43f5e", "#8b5cf6"];
+export const SERIES_COLORS = ["#8b5cf6", "#3b82f6", "#22c55e", "#f59e0b", "#ec4899", "#06b6d4", "#f43f5e", "#38bdf8"];
 
 export function Svg({ path, size = 20, strokeWidth = 1.8 }: { path: ReactNode; size?: number; strokeWidth?: number }) {
   return (
@@ -180,7 +180,7 @@ export function AreaChart({
               <path d={area} fill={`url(#ag-area-${i}-${c.replace("#", "")})`} />
               <path d={line} fill="none" stroke={c} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
               {s.data.map((v, j) => (
-                <circle key={j} cx={xAt(j)} cy={yAt(v)} r={hover === j ? 5 : 3} fill="#fff" stroke={c} strokeWidth="2.2" />
+                <circle key={j} cx={xAt(j)} cy={yAt(v)} r={hover === j ? 5 : 3} fill="#0b1220" stroke={c} strokeWidth="2.2" />
               ))}
             </g>
           );

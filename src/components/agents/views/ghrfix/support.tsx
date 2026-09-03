@@ -99,8 +99,8 @@ export default function SupportView({ platform, agent, api }: AgentViewProps) {
   const messages = t?.messages.items ?? [];
 
   const ticketMix = [
-    { label: "Open disputes", value: s?.openDisputes ?? 0, color: "#e0393e" },
-    { label: "Investigating", value: s?.investigatingDisputes ?? 0, color: "#d68b00" },
+    { label: "Open disputes", value: s?.openDisputes ?? 0, color: "#f43f5e" },
+    { label: "Investigating", value: s?.investigatingDisputes ?? 0, color: "#f59e0b" },
     { label: "Unresolved messages", value: s?.unresolvedMessages ?? 0, color: "#3b82f6" },
   ].filter((r) => r.value > 0);
   const ticketMixTotal = ticketMix.reduce((a, b) => a + b.value, 0);
