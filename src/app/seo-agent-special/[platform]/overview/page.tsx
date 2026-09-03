@@ -64,15 +64,21 @@ const Sparkle = () => (
   </span>
 );
 
-const MiniLine = ({ points, fill = true }: { points: string; fill?: boolean }) => (
-  <svg className="miniChart" viewBox="0 0 250 55" preserveAspectRatio="none">
-    {fill && <polygon points={`${points} 250,55 0,55`} className="miniFill"/>}
-    <polyline points={points} className="miniStroke"/>
-  </svg>
-);
-
 const StatusPill = ({ children, tone = "green" }: { children: React.ReactNode; tone?: "green"|"yellow"|"blue" }) => (
   <span className={`statusPill ${tone}`}><span>{children}</span></span>
+);
+
+/**
+ * Neither platform stores search-console style analytics — no per-page
+ * sessions, no keyword positions, no conversion attribution, no history of
+ * completed SEO work. Those panels say so plainly instead of showing a
+ * number, because a figure here would be a claim the backend can't support.
+ */
+const NotTracked = ({ children }: { children: React.ReactNode }) => (
+  <div className="notTracked">
+    <b>Not tracked</b>
+    <span>{children}</span>
+  </div>
 );
 
 const RobotArt = () => (
@@ -123,30 +129,6 @@ const RobotArt = () => (
       <path d="M131 49c13-7 24 5 22 19" stroke="rgba(139,92,246,.4)" strokeWidth="9" fill="none" strokeLinecap="round"/>
       <circle cx="153" cy="68" r="16" fill="#2a2145" stroke="rgba(139,92,246,.3)" strokeWidth="2"/>
     </g>
-  </svg>
-);
-
-const Donut = () => (
-  <div className="donut">
-    <div className="donutHole">
-      <b>5,842</b>
-      <span>Total Keywords</span>
-    </div>
-  </div>
-);
-
-const PerformanceChart = () => (
-  <svg className="performanceChart" viewBox="0 0 500 230" preserveAspectRatio="none">
-    <g className="grid">
-      <line x1="48" y1="20" x2="488" y2="20"/><line x1="48" y1="67" x2="488" y2="67"/>
-      <line x1="48" y1="114" x2="488" y2="114"/><line x1="48" y1="161" x2="488" y2="161"/><line x1="48" y1="208" x2="488" y2="208"/>
-    </g>
-    <text x="6" y="24">150K</text><text x="6" y="71">100K</text><text x="17" y="118">50K</text><text x="31" y="212">0</text>
-    <path d="M48 126 L78 114 L108 118 L138 105 L168 98 L198 108 L228 91 L258 84 L288 72 L318 84 L348 79 L378 65 L408 48 L438 59 L468 35 L488 29 L488 208 L48 208Z" className="areaPurple"/>
-    <polyline points="48,126 78,114 108,118 138,105 168,98 198,108 228,91 258,84 288,72 318,84 348,79 378,65 408,48 438,59 468,35 488,29" className="linePurple"/>
-    <path d="M48 178 L78 169 L108 172 L138 160 L168 153 L198 160 L228 150 L258 146 L288 139 L318 151 L348 147 L378 133 L408 117 L438 125 L468 106 L488 111 L488 208 L48 208Z" className="areaGreen"/>
-    <polyline points="48,178 78,169 108,172 138,160 168,153 198,160 228,150 258,146 288,139 318,151 348,147 378,133 408,117 438,125 468,106 488,111" className="lineGreen"/>
-    {["May 22","May 29","Jun 5","Jun 12","Jun 19"].map((t,i)=><text key={t} x={[48,158,267,376,466][i]} y="226" textAnchor={i===4?"end":"middle"}>{t}</text>)}
   </svg>
 );
 
@@ -222,6 +204,10 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
         .statValue{font-size:28px;font-weight:770;letter-spacing:-.8px}
         .up{font-size:12px;color:#22c55e;margin-left:7px;font-weight:700;vertical-align:5px}
         .statSub{font-size:11px;color:#94a3b8;margin-top:3px}
+        .notTracked{display:flex;flex-direction:column;gap:4px;padding:14px 2px;color:#5b6780}
+        .notTracked b{font-size:15px;font-weight:700;color:#94a3b8;letter-spacing:-.01em}
+        .notTracked span{font-size:11px;line-height:17px;color:#5b6780;max-width:44ch}
+        .card .notTracked{padding:18px 2px}
         .miniChart{position:absolute;left:18px;right:17px;bottom:11px;width:calc(100% - 35px);height:48px;overflow:visible}
         .miniStroke{fill:none;stroke:#8b5cf6;stroke-width:2.1}
         .miniFill{fill:url(#noGradient)}
@@ -344,9 +330,7 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
         <section className="stats">
           <div className="card stat">
             <div className="statLabel">Organic Sessions</div>
-            <div className="statValue">128.6K <span className="up">↑ 28.5%</span></div>
-            <div className="statSub">vs Apr 22 - May 21, 2025</div>
-            <MiniLine points="0,42 10,37 22,43 35,32 48,36 61,26 73,31 86,22 97,36 108,12 120,32 133,21 146,29 160,18 173,32 186,21 199,31 212,18 225,22 237,4 250,11"/>
+            <NotTracked>{platformLabel(platform)} stores no traffic analytics — sessions would have to come from Search Console or an analytics provider.</NotTracked>
           </div>
           <div className="card stat">
             <div className="statLabel">Published Posts</div>
@@ -382,9 +366,7 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
           </div>
           <div className="card stat">
             <div className="statLabel">Conversions</div>
-            <div className="statValue">2,845 <span className="up">↑ 31.7%</span></div>
-            <div className="statSub">vs Apr 22 - May 21, 2025</div>
-            <MiniLine points="0,47 13,43 26,45 39,42 51,22 64,37 77,39 90,27 103,34 116,24 129,33 142,18 155,25 168,20 181,31 194,12 207,34 220,18 233,3 246,29 250,10"/>
+            <NotTracked>No conversion attribution exists on {platformLabel(platform)} — nothing links a signup or booking back to an organic visit.</NotTracked>
           </div>
         </section>
 
@@ -392,7 +374,15 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
           <div className="card overview">
             <div className="overviewCopy">
               <div className="sectionTitle"><span className="robotIcon"><Icon name="bot" size={19}/></span>AI SEO Overview</div>
-              <div className="overviewText">Your website is performing great! Organic traffic is up <strong>28.5%</strong> this month, we found <strong>1,248</strong> new keyword opportunities and <strong>18</strong> technical issues were fixed automatically.</div>
+              <div className="overviewText">
+                {seo.loading
+                  ? "Reading the live SEO audit…"
+                  : seo.error
+                    ? `The ${platformLabel(platform)} audit could not be read this session, so there is nothing to summarise.`
+                    : seo.publishedCount === 0
+                      ? <>There are no published posts on {platformLabel(platform)} yet, so there is nothing to score. Publish a post and the audit will start reporting real numbers here.</>
+                      : <>The audit scored <strong>{seo.publishedCount}</strong> published {seo.publishedCount === 1 ? "post" : "posts"}, averaging <strong>{seo.averageScore ?? "—"}</strong> out of {seo.maxScore}. <strong>{seo.needsImprovement.length}</strong> {seo.needsImprovement.length === 1 ? "post needs" : "posts need"} attention{seo.mostCommonIssue ? <>, most often for <strong>{seo.mostCommonIssue.rule}</strong></> : null}.</>}
+              </div>
               <button className="askBtn insightBtn" onClick={()=>setShowInsights(true)}>View AI Insights</button>
             </div>
             <div className="overviewArt"><RobotArt/></div>
@@ -434,57 +424,81 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
 
         <section className="row3">
           <div className="card rankCard">
-            <div className="cardHeader"><h3>Keyword Rankings</h3><button className="viewBtn">View Full Report</button></div>
-            <div className="rankBody">
-              <Donut/>
-              <div className="legend">
-                <div className="legendLine"><i className="dot green"/><b>1,256</b><span>Top 3</span><span>(21.5%)</span></div>
-                <div className="legendLine"><i className="dot blue"/><b>2,134</b><span>Top 4-10</span><span>(36.5%)</span></div>
-                <div className="legendLine"><i className="dot yellow"/><b>1,942</b><span>Top 11-50</span><span>(33.2%)</span></div>
-                <div className="legendLine"><i className="dot red"/><b>510</b><span>Top 51-100</span><span>(8.8%)</span></div>
-              </div>
-            </div>
+            <div className="cardHeader"><h3>Keyword Rankings</h3></div>
+            <NotTracked>Search positions come from Search Console, which {platformLabel(platform)} is not connected to. The audit scores on-page signals only — it never sees where a page ranks.</NotTracked>
           </div>
 
           <div className="card performance">
             <div className="cardHeader"><h3>SEO Performance</h3></div>
-            <div className="legendTop"><span><i className="legendDot p"/>Organic Traffic</span><span><i className="legendDot g"/>Organic Keywords</span></div>
-            <PerformanceChart/>
+            <NotTracked>There is no history to chart: {platformLabel(platform)} scores posts on demand and keeps no time series of traffic, keywords or past scores.</NotTracked>
           </div>
 
           <div className="card tasks">
-            <div className="cardHeader"><h3>AI SEO Tasks</h3><button className="viewBtn">View All</button></div>
-            <div className="task">
-              <div className="taskIcon"><Icon name="edit" size={16}/></div>
-              <div className="taskInfo"><div className="taskName">Optimize meta titles for 45 pages</div><div className="taskMeta high">High impact</div></div>
-              <div className="taskRight"><StatusPill>Completed</StatusPill><Icon name="check" size={17}/></div>
-            </div>
-            <div className="task">
-              <div className="taskIcon"><Icon name="edit" size={16}/></div>
-              <div className="taskInfo"><div className="taskName">Generate content for new keywords</div><div className="taskMeta medium">Medium impact</div></div>
-              <div className="taskRight"><StatusPill tone="blue">In Progress</StatusPill><Icon name="chevron" size={16}/></div>
-            </div>
-            <div className="task">
-              <div className="taskIcon"><Icon name="wrench" size={16}/></div>
-              <div className="taskInfo"><div className="taskName">Fix technical SEO issues</div><div className="taskMeta high">High impact</div></div>
-              <div className="taskRight"><StatusPill>Completed</StatusPill><Icon name="check" size={17}/></div>
-            </div>
-            <div className="task">
-              <div className="taskIcon"><Icon name="link" size={16}/></div>
-              <div className="taskInfo"><div className="taskName">Build backlinks for priority pages</div><div className="taskMeta medium">Medium impact</div></div>
-              <div className="taskRight"><StatusPill tone="yellow">Pending</StatusPill><Icon name="chevron" size={16}/></div>
-            </div>
+            {/* Real posts the audit flagged. There is no stored task queue or
+                completion history on either platform, so nothing is invented
+                here — an empty audit simply shows nothing to do. */}
+            <div className="cardHeader"><h3>Posts Needing Attention</h3>{seo.needsImprovement.length > 0 && <Link href={`/seo-agent-special/${platform}/recommendations`} className="viewBtn">View All</Link>}</div>
+            {seo.loading ? (
+              <NotTracked>Reading the live audit…</NotTracked>
+            ) : seo.error ? (
+              <NotTracked>The audit could not be read this session.</NotTracked>
+            ) : seo.needsImprovement.length === 0 ? (
+              <NotTracked>
+                {seo.publishedCount === 0
+                  ? `No published posts on ${platformLabel(platform)} yet, so the audit has nothing to check.`
+                  : "Every scored post is already at the maximum score — nothing needs attention."}
+              </NotTracked>
+            ) : (
+              seo.needsImprovement.slice(0, 4).map((post) => (
+                <div className="task" key={post.id}>
+                  <div className="taskIcon"><Icon name="edit" size={16}/></div>
+                  <div className="taskInfo">
+                    <div className="taskName">{post.title}</div>
+                    <div className={post.score < seo.maxScore * 0.6 ? "taskMeta high" : "taskMeta medium"}>
+                      Scored {post.score} of {seo.maxScore}
+                    </div>
+                  </div>
+                  <div className="taskRight"><StatusPill tone="yellow">Needs work</StatusPill></div>
+                </div>
+              ))
+            )}
           </div>
         </section>
 
         <section className="card recommend">
           <div className="sectionTitle"><span style={{color:"#8b5cf6"}}><Icon name="light" size={20}/></span>AI Recommendations</div>
-          <div className="recommendGrid">
-            <div className="rec"><div className="recIcon"><Icon name="light" size={18}/></div><div><h4>Target 248 new keywords</h4><p>High potential keywords</p></div><button>View Keywords</button></div>
-            <div className="rec"><div className="recIcon"><Icon name="edit" size={17}/></div><div><h4>Optimize 45 pages</h4><p>Improve on-page SEO</p></div><button>Optimize Now</button></div>
-            <div className="rec"><div className="recIcon"><Icon name="wrench" size={17}/></div><div><h4>Fix 18 technical issues</h4><p>Improve site health</p></div><button>Fix Issues</button></div>
-            <div className="rec"><div className="recIcon"><Icon name="link" size={17}/></div><div><h4>Build quality backlinks</h4><p>Increase domain authority</p></div><button>Build Backlinks</button></div>
-          </div>
+          {/* Only what the audit actually found. Keyword targets, page counts
+              and backlink work were invented figures — none of that is
+              measured by either backend. */}
+          {seo.loading ? (
+            <NotTracked>Reading the live audit…</NotTracked>
+          ) : seo.error || seo.publishedCount === 0 ? (
+            <NotTracked>
+              {seo.error
+                ? "The audit could not be read this session, so there is nothing to recommend."
+                : `Nothing to recommend yet — ${platformLabel(platform)} has no published posts for the audit to score.`}
+            </NotTracked>
+          ) : (
+            <div className="recommendGrid">
+              <div className="rec">
+                <div className="recIcon"><Icon name="edit" size={17}/></div>
+                <div><h4>{seo.needsImprovement.length} {seo.needsImprovement.length === 1 ? "post" : "posts"} below target</h4><p>Scored under {seo.maxScore} by the live audit</p></div>
+                <Link href={`/seo-agent-special/${platform}/recommendations`}><button>Review</button></Link>
+              </div>
+              {seo.mostCommonIssue && (
+                <div className="rec">
+                  <div className="recIcon"><Icon name="wrench" size={17}/></div>
+                  <div><h4>{seo.mostCommonIssue.rule}</h4><p>Failing on {seo.mostCommonIssue.failingPercent}% of scored posts</p></div>
+                  <Link href={`/seo-agent-special/${platform}/blog-optimization`}><button>Fix</button></Link>
+                </div>
+              )}
+              <div className="rec">
+                <div className="recIcon"><Icon name="file" size={17}/></div>
+                <div><h4>{seo.publishedCount} published {seo.publishedCount === 1 ? "post" : "posts"}</h4><p>Averaging {seo.averageScore ?? "—"} of {seo.maxScore}</p></div>
+                <Link href={`/seo-agent-special/${platform}/statistics`}><button>Statistics</button></Link>
+              </div>
+            </div>
+          )}
         </section>
       </main>
 
@@ -494,9 +508,15 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
             <div className="modalHeader"><h2>AI SEO Insights</h2><button className="close" onClick={()=>setShowInsights(false)}><Icon name="close" size={16}/></button></div>
             <p>Your SEO AI Agent has identified the highest-impact opportunities for {platformLabel(platform)}.com.</p>
             <div className="insightList">
-              <div className="insight"><Icon name="trend" size={20}/><div><b>Organic growth is accelerating</b><span>Traffic is up 28.5% compared with the previous period.</span></div></div>
-              <div className="insight"><Icon name="search" size={20}/><div><b>1,248 keyword opportunities</b><span>Prioritize high-intent queries where the site is already close to page one.</span></div></div>
-              <div className="insight"><Icon name="wrench" size={20}/><div><b>18 technical issues fixed</b><span>Automation has already resolved the reported technical SEO issues.</span></div></div>
+              {/* Every line below is read off the live audit. Growth, keyword
+                  opportunity and "issues fixed" claims were removed: nothing on
+                  either platform measures traffic, keywords, or past fixes. */}
+              <div className="insight"><Icon name="file" size={20}/><div><b>{seo.publishedCount ?? "—"} published {seo.publishedCount === 1 ? "post" : "posts"} scored</b><span>{seo.publishedCount === 0 ? "Nothing has been published yet, so the audit has nothing to score." : `Average score ${seo.averageScore ?? "—"} out of ${seo.maxScore}.`}</span></div></div>
+              <div className="insight"><Icon name="light" size={20}/><div><b>{seo.needsImprovement.length} {seo.needsImprovement.length === 1 ? "post needs" : "posts need"} attention</b><span>{seo.needsImprovement.length === 0 ? "No scored post is below the maximum." : `Lowest: ${seo.needsImprovement[0].title} at ${seo.needsImprovement[0].score} of ${seo.maxScore}.`}</span></div></div>
+              {seo.mostCommonIssue && (
+                <div className="insight"><Icon name="wrench" size={20}/><div><b>Most common issue: {seo.mostCommonIssue.rule}</b><span>Failing on {seo.mostCommonIssue.failingPercent}% of the posts the audit checked.</span></div></div>
+              )}
+              <div className="insight"><Icon name="search" size={20}/><div><b>Rankings and traffic are not tracked</b><span>{platformLabel(platform)} is not connected to Search Console or an analytics provider, so positions, sessions and conversions cannot be reported.</span></div></div>
             </div>
           </div>
         </div>
