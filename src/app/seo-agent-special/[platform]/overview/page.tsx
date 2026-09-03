@@ -79,49 +79,49 @@ const RobotArt = () => (
   <svg className="robotArt" viewBox="0 0 430 220" aria-hidden="true">
     <defs>
       <linearGradient id="purplePanel" x1="0" x2="1">
-        <stop offset="0" stopColor="#8a69f5"/>
-        <stop offset="1" stopColor="#c0b2ff"/>
+        <stop offset="0" stopColor="#8b5cf6"/>
+        <stop offset="1" stopColor="#a78bfa"/>
       </linearGradient>
       <linearGradient id="robotBody" x1="0" x2="1">
-        <stop offset="0" stopColor="#f5f4ff"/>
-        <stop offset="1" stopColor="#d8d5ff"/>
+        <stop offset="0" stopColor="#0d1526"/>
+        <stop offset="1" stopColor="#1a1433"/>
       </linearGradient>
     </defs>
-    <ellipse cx="218" cy="207" rx="185" ry="10" fill="#e9e8f6"/>
+    <ellipse cx="218" cy="207" rx="185" ry="10" fill="rgba(0,0,0,.4)"/>
     <g transform="translate(12,15)">
-      <rect x="26" y="30" width="210" height="142" rx="17" fill="#fff" stroke="#dddaf0" strokeWidth="2"/>
-      <rect x="43" y="47" width="176" height="72" rx="10" fill="#f5f3ff"/>
+      <rect x="26" y="30" width="210" height="142" rx="17" fill="#0b1220" stroke="rgba(139,92,246,.3)" strokeWidth="2"/>
+      <rect x="43" y="47" width="176" height="72" rx="10" fill="#0d1526"/>
       <rect x="61" y="60" width="125" height="13" rx="6.5" fill="url(#purplePanel)" opacity=".85"/>
-      <circle cx="57" cy="95" r="7" fill="#fff" stroke="#a8a3cf" strokeWidth="2"/>
-      <path d="m53 95 3 3 6-7" stroke="#7e61e9" strokeWidth="2" fill="none"/>
-      <rect x="70" y="89" width="125" height="11" rx="5" fill="#dcd9ee"/>
-      <circle cx="57" cy="117" r="7" fill="#fff" stroke="#a8a3cf" strokeWidth="2"/>
-      <rect x="70" y="111" width="105" height="11" rx="5" fill="#dcd9ee"/>
-      <rect x="48" y="132" width="9" height="25" rx="2" fill="#8060e9"/>
-      <rect x="62" y="143" width="9" height="14" rx="2" fill="#a18bef"/>
-      <rect x="76" y="125" width="9" height="32" rx="2" fill="#6f4de2"/>
-      <path d="M48 126c18-16 37-8 51-28 15-20 35-14 51-29" stroke="#7660e6" strokeWidth="3" fill="none"/>
-      <path d="M198 132l18-18" stroke="#b4a9ec" strokeWidth="3"/>
-      <circle cx="216" cy="114" r="7" fill="#fff" stroke="#8b75e7" strokeWidth="3"/>
+      <circle cx="57" cy="95" r="7" fill="#0b1220" stroke="rgba(139,92,246,.4)" strokeWidth="2"/>
+      <path d="m53 95 3 3 6-7" stroke="#8b5cf6" strokeWidth="2" fill="none"/>
+      <rect x="70" y="89" width="125" height="11" rx="5" fill="#1a1433"/>
+      <circle cx="57" cy="117" r="7" fill="#0b1220" stroke="rgba(139,92,246,.4)" strokeWidth="2"/>
+      <rect x="70" y="111" width="105" height="11" rx="5" fill="#1a1433"/>
+      <rect x="48" y="132" width="9" height="25" rx="2" fill="#7c3aed"/>
+      <rect x="62" y="143" width="9" height="14" rx="2" fill="#a78bfa"/>
+      <rect x="76" y="125" width="9" height="32" rx="2" fill="#8b5cf6"/>
+      <path d="M48 126c18-16 37-8 51-28 15-20 35-14 51-29" stroke="#8b5cf6" strokeWidth="3" fill="none"/>
+      <path d="M198 132l18-18" stroke="rgba(139,92,246,.4)" strokeWidth="3"/>
+      <circle cx="216" cy="114" r="7" fill="#0b1220" stroke="#8b5cf6" strokeWidth="3"/>
     </g>
     <g transform="translate(245,7)">
-      <ellipse cx="83" cy="194" rx="51" ry="9" fill="#c9c6e7"/>
-      <rect x="52" y="113" width="63" height="78" rx="25" fill="url(#robotBody)" stroke="#b7b2d9" strokeWidth="2"/>
-      <rect x="45" y="50" width="78" height="79" rx="28" fill="url(#robotBody)" stroke="#aaa5cf" strokeWidth="2"/>
-      <rect x="54" y="60" width="60" height="44" rx="19" fill="#141c47"/>
-      <circle cx="75" cy="81" r="8" fill="#19a8ff"/>
-      <circle cx="94" cy="81" r="8" fill="#19a8ff"/>
-      <path d="M73 92c8 5 16 5 24 0" stroke="#5ad7ff" strokeWidth="3" fill="none" strokeLinecap="round"/>
-      <rect x="76" y="36" width="16" height="14" rx="6" fill="#bdb9e3"/>
-      <circle cx="84" cy="29" r="6" fill="#7560dc"/>
-      <path d="M50 126c-24 3-31 20-28 39" stroke="#b3aed3" strokeWidth="14" fill="none" strokeLinecap="round"/>
-      <circle cx="23" cy="166" r="9" fill="#7562df"/>
-      <path d="M116 126c24 2 32 20 28 38" stroke="#b3aed3" strokeWidth="14" fill="none" strokeLinecap="round"/>
-      <circle cx="144" cy="164" r="9" fill="#7562df"/>
-      <rect x="69" y="189" width="13" height="8" rx="4" fill="#6b61bd"/>
-      <rect x="92" y="189" width="13" height="8" rx="4" fill="#6b61bd"/>
-      <path d="M131 49c13-7 24 5 22 19" stroke="#b2add4" strokeWidth="9" fill="none" strokeLinecap="round"/>
-      <circle cx="153" cy="68" r="16" fill="#dddaf4" stroke="#aaa5cf" strokeWidth="2"/>
+      <ellipse cx="83" cy="194" rx="51" ry="9" fill="rgba(0,0,0,.4)"/>
+      <rect x="52" y="113" width="63" height="78" rx="25" fill="url(#robotBody)" stroke="rgba(139,92,246,.3)" strokeWidth="2"/>
+      <rect x="45" y="50" width="78" height="79" rx="28" fill="url(#robotBody)" stroke="rgba(139,92,246,.3)" strokeWidth="2"/>
+      <rect x="54" y="60" width="60" height="44" rx="19" fill="#05080f"/>
+      <circle cx="75" cy="81" r="8" fill="#22d3ee"/>
+      <circle cx="94" cy="81" r="8" fill="#22d3ee"/>
+      <path d="M73 92c8 5 16 5 24 0" stroke="#22d3ee" strokeWidth="3" fill="none" strokeLinecap="round"/>
+      <rect x="76" y="36" width="16" height="14" rx="6" fill="#2a2145"/>
+      <circle cx="84" cy="29" r="6" fill="#8b5cf6"/>
+      <path d="M50 126c-24 3-31 20-28 39" stroke="rgba(139,92,246,.4)" strokeWidth="14" fill="none" strokeLinecap="round"/>
+      <circle cx="23" cy="166" r="9" fill="#8b5cf6"/>
+      <path d="M116 126c24 2 32 20 28 38" stroke="rgba(139,92,246,.4)" strokeWidth="14" fill="none" strokeLinecap="round"/>
+      <circle cx="144" cy="164" r="9" fill="#8b5cf6"/>
+      <rect x="69" y="189" width="13" height="8" rx="4" fill="#2a2145"/>
+      <rect x="92" y="189" width="13" height="8" rx="4" fill="#2a2145"/>
+      <path d="M131 49c13-7 24 5 22 19" stroke="rgba(139,92,246,.4)" strokeWidth="9" fill="none" strokeLinecap="round"/>
+      <circle cx="153" cy="68" r="16" fill="#2a2145" stroke="rgba(139,92,246,.3)" strokeWidth="2"/>
     </g>
   </svg>
 );
@@ -169,126 +169,126 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
       <style>{`
         *{box-sizing:border-box}
         :root{
-          --purple:#713be6;--purple2:#8b5cf6;--ink:#12142a;--muted:#687087;
-          --line:#e7e8ef;--green:#19ad72;--blue:#3b82f6;--yellow:#f6b83f;
+          --purple:#7c3aed;--purple2:#8b5cf6;--ink:#f1f5f9;--muted:#94a3b8;
+          --line:rgba(255,255,255,.07);--green:#22c55e;--blue:#38bdf8;--yellow:#f59e0b;
           font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
         }
-        body{margin:0;background:#f7f8fc;color:var(--ink)}
+        body{margin:0;background:#030712;color:var(--ink)}
         button{font:inherit}
-        .app{width:1536px;min-height:1024px;background:#f8f9fc;display:flex;overflow:hidden}
-        .sidebar{width:260px;flex:0 0 260px;background:#fff;border-right:1px solid #e7e8ef;min-height:1024px;padding:33px 15px 20px;position:relative}
+        .app{width:1536px;min-height:1024px;background:#030712;display:flex;overflow:hidden}
+        .sidebar{width:260px;flex:0 0 260px;background:#05080f;border-right:1px solid rgba(255,255,255,.07);min-height:1024px;padding:33px 15px 20px;position:relative}
         .brand{height:70px;padding-left:15px;display:flex;align-items:flex-start;gap:10px}
         .brandMark{width:39px;height:39px;object-fit:contain;margin-top:2px}
-        .brandName{font-size:24px;line-height:28px;font-weight:750;letter-spacing:-.8px;color:#5e35c8}
-        .brandName b{color:#d34eac;font-weight:650}
-        .tagline{font-size:12px;color:#3c3f62;line-height:18px}
+        .brandName{font-size:24px;line-height:28px;font-weight:750;letter-spacing:-.8px;color:#8b5cf6}
+        .brandName b{color:#f43f5e;font-weight:650}
+        .tagline{font-size:12px;color:#94a3b8;line-height:18px}
         .nav{margin-top:7px}
-        .navItem{height:42px;border-radius:7px;display:flex;align-items:center;gap:16px;padding:0 14px;color:#4d566e;font-size:14px;margin-bottom:4px;cursor:pointer}
-        .navItem svg{color:#6d7487}
-        .navItem.active{background:linear-gradient(90deg,#7238df,#7c49ec);color:#fff;box-shadow:0 6px 14px rgba(113,59,230,.18)}
+        .navItem{height:42px;border-radius:7px;display:flex;align-items:center;gap:16px;padding:0 14px;color:#94a3b8;font-size:14px;margin-bottom:4px;cursor:pointer}
+        .navItem svg{color:#94a3b8}
+        .navItem.active{background:linear-gradient(90deg,#7c3aed,#8b5cf6);color:#fff;box-shadow:0 6px 14px rgba(139,92,246,.3)}
         .navItem.active svg{color:#fff}
-        .assistantCard{position:absolute;left:21px;right:21px;bottom:19px;height:300px;border:1px solid #e5e4f2;border-radius:13px;background:linear-gradient(180deg,#faf8ff,#fff);text-align:center;padding:17px 17px 15px;overflow:hidden}
-        .assistantTitle{font-weight:750;color:#6941c6;font-size:15px}
+        .assistantCard{position:absolute;left:21px;right:21px;bottom:19px;height:300px;border:1px solid rgba(255,255,255,.07);border-radius:13px;background:linear-gradient(180deg,#0d1526,#0b1220);text-align:center;padding:17px 17px 15px;overflow:hidden}
+        .assistantTitle{font-weight:750;color:#8b5cf6;font-size:15px}
         .assistantRobot{width:106px;height:106px;margin:8px auto 3px;position:relative}
-        .assistantRobot .head{width:63px;height:51px;border-radius:22px;background:#dfe0f4;border:1px solid #aaa7c6;position:absolute;left:21px;top:13px;box-shadow:inset 0 -4px 0 #c9c7e6}
-        .assistantRobot .screen{position:absolute;left:28px;top:21px;width:49px;height:32px;background:#111842;border-radius:13px}
-        .assistantRobot .eye{position:absolute;width:7px;height:7px;border-radius:50%;background:#19b7ff;top:32px}
+        .assistantRobot .head{width:63px;height:51px;border-radius:22px;background:#2a2145;border:1px solid rgba(139,92,246,.3);position:absolute;left:21px;top:13px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.3)}
+        .assistantRobot .screen{position:absolute;left:28px;top:21px;width:49px;height:32px;background:#05080f;border-radius:13px}
+        .assistantRobot .eye{position:absolute;width:7px;height:7px;border-radius:50%;background:#22d3ee;top:32px}
         .assistantRobot .eye.a{left:41px}.assistantRobot .eye.b{left:58px}
-        .assistantRobot .body{position:absolute;left:31px;top:62px;width:43px;height:33px;border-radius:17px 17px 12px 12px;background:#e5e4f5;border:1px solid #aaa7c6}
-        .assistantRobot .arm{position:absolute;top:68px;width:29px;height:8px;border-radius:8px;background:#bcb9dc}
+        .assistantRobot .body{position:absolute;left:31px;top:62px;width:43px;height:33px;border-radius:17px 17px 12px 12px;background:#2a2145;border:1px solid rgba(139,92,246,.3)}
+        .assistantRobot .arm{position:absolute;top:68px;width:29px;height:8px;border-radius:8px;background:#2a2145}
         .assistantRobot .arm.a{left:7px;transform:rotate(24deg)}.assistantRobot .arm.b{right:7px;transform:rotate(-24deg)}
-        .assistantCopy{font-size:13px;line-height:23px;color:#37385d;margin:4px 0 13px}
-        .askBtn,.purpleBtn{border:0;border-radius:7px;background:linear-gradient(90deg,#7137dc,#7540e7);color:#fff;font-weight:650;cursor:pointer;box-shadow:0 5px 10px rgba(113,59,230,.12)}
+        .assistantCopy{font-size:13px;line-height:23px;color:#94a3b8;margin:4px 0 13px}
+        .askBtn,.purpleBtn{border:0;border-radius:7px;background:linear-gradient(90deg,#7c3aed,#8b5cf6);color:#fff;font-weight:650;cursor:pointer;box-shadow:0 5px 10px rgba(139,92,246,.25)}
         .askBtn{height:38px;width:181px}
         .main{width:1276px;min-width:1276px;padding:25px 24px 23px 31px}
         .topbar{height:66px;display:flex;align-items:flex-start;justify-content:space-between}
         .heading h1{margin:0;font-size:27px;line-height:34px;letter-spacing:-.5px;font-weight:760}
-        .heading p{margin:2px 0 0;color:#657087;font-size:14px}
-        .titleSpark{display:inline-flex;color:#7650e9;vertical-align:2px;margin-left:4px}
+        .heading p{margin:2px 0 0;color:#94a3b8;font-size:14px}
+        .titleSpark{display:inline-flex;color:#8b5cf6;vertical-align:2px;margin-left:4px}
         .actions{display:flex;align-items:center;gap:12px}
-        .dateBtn{height:35px;padding:0 14px;border:1px solid #d8dae3;background:#fff;border-radius:7px;color:#34394e;font-size:12px;display:flex;align-items:center;gap:9px}
-        .exportBtn{height:35px;padding:0 14px;border:0;background:linear-gradient(90deg,#7440df,#7e49ed);border-radius:7px;color:#fff;font-size:12px;display:flex;align-items:center;gap:7px;box-shadow:0 5px 12px rgba(116,64,223,.12)}
+        .dateBtn{height:35px;padding:0 14px;border:1px solid rgba(255,255,255,.07);background:#0b1220;border-radius:7px;color:#f1f5f9;font-size:12px;display:flex;align-items:center;gap:9px}
+        .exportBtn{height:35px;padding:0 14px;border:0;background:linear-gradient(90deg,#7c3aed,#8b5cf6);border-radius:7px;color:#fff;font-size:12px;display:flex;align-items:center;gap:7px;box-shadow:0 5px 12px rgba(139,92,246,.25)}
         .profile{display:flex;align-items:center;gap:9px;margin-left:2px}
-        .bell{color:#667085;margin-right:13px}
-        .avatar{width:37px;height:37px;border-radius:50%;overflow:hidden;background:#e4e7ee;border:1px solid #d5d8e0;display:flex;align-items:center;justify-content:center}
-        .avatar:before{content:"";width:15px;height:15px;background:#c4c7d0;border-radius:50%;position:absolute;margin-top:-13px}
-        .avatar:after{content:"";width:22px;height:14px;background:#8b91a1;border-radius:12px 12px 4px 4px;position:absolute;margin-top:16px}
-        .profileText{line-height:16px}.profileText b{font-size:12px}.profileText span{display:block;color:#687087;font-size:11px}
-        .profile svg{color:#687087;margin-left:5px}
+        .bell{color:#94a3b8;margin-right:13px}
+        .avatar{width:37px;height:37px;border-radius:50%;overflow:hidden;background:#0d1526;border:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center}
+        .avatar:before{content:"";width:15px;height:15px;background:#94a3b8;border-radius:50%;position:absolute;margin-top:-13px}
+        .avatar:after{content:"";width:22px;height:14px;background:#94a3b8;border-radius:12px 12px 4px 4px;position:absolute;margin-top:16px}
+        .profileText{line-height:16px}.profileText b{font-size:12px}.profileText span{display:block;color:#94a3b8;font-size:11px}
+        .profile svg{color:#94a3b8;margin-left:5px}
         .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-top:7px}
-        .card{background:#fff;border:1px solid #e5e7ef;border-radius:14px;box-shadow:0 1px 2px rgba(20,25,50,.02)}
+        .card{background:#0b1220;border:1px solid rgba(255,255,255,.07);border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.3)}
         .stat{height:170px;padding:19px 20px 13px;position:relative;overflow:hidden}
         .statLabel{font-size:13px;font-weight:650;margin-bottom:8px}
         .statValue{font-size:28px;font-weight:770;letter-spacing:-.8px}
-        .up{font-size:12px;color:#15a76b;margin-left:7px;font-weight:700;vertical-align:5px}
-        .statSub{font-size:11px;color:#697188;margin-top:3px}
+        .up{font-size:12px;color:#22c55e;margin-left:7px;font-weight:700;vertical-align:5px}
+        .statSub{font-size:11px;color:#94a3b8;margin-top:3px}
         .miniChart{position:absolute;left:18px;right:17px;bottom:11px;width:calc(100% - 35px);height:48px;overflow:visible}
-        .miniStroke{fill:none;stroke:#7244e4;stroke-width:2.1}
+        .miniStroke{fill:none;stroke:#8b5cf6;stroke-width:2.1}
         .miniFill{fill:url(#noGradient)}
-        .miniChart .miniFill{fill:#f3efff;opacity:.8}
+        .miniChart .miniFill{fill:rgba(139,92,246,.22);opacity:.8}
         .seoScore{display:flex;align-items:center;gap:17px;margin-top:0}
-        .scoreRing{width:91px;height:91px;border-radius:50%;background:conic-gradient(#7040dd 0 62%,#1db77a 62% 87%,#e6e7ef 87% 100%);position:relative}
-        .scoreRing:after{content:"";position:absolute;inset:8px;background:#fff;border-radius:50%}
+        .scoreRing{width:91px;height:91px;border-radius:50%;background:conic-gradient(#8b5cf6 0 62%,#22c55e 62% 87%,rgba(255,255,255,.08) 87% 100%);position:relative}
+        .scoreRing:after{content:"";position:absolute;inset:8px;background:#0b1220;border-radius:50%}
         .scoreCenter{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:2}
-        .scoreCenter b{font-size:26px}.scoreCenter span{font-size:10px;color:#4e566e}
-        .excellent b{font-size:12px;color:#1bab70}.excellent span{display:block;color:#657087;font-size:11px;margin-top:5px}
-        .excellent .pts{color:#16a86b;font-weight:700}
+        .scoreCenter b{font-size:26px}.scoreCenter span{font-size:10px;color:#94a3b8}
+        .excellent b{font-size:12px;color:#22c55e}.excellent span{display:block;color:#94a3b8;font-size:11px;margin-top:5px}
+        .excellent .pts{color:#22c55e;font-weight:700}
         .row2{display:grid;grid-template-columns:2fr 1.12fr;gap:11px;margin-top:10px}
         .overview{height:253px;padding:19px 18px;display:flex;position:relative;overflow:hidden}
         .overviewCopy{width:56%;padding-left:1px}
         .sectionTitle{font-size:16px;font-weight:750;display:flex;align-items:center;gap:9px}
-        .sectionTitle .robotIcon{width:29px;height:29px;border-radius:50%;background:#eef2ff;display:flex;align-items:center;justify-content:center;color:#7a5be2}
-        .overviewText{font-size:12px;line-height:22px;color:#555e75;margin:17px 0 12px;max-width:570px}
-        .overviewText strong{color:#34384e}
+        .sectionTitle .robotIcon{width:29px;height:29px;border-radius:50%;background:rgba(139,92,246,.16);display:flex;align-items:center;justify-content:center;color:#8b5cf6}
+        .overviewText{font-size:12px;line-height:22px;color:#94a3b8;margin:17px 0 12px;max-width:570px}
+        .overviewText strong{color:#f1f5f9}
         .insightBtn{height:35px;padding:0 14px;font-size:12px}
         .overviewArt{position:absolute;right:5px;bottom:9px;width:430px;height:220px}
         .topPages{height:253px;padding:18px 19px}
         .cardHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
         .cardHeader h3{margin:0;font-size:15px}
-        .viewBtn{height:28px;border:1px solid #ddd9ee;background:#fff;border-radius:6px;padding:0 11px;color:#6336ce;font-size:11px}
+        .viewBtn{height:28px;border:1px solid rgba(139,92,246,.35);background:#0b1220;border-radius:6px;padding:0 11px;color:#8b5cf6;font-size:11px}
         .pagesTable{width:100%;border-collapse:collapse;font-size:12px}
-        .pagesTable th{font-size:11px;color:#697187;font-weight:500;text-align:left;padding:0 0 8px}
+        .pagesTable th{font-size:11px;color:#94a3b8;font-weight:500;text-align:left;padding:0 0 8px}
         .pagesTable th:nth-child(2),.pagesTable td:nth-child(2){text-align:right}
         .pagesTable th:last-child,.pagesTable td:last-child{text-align:right}
-        .pagesTable td{height:31px;border-top:1px solid #ececf1}
-        .greenUp{color:#18ad72;font-weight:650}
+        .pagesTable td{height:31px;border-top:1px solid rgba(255,255,255,.05)}
+        .greenUp{color:#22c55e;font-weight:650}
         .row3{display:grid;grid-template-columns:1.02fr 1.02fr .96fr;gap:11px;margin-top:10px}
         .rankCard,.performance,.tasks{height:275px;padding:18px 19px}
         .rankBody{display:flex;align-items:center;gap:19px;margin-top:16px}
-        .donut{width:174px;height:174px;border-radius:50%;background:conic-gradient(#15b87b 0 21.5%,#4a8de9 21.5% 58%,#f6b83f 58% 91.2%,#ef5d64 91.2% 100%);position:relative;flex:0 0 174px}
-        .donutHole{position:absolute;inset:38px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column}
-        .donutHole b{font-size:17px}.donutHole span{font-size:10px;margin-top:3px;color:#4e566e}
+        .donut{width:174px;height:174px;border-radius:50%;background:conic-gradient(#22c55e 0 21.5%,#38bdf8 21.5% 58%,#f59e0b 58% 91.2%,#f43f5e 91.2% 100%);position:relative;flex:0 0 174px}
+        .donutHole{position:absolute;inset:38px;background:#0b1220;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column}
+        .donutHole b{font-size:17px}.donutHole span{font-size:10px;margin-top:3px;color:#94a3b8}
         .legend{font-size:11px;line-height:31px;flex:1}
         .legendLine{display:flex;align-items:center;gap:9px;white-space:nowrap}
         .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
-        .dot.green{background:#15b87b}.dot.blue{background:#4a8de9}.dot.yellow{background:#f6b83f}.dot.red{background:#ef5d64}
-        .legend b{font-size:12px;margin-right:3px}.legend span{color:#687087}
-        .performance .legendTop{display:flex;gap:22px;font-size:11px;color:#3d4358;margin:13px 0 0 47px}
-        .legendDot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:7px}.legendDot.p{background:#7341e0}.legendDot.g{background:#16ad75}
+        .dot.green{background:#22c55e}.dot.blue{background:#38bdf8}.dot.yellow{background:#f59e0b}.dot.red{background:#f43f5e}
+        .legend b{font-size:12px;margin-right:3px}.legend span{color:#94a3b8}
+        .performance .legendTop{display:flex;gap:22px;font-size:11px;color:#94a3b8;margin:13px 0 0 47px}
+        .legendDot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:7px}.legendDot.p{background:#8b5cf6}.legendDot.g{background:#22c55e}
         .performanceChart{width:100%;height:190px;margin-top:1px;overflow:visible}
-        .performanceChart .grid line{stroke:#ececf1;stroke-width:1}
-        .performanceChart text{font-size:10px;fill:#687087}
-        .linePurple{fill:none;stroke:#7341e0;stroke-width:2.5}.lineGreen{fill:none;stroke:#16ad75;stroke-width:2.5}
-        .areaPurple{fill:#f0eaff;opacity:.75}.areaGreen{fill:#e8f9f2;opacity:.65}
-        .tasks .task{height:52px;border-top:1px solid #ececf1;display:flex;align-items:center;gap:10px}
+        .performanceChart .grid line{stroke:rgba(255,255,255,.07);stroke-width:1}
+        .performanceChart text{font-size:10px;fill:#94a3b8}
+        .linePurple{fill:none;stroke:#8b5cf6;stroke-width:2.5}.lineGreen{fill:none;stroke:#22c55e;stroke-width:2.5}
+        .areaPurple{fill:rgba(139,92,246,.2);opacity:.75}.areaGreen{fill:rgba(34,197,94,.2);opacity:.65}
+        .tasks .task{height:52px;border-top:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:10px}
         .tasks .task:first-of-type{border-top:0}
-        .taskIcon{width:31px;height:31px;border-radius:8px;background:#f2edff;color:#7244df;display:flex;align-items:center;justify-content:center;flex:0 0 31px}
-        .taskInfo{min-width:0;flex:1}.taskName{font-size:11px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.taskMeta{font-size:10px;color:#687087;margin-top:3px}
-        .taskMeta.high{color:#16a76e}.taskMeta.medium{color:#677089}
-        .taskRight{display:flex;align-items:center;gap:6px}.taskRight svg{color:#1bad72}
+        .taskIcon{width:31px;height:31px;border-radius:8px;background:rgba(139,92,246,.16);color:#8b5cf6;display:flex;align-items:center;justify-content:center;flex:0 0 31px}
+        .taskInfo{min-width:0;flex:1}.taskName{font-size:11px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.taskMeta{font-size:10px;color:#94a3b8;margin-top:3px}
+        .taskMeta.high{color:#22c55e}.taskMeta.medium{color:#94a3b8}
+        .taskRight{display:flex;align-items:center;gap:6px}.taskRight svg{color:#22c55e}
         .statusPill{height:23px;padding:0 9px;border-radius:6px;font-size:10px;display:flex;align-items:center;border:1px solid}
-        .statusPill.green{background:#ebfbf4;border-color:#c5eedb;color:#14a56d}.statusPill.blue{background:#eef6ff;border-color:#d3e6fb;color:#3b7fd1}.statusPill.yellow{background:#fff9e8;border-color:#f5e3ad;color:#e1a82e}
+        .statusPill.green{background:rgba(34,197,94,.16);border-color:rgba(34,197,94,.3);color:#22c55e}.statusPill.blue{background:rgba(56,189,248,.16);border-color:rgba(56,189,248,.3);color:#38bdf8}.statusPill.yellow{background:rgba(245,158,11,.16);border-color:rgba(245,158,11,.3);color:#f59e0b}
         .recommend{height:150px;margin-top:10px;padding:18px 18px 16px}
         .recommendGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-top:14px}
-        .rec{height:88px;border:1px solid #eef0f5;border-radius:8px;background:#fff;display:grid;grid-template-columns:35px 1fr;grid-template-rows:auto 28px;padding:10px 12px;column-gap:7px}
+        .rec{height:88px;border:1px solid rgba(255,255,255,.07);border-radius:8px;background:#0b1220;display:grid;grid-template-columns:35px 1fr;grid-template-rows:auto 28px;padding:10px 12px;column-gap:7px}
         .recIcon{grid-row:1/3;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center}
-        .rec:nth-child(1) .recIcon{color:#3188e9;background:#eef6ff}.rec:nth-child(2) .recIcon{color:#17ae73;background:#edfbf5}.rec:nth-child(3) .recIcon{color:#f15c65;background:#fff1f2}.rec:nth-child(4) .recIcon{color:#7443df;background:#f2edff}
-        .rec h4{margin:0;font-size:12px;font-weight:700}.rec p{margin:2px 0 0;color:#697188;font-size:10px}
-        .rec button{align-self:end;justify-self:start;height:27px;border:1px solid #dcd8ec;background:#fff;border-radius:6px;color:#6539d0;font-size:10px;padding:0 10px}
-        .modalShade{position:fixed;inset:0;background:rgba(16,18,35,.18);display:flex;align-items:center;justify-content:center;z-index:10}
-        .modal{width:510px;background:#fff;border-radius:16px;border:1px solid #e2e3eb;box-shadow:0 24px 70px rgba(40,35,80,.18);padding:23px}
-        .modalHeader{display:flex;justify-content:space-between}.modal h2{margin:0;font-size:19px}.close{border:0;background:#f3f3f7;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#657087}
-        .modal p{font-size:12px;color:#687087;line-height:20px}.insightList{display:grid;gap:9px;margin-top:14px}.insight{border:1px solid #ececf2;border-radius:9px;padding:12px;display:flex;gap:10px}.insight b{font-size:12px}.insight span{display:block;color:#697188;font-size:11px;margin-top:3px}
+        .rec:nth-child(1) .recIcon{color:#38bdf8;background:rgba(56,189,248,.16)}.rec:nth-child(2) .recIcon{color:#22c55e;background:rgba(34,197,94,.16)}.rec:nth-child(3) .recIcon{color:#f43f5e;background:rgba(244,63,94,.16)}.rec:nth-child(4) .recIcon{color:#8b5cf6;background:rgba(139,92,246,.16)}
+        .rec h4{margin:0;font-size:12px;font-weight:700}.rec p{margin:2px 0 0;color:#94a3b8;font-size:10px}
+        .rec button{align-self:end;justify-self:start;height:27px;border:1px solid rgba(139,92,246,.35);background:#0b1220;border-radius:6px;color:#8b5cf6;font-size:10px;padding:0 10px}
+        .modalShade{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:10}
+        .modal{width:510px;background:#0b1220;border-radius:16px;border:1px solid rgba(255,255,255,.07);box-shadow:0 24px 70px rgba(0,0,0,.5);padding:23px}
+        .modalHeader{display:flex;justify-content:space-between}.modal h2{margin:0;font-size:19px}.close{border:0;background:#0d1526;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#94a3b8}
+        .modal p{font-size:12px;color:#94a3b8;line-height:20px}.insightList{display:grid;gap:9px;margin-top:14px}.insight{border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:12px;display:flex;gap:10px}.insight b{font-size:12px}.insight span{display:block;color:#94a3b8;font-size:11px;margin-top:3px}
       `}</style>
 
       <aside className="sidebar">
@@ -366,7 +366,7 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
                 style={
                   seo.averageScore === null
                     ? undefined
-                    : { background: `conic-gradient(#7040dd 0 ${Math.round((seo.averageScore / seo.maxScore) * 360)}deg, #e6e7ef ${Math.round((seo.averageScore / seo.maxScore) * 360)}deg 360deg)` }
+                    : { background: `conic-gradient(#8b5cf6 0 ${Math.round((seo.averageScore / seo.maxScore) * 360)}deg, rgba(255,255,255,.08) ${Math.round((seo.averageScore / seo.maxScore) * 360)}deg 360deg)` }
                 }
               >
                 <div className="scoreCenter">
@@ -459,7 +459,7 @@ export default function ShadiLifeSEOAgent({ params }: { params: Promise<{ platfo
         </section>
 
         <section className="card recommend">
-          <div className="sectionTitle"><span style={{color:"#7a5be2"}}><Icon name="light" size={20}/></span>AI Recommendations</div>
+          <div className="sectionTitle"><span style={{color:"#8b5cf6"}}><Icon name="light" size={20}/></span>AI Recommendations</div>
           <div className="recommendGrid">
             <div className="rec"><div className="recIcon"><Icon name="light" size={18}/></div><div><h4>Target 248 new keywords</h4><p>High potential keywords</p></div><button>View Keywords</button></div>
             <div className="rec"><div className="recIcon"><Icon name="edit" size={17}/></div><div><h4>Optimize 45 pages</h4><p>Improve on-page SEO</p></div><button>Optimize Now</button></div>

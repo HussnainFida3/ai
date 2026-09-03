@@ -156,7 +156,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         body {
           margin: 0;
           min-height: 100%;
-          background: #f6f7fb;
+          background: #030712;
           font-family:
             Inter,
             ui-sans-serif,
@@ -165,7 +165,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
             BlinkMacSystemFont,
             "Segoe UI",
             sans-serif;
-          color: #20263a;
+          color: #f1f5f9;
         }
 
         button,
@@ -181,8 +181,8 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           min-height: 100vh;
           display: flex;
           background:
-            radial-gradient(circle at 48% 0%, rgba(106, 66, 215, 0.055), transparent 31%),
-            #f7f8fc;
+            radial-gradient(circle at 48% 0%, rgba(139, 92, 246, 0.09), transparent 31%),
+            #030712;
         }
 
         /* ================= SIDEBAR ================= */
@@ -196,9 +196,9 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           padding: 16px 10px;
           color: white;
           background:
-            radial-gradient(circle at 50% -10%, rgba(123, 75, 255, 0.24), transparent 32%),
-            linear-gradient(180deg, #241043 0%, #1d1038 52%, #180d31 100%);
-          box-shadow: 8px 0 30px rgba(22, 10, 50, 0.1);
+            radial-gradient(circle at 50% -10%, rgba(139, 92, 246, 0.24), transparent 32%),
+            linear-gradient(180deg, #0d1526 0%, #070b14 52%, #05080f 100%);
+          box-shadow: 8px 0 30px rgba(0, 0, 0, 0.3);
         }
 
         .brand {
@@ -233,19 +233,19 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           font-size: 22px;
           letter-spacing: -0.8px;
           font-weight: 800;
-          background: linear-gradient(90deg, #8d46c7, #4f4cc5);
+          background: linear-gradient(90deg, #8b5cf6, #38bdf8);
           -webkit-background-clip: text;
           color: transparent;
         }
 
         .brand-name strong span {
           font-size: 15px;
-          color: #6540af;
+          color: #8b5cf6;
         }
 
         .brand-name small {
           display: block;
-          color: #777e96;
+          color: #94a3b8;
           margin-top: 7px;
           font-size: 10px;
           font-weight: 500;
@@ -265,7 +265,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         .nav-item,
         .nav-subitem {
           border: 0;
-          color: #ded9ed;
+          color: #f1f5f9;
           background: transparent;
           width: 100%;
           min-height: 39px;
@@ -295,7 +295,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
 
         .nav-item.active {
           color: white;
-          background: linear-gradient(90deg, #56309c, #3f2379);
+          background: linear-gradient(90deg, #7c3aed, #8b5cf6);
           box-shadow:
             inset 0 0 0 1px rgba(255, 255, 255, 0.07),
             0 5px 15px rgba(0, 0, 0, 0.13);
@@ -313,7 +313,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         .sub-nav {
           margin: 2px 0 10px 25px;
           padding: 0 0 0 12px;
-          border-left: 1px solid rgba(166, 138, 224, 0.35);
+          border-left: 1px solid rgba(139, 92, 246, 0.35);
           display: grid;
           gap: 3px;
         }
@@ -322,7 +322,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           min-height: 31px;
           padding: 0 6px;
           border-radius: 6px;
-          color: #d1c8e4;
+          color: #94a3b8;
           font-size: 13px;
         }
 
@@ -338,8 +338,8 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           border-radius: 6px;
           font-size: 10px;
           font-weight: 700;
-          color: #d8c5ff;
-          background: rgba(118, 77, 214, 0.4);
+          color: #f1f5f9;
+          background: rgba(139, 92, 246, 0.4);
         }
 
         /* ================= MAIN ================= */
@@ -358,9 +358,9 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           padding: 0 25px;
           display: flex;
           align-items: center;
-          background: rgba(250, 251, 255, 0.88);
+          background: rgba(3, 7, 18, 0.88);
           backdrop-filter: blur(22px);
-          border-bottom: 1px solid #e8e9f0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.07);
         }
 
         .topbar-title {
@@ -376,9 +376,9 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           display: grid;
           place-items: center;
           border-radius: 15px;
-          color: #4d5469;
-          background: #f0f1f7;
-          box-shadow: 0 7px 20px rgba(58, 55, 83, 0.06);
+          color: #94a3b8;
+          background: #0d1526;
+          box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3);
         }
 
         .topbar-icon svg {
@@ -391,18 +391,18 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           font-size: 21px;
           font-weight: 750;
           letter-spacing: -0.45px;
-          color: #222738;
+          color: #f1f5f9;
         }
 
         .page-heading p {
           margin: 6px 0 0;
           font-size: 12px;
-          color: #70768a;
+          color: #94a3b8;
         }
 
         .magic {
           display: inline-flex;
-          color: #7945ce;
+          color: #8b5cf6;
           margin-left: 7px;
           vertical-align: top;
         }
@@ -422,16 +422,16 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         .date-picker {
           min-width: 250px;
           height: 45px;
-          border: 1px solid #dedfe8;
+          border: 1px solid rgba(255, 255, 255, 0.07);
           border-radius: 9px;
-          background: white;
-          color: #3d4353;
+          background: #0b1220;
+          color: #f1f5f9;
           padding: 0 13px;
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 12px;
-          box-shadow: 0 5px 14px rgba(30, 32, 50, 0.03);
+          box-shadow: 0 5px 14px rgba(0, 0, 0, 0.3);
           font-size: 12px;
         }
 
@@ -443,8 +443,8 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           display: grid;
           place-items: center;
           border: 0;
-          background: #f3f4f8;
-          color: #434b61;
+          background: #0d1526;
+          color: #94a3b8;
         }
 
         .notification svg {
@@ -462,9 +462,9 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           place-items: center;
           border-radius: 50%;
           color: white;
-          background: #e14565;
+          background: #f43f5e;
           font-size: 8px;
-          border: 2px solid #fafbff;
+          border: 2px solid #0d1526;
         }
 
         .admin {
@@ -480,15 +480,15 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           border-radius: 50%;
           display: grid;
           place-items: center;
-          background: linear-gradient(145deg, #d6d8e4, #bfc2d1);
-          color: #363c4f;
+          background: linear-gradient(145deg, #0d1526, #1a1433);
+          color: #94a3b8;
           overflow: hidden;
         }
 
         .avatar svg {
           width: 26px;
           height: 26px;
-          fill: #596176;
+          fill: #94a3b8;
         }
 
         .admin-text strong {
@@ -501,12 +501,12 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           display: block;
           margin-top: 4px;
           font-size: 10px;
-          color: #7d8292;
+          color: #94a3b8;
         }
 
         .admin > svg {
           width: 15px;
-          color: #6e7487;
+          color: #94a3b8;
           margin-left: 7px;
         }
 
@@ -538,12 +538,12 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         }
 
         .card {
-          background: rgba(255, 255, 255, 0.88);
-          border: 1px solid #e7e8ef;
+          background: rgba(11, 18, 32, 0.88);
+          border: 1px solid rgba(255, 255, 255, 0.07);
           border-radius: 10px;
           box-shadow:
-            0 7px 20px rgba(28, 34, 55, 0.035),
-            0 1px 1px rgba(30, 32, 45, 0.02);
+            0 7px 20px rgba(0, 0, 0, 0.35),
+            0 1px 1px rgba(0, 0, 0, 0.15);
         }
 
         .metric-card {
@@ -565,19 +565,19 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         }
 
         .metric-card:nth-child(1)::after {
-          background: #7c3fca;
+          background: #8b5cf6;
         }
 
         .metric-card:nth-child(2)::after {
-          background: #29b67b;
+          background: #22c55e;
         }
 
         .metric-card:nth-child(3)::after {
-          background: #ec6555;
+          background: #f43f5e;
         }
 
         .metric-card:nth-child(4)::after {
-          background: #4d6ee5;
+          background: #38bdf8;
         }
 
         .metric-label {
@@ -585,7 +585,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           z-index: 1;
           font-size: 11px;
           font-weight: 600;
-          color: #353b4d;
+          color: #f1f5f9;
         }
 
         .metric-value {
@@ -595,7 +595,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           font-size: 20px;
           font-weight: 750;
           letter-spacing: -0.35px;
-          color: #252a39;
+          color: #f1f5f9;
         }
 
         .metric-bottom {
@@ -606,7 +606,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           flex-direction: column;
           gap: 7px;
           font-size: 10px;
-          color: #70768a;
+          color: #94a3b8;
         }
 
         .metric-change {
@@ -618,11 +618,11 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         }
 
         .metric-change.up {
-          color: #1b9b68;
+          color: #22c55e;
         }
 
         .metric-change.down {
-          color: #db5252;
+          color: #f43f5e;
         }
 
         .metric-icon {
@@ -643,23 +643,23 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         }
 
         .purple {
-          color: #6d42c8;
-          background: #f0eafe;
+          color: #8b5cf6;
+          background: rgba(139, 92, 246, 0.16);
         }
 
         .green {
-          color: #1b9d6b;
-          background: #e7f7f0;
+          color: #22c55e;
+          background: rgba(34, 197, 94, 0.16);
         }
 
         .red {
-          color: #df5b52;
-          background: #ffefec;
+          color: #f43f5e;
+          background: rgba(244, 63, 94, 0.16);
         }
 
         .blue {
-          color: #5067cf;
-          background: #ecefff;
+          color: #38bdf8;
+          background: rgba(56, 189, 248, 0.16);
         }
 
         /* ================= CHART ROW ================= */
@@ -689,16 +689,16 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           margin: 0;
           font-size: 13px;
           font-weight: 700;
-          color: #303545;
+          color: #f1f5f9;
         }
 
         .select-small {
           height: 34px;
           min-width: 118px;
-          border: 1px solid #e2e3ea;
+          border: 1px solid rgba(255, 255, 255, 0.07);
           border-radius: 8px;
-          background: #fbfbfd;
-          color: #444a5a;
+          background: #0d1526;
+          color: #f1f5f9;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -730,14 +730,14 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           position: relative;
           width: 100%;
           height: 1px;
-          background: #ececf2;
+          background: rgba(255, 255, 255, 0.07);
         }
 
         .chart-gridline span {
           position: absolute;
           left: -41px;
           top: -8px;
-          color: #6e7485;
+          color: #94a3b8;
           font-size: 9px;
         }
 
@@ -762,7 +762,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           bottom: 0;
           display: flex;
           justify-content: space-between;
-          color: #697083;
+          color: #94a3b8;
           font-size: 9px;
         }
 
@@ -773,19 +773,19 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           padding: 10px 12px;
           min-width: 103px;
           border-radius: 9px;
-          background: white;
-          border: 1px solid #e8e8ee;
-          box-shadow: 0 10px 24px rgba(30, 30, 50, 0.11);
+          background: #0d1526;
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
           font-size: 9px;
           line-height: 1.55;
-          color: #73798a;
+          color: #94a3b8;
         }
 
         .chart-tooltip strong {
           display: block;
           margin-top: 3px;
           font-size: 11px;
-          color: #343a49;
+          color: #f1f5f9;
         }
 
         /* ================= INCOME ================= */
@@ -804,12 +804,12 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           height: 175px;
           border-radius: 50%;
           background: conic-gradient(
-            #cf3e98 0deg 80deg,
-            #ff7e1f 80deg 116deg,
-            #4165c6 116deg 138deg,
-            #733bc1 138deg 360deg
+            #f43f5e 0deg 80deg,
+            #f59e0b 80deg 116deg,
+            #38bdf8 116deg 138deg,
+            #8b5cf6 138deg 360deg
           );
-          box-shadow: 0 10px 24px rgba(99, 57, 176, 0.1);
+          box-shadow: 0 10px 24px rgba(139, 92, 246, 0.15);
         }
 
         .donut-wrap::before {
@@ -817,8 +817,8 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           position: absolute;
           inset: 35px;
           border-radius: 50%;
-          background: white;
-          box-shadow: inset 0 0 0 1px #f1f1f5;
+          background: #0b1220;
+          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
         }
 
         .donut-center {
@@ -832,13 +832,13 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
 
         .donut-center span {
           font-size: 11px;
-          color: #73798a;
+          color: #94a3b8;
         }
 
         .donut-center strong {
           margin-top: 7px;
           font-size: 15px;
-          color: #34394a;
+          color: #f1f5f9;
         }
 
         .income-legend {
@@ -864,7 +864,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         .legend-copy strong {
           display: block;
           font-size: 11px;
-          color: #383d4d;
+          color: #f1f5f9;
           font-weight: 650;
         }
 
@@ -872,7 +872,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           display: block;
           margin-top: 4px;
           font-size: 10px;
-          color: #6e7484;
+          color: #94a3b8;
         }
 
         /* ================= LOWER ================= */
@@ -890,13 +890,13 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         }
 
         .view-button {
-          border: 1px solid #e1e2e9;
-          background: #fbfbfd;
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          background: #0d1526;
           border-radius: 8px;
           min-width: 72px;
           height: 30px;
           font-size: 10px;
-          color: #444a59;
+          color: #f1f5f9;
         }
 
         .transaction-list {
@@ -908,7 +908,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           display: grid;
           grid-template-columns: 40px minmax(0, 1fr) auto;
           align-items: center;
-          border-bottom: 1px solid #eeeeF3;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
           gap: 8px;
         }
 
@@ -930,28 +930,28 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         }
 
         .transaction-icon.orange {
-          color: #dc8a2e;
-          background: #fff5e8;
+          color: #f59e0b;
+          background: rgba(245, 158, 11, 0.16);
         }
 
         .transaction-icon.amber {
-          color: #d29a36;
-          background: #fff7e9;
+          color: #f59e0b;
+          background: rgba(245, 158, 11, 0.16);
         }
 
         .transaction-icon.blue {
-          color: #5364ce;
-          background: #edf0ff;
+          color: #38bdf8;
+          background: rgba(56, 189, 248, 0.16);
         }
 
         .transaction-icon.purple {
-          color: #8450cb;
-          background: #f3edff;
+          color: #8b5cf6;
+          background: rgba(139, 92, 246, 0.16);
         }
 
         .transaction-icon.pink {
-          color: #ca52bc;
-          background: #fff0fb;
+          color: #f43f5e;
+          background: rgba(244, 63, 94, 0.16);
         }
 
         .transaction-copy {
@@ -962,7 +962,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           display: block;
           font-size: 10.5px;
           font-weight: 650;
-          color: #353a49;
+          color: #f1f5f9;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -972,7 +972,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           display: block;
           margin-top: 4px;
           font-size: 9px;
-          color: #73798a;
+          color: #94a3b8;
         }
 
         .transaction-value {
@@ -986,17 +986,17 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         }
 
         .transaction-value strong.positive {
-          color: #238f61;
+          color: #22c55e;
         }
 
         .transaction-value strong.negative {
-          color: #cf5a5c;
+          color: #f43f5e;
         }
 
         .transaction-value span {
           display: block;
           margin-top: 4px;
-          color: #747a8b;
+          color: #94a3b8;
           font-size: 8.5px;
         }
 
@@ -1021,14 +1021,14 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
 
         .expense-title {
           font-size: 10px;
-          color: #383d4c;
+          color: #f1f5f9;
           margin-bottom: 7px;
         }
 
         .expense-track {
           height: 6px;
           width: 100%;
-          background: #eeeeF4;
+          background: rgba(255, 255, 255, 0.07);
           border-radius: 99px;
           overflow: hidden;
         }
@@ -1039,45 +1039,45 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         }
 
         .expense-purple {
-          background: linear-gradient(90deg, #5f26c4, #8540d3);
+          background: linear-gradient(90deg, #7c3aed, #8b5cf6);
         }
 
         .expense-pink {
-          background: linear-gradient(90deg, #d83c93, #ef67b1);
+          background: linear-gradient(90deg, #be123c, #f43f5e);
         }
 
         .expense-orange {
-          background: linear-gradient(90deg, #e47719, #ffb14a);
+          background: linear-gradient(90deg, #d97706, #f59e0b);
         }
 
         .expense-blue {
-          background: linear-gradient(90deg, #3157bc, #5d7ed6);
+          background: linear-gradient(90deg, #0284c7, #38bdf8);
         }
 
         .expense-green {
-          background: linear-gradient(90deg, #218d65, #39bb82);
+          background: linear-gradient(90deg, #16a34a, #22c55e);
         }
 
         .expense-value {
           font-size: 9px;
-          color: #4d5261;
+          color: #94a3b8;
           white-space: nowrap;
         }
 
         .expense-percent {
           font-size: 9px;
-          color: #5c6272;
+          color: #94a3b8;
           text-align: right;
         }
 
         .expense-total {
-          border-top: 1px solid #e9e9ee;
+          border-top: 1px solid rgba(255, 255, 255, 0.07);
           margin-top: 14px;
           padding-top: 12px;
           display: flex;
           justify-content: space-between;
           font-size: 10px;
-          color: #343946;
+          color: #f1f5f9;
         }
 
         .expense-total strong {
@@ -1103,9 +1103,9 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           place-items: center;
           color: white;
           background:
-            radial-gradient(circle at 35% 25%, #b87cff, transparent 22%),
-            linear-gradient(145deg, #7d42d3, #5420a7);
-          box-shadow: 0 11px 20px rgba(101, 45, 182, 0.24);
+            radial-gradient(circle at 35% 25%, #a78bfa, transparent 22%),
+            linear-gradient(145deg, #8b5cf6, #7c3aed);
+          box-shadow: 0 11px 20px rgba(139, 92, 246, 0.35);
         }
 
         .recommendation-orb svg {
@@ -1126,22 +1126,22 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         .recommendation-title h3 {
           margin: 0;
           font-size: 12px;
-          color: #363b4a;
+          color: #f1f5f9;
         }
 
         .recommendation-title span {
           padding: 3px 8px;
           border-radius: 6px;
           font-size: 9px;
-          color: #8157ca;
-          background: #f0eafe;
+          color: #8b5cf6;
+          background: rgba(139, 92, 246, 0.16);
           font-weight: 700;
         }
 
         .recommendation-copy p {
           margin: 7px 0 0;
           font-size: 10px;
-          color: #4c5262;
+          color: #94a3b8;
           line-height: 1.65;
         }
 
@@ -1153,8 +1153,8 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           color: white;
           font-size: 11px;
           font-weight: 650;
-          background: linear-gradient(90deg, #5d2ab8, #7332c7);
-          box-shadow: 0 9px 18px rgba(94, 42, 184, 0.2);
+          background: linear-gradient(90deg, #7c3aed, #8b5cf6);
+          box-shadow: 0 9px 18px rgba(139, 92, 246, 0.3);
         }
 
         /* ================= AI PANEL ================= */
@@ -1165,7 +1165,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           display: flex;
           flex-direction: column;
           background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(251, 251, 254, 0.96));
+            linear-gradient(180deg, rgba(11, 18, 32, 0.97), rgba(13, 21, 38, 0.96));
         }
 
         .ai-panel-header {
@@ -1178,13 +1178,13 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         .ai-panel-header h2 {
           margin: 0;
           font-size: 13px;
-          color: #343947;
+          color: #f1f5f9;
         }
 
         .ai-panel-header button {
           border: 0;
           background: transparent;
-          color: #a2a5b1;
+          color: #5b6780;
           padding: 0;
         }
 
@@ -1192,7 +1192,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           display: flex;
           align-items: center;
           gap: 6px;
-          color: #555b6b;
+          color: #94a3b8;
           font-size: 9px;
           margin-top: 9px;
         }
@@ -1201,7 +1201,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           width: 7px;
           height: 7px;
           border-radius: 50%;
-          background: #20ad71;
+          background: #22c55e;
         }
 
         /* robot */
@@ -1221,11 +1221,11 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           top: 18px;
           border-radius: 33px 33px 27px 27px;
           background:
-            linear-gradient(145deg, #f6f6ff, #d5d2f5 45%, #aaa2db);
-          border: 2px solid #a49ad5;
+            linear-gradient(145deg, #0d1526, #1a1433 45%, #241b3d);
+          border: 2px solid rgba(139, 92, 246, 0.4);
           box-shadow:
-            inset 8px 7px 12px rgba(255, 255, 255, 0.9),
-            0 8px 16px rgba(65, 48, 130, 0.18);
+            inset 8px 7px 12px rgba(139, 92, 246, 0.15),
+            0 8px 16px rgba(0, 0, 0, 0.35);
         }
 
         .robot-screen {
@@ -1235,7 +1235,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           width: 50px;
           height: 31px;
           border-radius: 17px;
-          background: linear-gradient(145deg, #120d35, #27164e);
+          background: linear-gradient(145deg, #05080f, #0d1526);
           box-shadow: inset 0 0 12px #000;
         }
 
@@ -1245,8 +1245,8 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           width: 8px;
           height: 8px;
           border-radius: 50%;
-          background: #9d5cff;
-          box-shadow: 0 0 9px #8d50ff;
+          background: #8b5cf6;
+          box-shadow: 0 0 9px #8b5cf6;
         }
 
         .robot-eye.left {
@@ -1263,8 +1263,8 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           width: 17px;
           height: 29px;
           border-radius: 10px;
-          background: linear-gradient(180deg, #b6aee8, #655aa5);
-          border: 1px solid #8d84c3;
+          background: linear-gradient(180deg, #2a2145, #1a1433);
+          border: 1px solid rgba(139, 92, 246, 0.3);
         }
 
         .robot-ear.left {
@@ -1281,7 +1281,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           left: 65px;
           width: 19px;
           height: 17px;
-          background: #8b7fc2;
+          background: #2a2145;
           border-radius: 5px;
         }
 
@@ -1293,8 +1293,8 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           height: 43px;
           border-radius: 25px 25px 15px 15px;
           background:
-            linear-gradient(145deg, #f4f3ff 10%, #d8d5f6 55%, #b0a9dc);
-          border: 1px solid #aaa2d4;
+            linear-gradient(145deg, #0d1526 10%, #1a1433 55%, #241b3d);
+          border: 1px solid rgba(139, 92, 246, 0.3);
         }
 
         .robot-chest {
@@ -1304,7 +1304,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           left: 20px;
           top: 6px;
           border-radius: 8px;
-          background: linear-gradient(180deg, #5624b5, #7e4ad7);
+          background: linear-gradient(180deg, #7c3aed, #8b5cf6);
         }
 
         .robot-arm {
@@ -1313,8 +1313,8 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           width: 20px;
           height: 39px;
           border-radius: 14px;
-          background: linear-gradient(145deg, #ddd9f7, #9187c8);
-          border: 1px solid #aaa2d5;
+          background: linear-gradient(145deg, #1a1433, #241b3d);
+          border: 1px solid rgba(139, 92, 246, 0.3);
         }
 
         .robot-arm.left {
@@ -1334,9 +1334,9 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           width: 21px;
           height: 16px;
           border-radius: 9px;
-          background: #d7d3f2;
+          background: #2a2145;
           transform: rotate(-16deg);
-          border: 1px solid #a8a0d1;
+          border: 1px solid rgba(139, 92, 246, 0.3);
         }
 
         .ai-greeting {
@@ -1346,25 +1346,25 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         .ai-greeting h3 {
           margin: 0;
           font-size: 12px;
-          color: #3b4050;
+          color: #f1f5f9;
         }
 
         .ai-greeting p {
           margin: 8px 0 0;
           font-size: 10px;
           line-height: 1.8;
-          color: #3e4352;
+          color: #94a3b8;
         }
 
         .insights {
-          border-top: 1px solid #ebebf0;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
           padding: 13px 0 12px;
         }
 
         .insights h3 {
           margin: 0 0 10px;
           font-size: 11px;
-          color: #3b4050;
+          color: #f1f5f9;
         }
 
         .insight-list {
@@ -1395,43 +1395,43 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         .insight p {
           margin: 0;
           font-size: 9px;
-          color: #3f4452;
+          color: #94a3b8;
           line-height: 1.55;
         }
 
         .insight.green .insight-icon {
-          color: #1b9b69;
-          background: #e8f7ef;
+          color: #22c55e;
+          background: rgba(34, 197, 94, 0.16);
         }
 
         .insight.orange .insight-icon {
-          color: #df8d31;
-          background: #fff4e7;
+          color: #f59e0b;
+          background: rgba(245, 158, 11, 0.16);
         }
 
         .insight.blue .insight-icon {
-          color: #5268cf;
-          background: #edf0ff;
+          color: #38bdf8;
+          background: rgba(56, 189, 248, 0.16);
         }
 
         .insight.purple .insight-icon {
-          color: #8751c8;
-          background: #f4edff;
+          color: #8b5cf6;
+          background: rgba(139, 92, 246, 0.16);
         }
 
         .ai-actions {
           display: grid;
           gap: 7px;
           padding-top: 10px;
-          border-top: 1px solid #ebebf0;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .ai-action {
           height: 36px;
           border-radius: 7px;
-          border: 1px solid #d8c7f0;
-          background: white;
-          color: #62349c;
+          border: 1px solid rgba(139, 92, 246, 0.4);
+          background: #0b1220;
+          color: #8b5cf6;
           display: flex;
           align-items: center;
           gap: 9px;
@@ -1443,8 +1443,8 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
 
         .ai-action:hover {
           transform: translateY(-1px);
-          box-shadow: 0 7px 15px rgba(90, 48, 158, 0.1);
-          background: #fbf9ff;
+          box-shadow: 0 7px 15px rgba(139, 92, 246, 0.2);
+          background: rgba(139, 92, 246, 0.12);
         }
 
         .ai-action svg {
@@ -1460,9 +1460,9 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
         .ask-inner {
           min-height: 49px;
           padding: 5px 6px 5px 12px;
-          border: 1px solid #e0e1e8;
+          border: 1px solid rgba(255, 255, 255, 0.07);
           border-radius: 12px;
-          background: white;
+          background: #0b1220;
           display: flex;
           align-items: center;
           gap: 6px;
@@ -1474,7 +1474,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           outline: 0;
           background: transparent;
           font-size: 9px;
-          color: #4a5060;
+          color: #f1f5f9;
         }
 
         .send-button {
@@ -1486,7 +1486,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           display: grid;
           place-items: center;
           color: white;
-          background: linear-gradient(145deg, #7040cf, #5522b5);
+          background: linear-gradient(145deg, #8b5cf6, #7c3aed);
         }
 
         .send-button svg {
@@ -1498,7 +1498,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
           margin: 13px 0 0;
           text-align: center;
           font-size: 8px;
-          color: #8c91a0;
+          color: #5b6780;
           line-height: 1.6;
         }
 
@@ -1829,12 +1829,12 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
                             >
                               <stop
                                 offset="0%"
-                                stopColor="#7542cf"
+                                stopColor="#8b5cf6"
                                 stopOpacity="0.25"
                               />
                               <stop
                                 offset="100%"
-                                stopColor="#7542cf"
+                                stopColor="#8b5cf6"
                                 stopOpacity="0"
                               />
                             </linearGradient>
@@ -1874,7 +1874,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
                                C589,18 604,17 625,8
                                L650,5"
                             fill="none"
-                            stroke="#7240c8"
+                            stroke="#8b5cf6"
                             strokeWidth="3"
                             strokeLinecap="round"
                           />
@@ -1895,8 +1895,8 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
                               cx={cx}
                               cy={cy}
                               r="4.2"
-                              fill="white"
-                              stroke="#7040c7"
+                              fill="#0b1220"
+                              stroke="#8b5cf6"
                               strokeWidth="2.5"
                             />
                           ))}
@@ -1941,7 +1941,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
                         <div className="legend-item">
                           <span
                             className="legend-dot"
-                            style={{ background: "#733bc1" }}
+                            style={{ background: "#8b5cf6" }}
                           />
                           <div className="legend-copy">
                             <strong>Premium Subscriptions</strong>
@@ -1952,7 +1952,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
                         <div className="legend-item">
                           <span
                             className="legend-dot"
-                            style={{ background: "#d13f9b" }}
+                            style={{ background: "#f43f5e" }}
                           />
                           <div className="legend-copy">
                             <strong>Membership Plans</strong>
@@ -1963,7 +1963,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
                         <div className="legend-item">
                           <span
                             className="legend-dot"
-                            style={{ background: "#f48625" }}
+                            style={{ background: "#f59e0b" }}
                           />
                           <div className="legend-copy">
                             <strong>Boost & Visibility</strong>
@@ -1974,7 +1974,7 @@ export default function FinanceManagerDashboard({ params }: { params: Promise<{ 
                         <div className="legend-item">
                           <span
                             className="legend-dot"
-                            style={{ background: "#4d6fc9" }}
+                            style={{ background: "#38bdf8" }}
                           />
                           <div className="legend-copy">
                             <strong>Others</strong>

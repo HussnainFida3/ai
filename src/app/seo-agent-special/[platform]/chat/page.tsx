@@ -205,8 +205,8 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           padding: 0;
           width: 100%;
           min-height: 100%;
-          background: #f8f9fd;
-          color: #273249;
+          background: #030712;
+          color: #f1f5f9;
           font-family:
             Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
             "Segoe UI", sans-serif;
@@ -228,15 +228,15 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           background:
             radial-gradient(
               circle at 67% 8%,
-              rgba(126, 102, 239, 0.055),
+              rgba(139, 92, 246, 0.10),
               transparent 25%
             ),
             radial-gradient(
               circle at 16% 90%,
-              rgba(127, 99, 235, 0.035),
+              rgba(139, 92, 246, 0.07),
               transparent 25%
             ),
-            #f9fafc;
+            #030712;
           display: flex;
           overflow: hidden;
         }
@@ -248,12 +248,12 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           flex: 0 0 264px;
           min-height: 100vh;
           padding: 38px 22px 26px;
-          border-right: 1px solid #e9eaf1;
+          border-right: 1px solid rgba(255, 255, 255, .07);
           background:
             linear-gradient(
               180deg,
-              rgba(255, 255, 255, 0.92),
-              rgba(249, 250, 253, 0.95)
+              rgba(13, 21, 38, 0.92),
+              rgba(5, 8, 15, 0.95)
             );
           display: flex;
           flex-direction: column;
@@ -278,17 +278,17 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           line-height: 1;
           font-weight: 800;
           letter-spacing: -1.2px;
-          color: #333a76;
+          color: #f1f5f9;
           white-space: nowrap;
         }
 
         .brand-text span {
-          color: #b1499a;
+          color: #f43f5e;
         }
 
         .brand-subtitle {
           margin-top: 5px;
-          color: #727c91;
+          color: #94a3b8;
           font-size: 11px;
           font-weight: 500;
           letter-spacing: 0.1px;
@@ -310,7 +310,7 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           align-items: center;
           gap: 18px;
           padding: 0 10px;
-          color: #526076;
+          color: #94a3b8;
           border-radius: 10px;
           font-size: 14px;
           font-weight: 500;
@@ -321,32 +321,32 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         .nav-item svg {
           width: 17px;
           height: 17px;
-          color: #66748b;
+          color: #94a3b8;
           stroke-width: 1.7;
         }
 
         .nav-item:hover {
-          background: #f1f0fb;
-          color: #543cc5;
+          background: rgba(139, 92, 246, .14);
+          color: #8b5cf6;
           transform: translateX(2px);
         }
 
         .nav-item:hover svg {
-          color: #6247cf;
+          color: #8b5cf6;
         }
 
         .nav-item.active-link {
-          background: #f1f0fb;
-          color: #543cc5;
+          background: rgba(139, 92, 246, .14);
+          color: #8b5cf6;
         }
 
         .nav-item.active-link svg {
-          color: #6247cf;
+          color: #8b5cf6;
         }
 
         .agent-promo {
           margin-top: auto;
-          border: 1px solid #e7e4f1;
+          border: 1px solid rgba(255, 255, 255, .07);
           border-radius: 15px;
           min-height: 300px;
           padding: 18px 16px 14px;
@@ -354,17 +354,17 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           background:
             radial-gradient(
               circle at 50% 30%,
-              rgba(130, 105, 239, 0.1),
+              rgba(139, 92, 246, 0.16),
               transparent 34%
             ),
-            linear-gradient(180deg, #fbfbff, #f5f4fb);
+            linear-gradient(180deg, #0d1526, #0b1220);
           box-shadow:
-            0 12px 32px rgba(44, 42, 76, 0.04),
-            inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            0 12px 32px rgba(0, 0, 0, 0.35),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
         .agent-promo h4 {
-          color: #5544ae;
+          color: #8b5cf6;
           font-size: 14px;
           margin: 0;
           font-weight: 700;
@@ -379,7 +379,7 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         }
 
         .agent-promo-title {
-          color: #5b4ab7;
+          color: #8b5cf6;
           font-size: 13px;
           font-weight: 700;
           margin: 4px 0 9px;
@@ -388,7 +388,7 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         .agent-promo p {
           margin: 0 auto;
           max-width: 165px;
-          color: #677187;
+          color: #94a3b8;
           font-size: 12px;
           line-height: 1.95;
         }
@@ -399,17 +399,17 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           height: 37px;
           border: 0;
           border-radius: 7px;
-          background: linear-gradient(135deg, #5436c5, #6e46d9);
+          background: linear-gradient(135deg, #7c3aed, #8b5cf6);
           color: white;
           font-size: 12px;
           font-weight: 600;
-          box-shadow: 0 7px 16px rgba(87, 54, 197, 0.2);
+          box-shadow: 0 7px 16px rgba(139, 92, 246, 0.3);
           transition: 0.18s ease;
         }
 
         .new-chat-button:hover {
           transform: translateY(-1px);
-          box-shadow: 0 10px 22px rgba(87, 54, 197, 0.28);
+          box-shadow: 0 10px 22px rgba(139, 92, 246, 0.4);
         }
 
         /* ================= MAIN ================= */
@@ -432,7 +432,7 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
 
         .page-heading h1 {
           margin: 10px 0 5px;
-          color: #283248;
+          color: #f1f5f9;
           font-size: 25px;
           letter-spacing: -0.55px;
           font-weight: 750;
@@ -444,14 +444,14 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         .page-heading h1 svg {
           width: 24px;
           height: 24px;
-          color: #6043d4;
-          fill: rgba(96, 67, 212, 0.13);
+          color: #8b5cf6;
+          fill: rgba(139, 92, 246, 0.16);
           stroke-width: 1.7;
         }
 
         .page-heading p {
           margin: 0;
-          color: #627087;
+          color: #94a3b8;
           font-size: 14px;
         }
 
@@ -475,7 +475,7 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #48566e;
+          color: #94a3b8;
         }
 
         .bell svg {
@@ -494,8 +494,8 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           height: 41px;
           border-radius: 50%;
           padding: 3px;
-          background: #eef0f6;
-          border: 1px solid #e2e5ed;
+          background: #0d1526;
+          border: 1px solid rgba(255, 255, 255, .07);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -507,9 +507,9 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           height: 100%;
           border-radius: 50%;
           background:
-            radial-gradient(circle at 50% 31%, #f2c6a7 0 15%, transparent 16%),
-            radial-gradient(circle at 50% 45%, #303947 0 28%, transparent 29%),
-            linear-gradient(150deg, #f0d2bd, #7b8b9e);
+            radial-gradient(circle at 50% 31%, rgba(139, 92, 246, .35) 0 15%, transparent 16%),
+            radial-gradient(circle at 50% 45%, #05080f 0 28%, transparent 29%),
+            linear-gradient(150deg, #2a2145, #1a1433);
           position: relative;
           overflow: hidden;
         }
@@ -520,7 +520,7 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           width: 18px;
           height: 15px;
           border-radius: 50% 50% 45% 45%;
-          background: #26303b;
+          background: #05080f;
           top: 5px;
           left: 8px;
         }
@@ -531,7 +531,7 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           width: 28px;
           height: 19px;
           border-radius: 50% 50% 0 0;
-          background: #293d54;
+          background: #0d1526;
           bottom: -5px;
           left: 3px;
         }
@@ -543,18 +543,18 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         .profile-name strong {
           display: block;
           font-size: 13px;
-          color: #303a4d;
+          color: #f1f5f9;
           margin-bottom: 4px;
         }
 
         .profile-name span {
           display: block;
           font-size: 11px;
-          color: #69758a;
+          color: #94a3b8;
         }
 
         .profile-chevron {
-          color: #68758b;
+          color: #94a3b8;
           width: 15px;
         }
 
@@ -574,31 +574,31 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
 
         .date-button {
           min-width: 248px;
-          border: 1px solid #dde1e9;
-          background: rgba(255, 255, 255, 0.65);
-          color: #3f4b5e;
+          border: 1px solid rgba(255, 255, 255, .07);
+          background: rgba(11, 18, 32, 0.65);
+          color: #f1f5f9;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 9px;
-          box-shadow: 0 2px 5px rgba(30, 40, 60, 0.015);
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
 
         .date-button svg {
           width: 16px;
-          color: #647187;
+          color: #94a3b8;
         }
 
         .export-button {
           width: 116px;
           border: 0;
           color: white;
-          background: linear-gradient(135deg, #6b4bd7, #5434be);
+          background: linear-gradient(135deg, #8b5cf6, #7c3aed);
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 7px;
-          box-shadow: 0 6px 15px rgba(91, 61, 203, 0.18);
+          box-shadow: 0 6px 15px rgba(139, 92, 246, 0.3);
         }
 
         .export-button svg {
@@ -621,25 +621,25 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           height: 860px;
           max-height: calc(100vh - 138px);
           min-height: 720px;
-          border: 1px solid #e7e8ef;
+          border: 1px solid rgba(255, 255, 255, .07);
           border-radius: 14px;
           overflow: hidden;
           display: grid;
           grid-template-columns: 225px minmax(0, 1fr);
-          background: rgba(255, 255, 255, 0.64);
+          background: rgba(11, 18, 32, 0.64);
           box-shadow:
-            0 15px 40px rgba(39, 43, 76, 0.035),
-            0 2px 8px rgba(30, 35, 60, 0.018);
+            0 15px 40px rgba(0, 0, 0, 0.35),
+            0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         /* ================= CONVERSATION LIST ================= */
 
         .conversation-list {
-          border-right: 1px solid #e9eaf0;
+          border-right: 1px solid rgba(255, 255, 255, .07);
           display: flex;
           flex-direction: column;
           min-height: 0;
-          background: rgba(250, 251, 254, 0.52);
+          background: rgba(13, 21, 38, 0.52);
         }
 
         .conversation-top {
@@ -652,12 +652,12 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
 
         .conversation-top strong {
           font-size: 13px;
-          color: #30394c;
+          color: #f1f5f9;
         }
 
         .conversation-top strong:before {
           content: "‹";
-          color: #7259d5;
+          color: #8b5cf6;
           margin-right: 3px;
           font-size: 18px;
           vertical-align: -1px;
@@ -666,7 +666,7 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         .conversation-top button {
           border: 0;
           background: transparent;
-          color: #647188;
+          color: #94a3b8;
           padding: 2px;
         }
 
@@ -677,14 +677,14 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         .conversation-search {
           margin: 0 17px 17px;
           height: 35px;
-          border: 1px solid #e0e3ea;
-          background: #fbfcfe;
+          border: 1px solid rgba(255, 255, 255, .07);
+          background: #0d1526;
           border-radius: 7px;
           display: flex;
           align-items: center;
           gap: 8px;
           padding: 0 11px;
-          color: #69758b;
+          color: #94a3b8;
         }
 
         .conversation-search svg {
@@ -696,12 +696,12 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           border: 0;
           outline: 0;
           background: transparent;
-          color: #49566b;
+          color: #f1f5f9;
           font-size: 10px;
         }
 
         .conversation-search input::placeholder {
-          color: #788398;
+          color: #5b6780;
         }
 
         .conversation-items {
@@ -723,18 +723,18 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         }
 
         .conversation-item:hover {
-          background: #f7f7fc;
+          background: rgba(139, 92, 246, .08);
         }
 
         .conversation-item.active {
-          border-color: #d9d5f2;
+          border-color: rgba(139, 92, 246, .35);
           background:
             linear-gradient(
               135deg,
-              rgba(111, 82, 217, 0.07),
-              rgba(255, 255, 255, 0.75)
+              rgba(139, 92, 246, 0.16),
+              rgba(11, 18, 32, 0.75)
             );
-          box-shadow: 0 3px 10px rgba(80, 62, 150, 0.025);
+          box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
         }
 
         .conversation-item-head {
@@ -751,13 +751,13 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #6248d2;
-          background: #f0effa;
+          color: #8b5cf6;
+          background: rgba(139, 92, 246, .16);
           flex: 0 0 auto;
         }
 
         .conversation-item.active .conversation-icon {
-          background: #ece9ff;
+          background: rgba(139, 92, 246, .25);
         }
 
         .conversation-meta {
@@ -767,7 +767,7 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
 
         .conversation-meta strong {
           display: block;
-          color: #384257;
+          color: #f1f5f9;
           font-size: 11px;
           font-weight: 650;
           white-space: nowrap;
@@ -776,19 +776,19 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         }
 
         .conversation-item.active .conversation-meta strong {
-          color: #5842b8;
+          color: #8b5cf6;
         }
 
         .conversation-time {
           margin-top: 8px;
           padding-left: 28px;
           font-size: 9px;
-          color: #7c8799;
+          color: #94a3b8;
         }
 
         .conversation-preview {
           margin: 9px 0 0 0;
-          color: #667287;
+          color: #94a3b8;
           font-size: 10px;
           white-space: nowrap;
           overflow: hidden;
@@ -799,10 +799,10 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           margin: 13px 18px 16px;
           height: 34px;
           flex: 0 0 auto;
-          border: 1px solid #dfe2e9;
-          background: #fbfcfe;
+          border: 1px solid rgba(139, 92, 246, .35);
+          background: #0d1526;
           border-radius: 7px;
-          color: #5543ae;
+          color: #8b5cf6;
           font-size: 10px;
           font-weight: 600;
         }
@@ -817,16 +817,16 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           background:
             radial-gradient(
               circle at 60% 16%,
-              rgba(127, 107, 224, 0.035),
+              rgba(139, 92, 246, 0.07),
               transparent 28%
             ),
-            rgba(255, 255, 255, 0.5);
+            rgba(11, 18, 32, 0.5);
         }
 
         .chat-header {
           height: 92px;
           flex: 0 0 92px;
-          border-bottom: 1px solid #eaebf0;
+          border-bottom: 1px solid rgba(255, 255, 255, .05);
           padding: 16px 24px;
           display: flex;
           align-items: center;
@@ -841,10 +841,10 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           background:
             radial-gradient(
               circle at center,
-              rgba(115, 88, 224, 0.12),
+              rgba(139, 92, 246, 0.22),
               transparent 65%
             ),
-            #f3f1fb;
+            #0d1526;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -855,20 +855,20 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           align-items: center;
           gap: 10px;
           font-size: 13px;
-          color: #354055;
+          color: #f1f5f9;
         }
 
         .online-dot {
           width: 6px;
           height: 6px;
           border-radius: 50%;
-          background: #42af8a;
-          box-shadow: 0 0 0 3px rgba(66, 175, 138, 0.07);
+          background: #22c55e;
+          box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
         }
 
         .chat-agent-info p {
           margin: 8px 0 0;
-          color: #748096;
+          color: #94a3b8;
           font-size: 11px;
         }
 
@@ -886,7 +886,7 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         }
 
         .message-time {
-          color: #6d778a;
+          color: #94a3b8;
           font-size: 9px;
           margin-bottom: 6px;
           text-align: right;
@@ -894,16 +894,16 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
 
         .user-message {
           width: 312px;
-          border: 1px solid #d4d1e4;
+          border: 1px solid rgba(139, 92, 246, .3);
           border-radius: 11px 11px 3px 11px;
           padding: 13px 17px;
           background:
             linear-gradient(
               135deg,
-              rgba(119, 94, 210, 0.12),
-              rgba(255, 255, 255, 0.7)
+              rgba(139, 92, 246, 0.2),
+              rgba(11, 18, 32, 0.7)
             );
-          color: #313a4d;
+          color: #f1f5f9;
           font-size: 12px;
           line-height: 1.75;
         }
@@ -920,7 +920,7 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         }
 
         .agent-message-time {
-          color: #6e788b;
+          color: #94a3b8;
           font-size: 9px;
           margin-bottom: 8px;
           white-space: nowrap;
@@ -930,21 +930,21 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         .agent-bubble {
           width: 457px;
           max-width: calc(100% - 20px);
-          border: 1px solid #e0e1e9;
+          border: 1px solid rgba(255, 255, 255, .07);
           border-radius: 0 13px 13px 13px;
           padding: 20px 20px 15px;
           background:
             linear-gradient(
               145deg,
-              rgba(255, 255, 255, 0.94),
-              rgba(248, 249, 253, 0.83)
+              rgba(11, 18, 32, 0.94),
+              rgba(13, 21, 38, 0.83)
             );
-          box-shadow: 0 7px 22px rgba(37, 42, 73, 0.025);
+          box-shadow: 0 7px 22px rgba(0, 0, 0, 0.3);
         }
 
         .agent-bubble-intro {
           margin: 0 0 14px;
-          color: #465166;
+          color: #94a3b8;
           font-size: 11px;
           line-height: 1.5;
         }
@@ -973,38 +973,38 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         }
 
         .tone-purple {
-          color: #6549d5;
-          background: #f0ecff;
+          color: #8b5cf6;
+          background: rgba(139, 92, 246, .16);
         }
 
         .tone-green {
-          color: #35a67e;
-          background: #e9f7f1;
+          color: #22c55e;
+          background: rgba(34, 197, 94, .16);
         }
 
         .tone-orange {
-          color: #db9a38;
-          background: #fff6e8;
+          color: #f59e0b;
+          background: rgba(245, 158, 11, .16);
         }
 
         .tone-blue {
-          color: #5274d5;
-          background: #edf3ff;
+          color: #38bdf8;
+          background: rgba(56, 189, 248, .16);
         }
 
         .tone-red {
-          color: #db795c;
-          background: #fff0eb;
+          color: #f43f5e;
+          background: rgba(244, 63, 94, .16);
         }
 
         .tone-gray {
-          color: #667287;
-          background: #f0f2f6;
+          color: #94a3b8;
+          background: rgba(255, 255, 255, .08);
         }
 
         .recommendation-content strong {
           display: block;
-          color: #3c4659;
+          color: #f1f5f9;
           font-size: 10px;
           font-weight: 650;
           margin: 1px 0 5px;
@@ -1012,14 +1012,14 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
 
         .recommendation-content p {
           margin: 0;
-          color: #687489;
+          color: #94a3b8;
           font-size: 10px;
           line-height: 1.55;
         }
 
         .agent-question {
           margin: 15px 0 13px;
-          color: #4d5769;
+          color: #94a3b8;
           font-size: 11px;
         }
 
@@ -1039,14 +1039,14 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         .optimize-now {
           border: 0;
           color: white;
-          background: linear-gradient(135deg, #6948d2, #5939c0);
-          box-shadow: 0 5px 12px rgba(94, 61, 196, 0.16);
+          background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+          box-shadow: 0 5px 12px rgba(139, 92, 246, 0.3);
         }
 
         .show-keywords {
-          border: 1px solid #d4d0eb;
-          color: #5d48bb;
-          background: white;
+          border: 1px solid rgba(139, 92, 246, .35);
+          color: #8b5cf6;
+          background: #0b1220;
         }
 
         .reaction-row {
@@ -1059,13 +1059,13 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           border: 0;
           padding: 2px;
           background: transparent;
-          color: #718097;
+          color: #94a3b8;
           display: flex;
           align-items: center;
         }
 
         .reaction-row button.active {
-          color: #5d42ca;
+          color: #8b5cf6;
         }
 
         .reaction-row svg {
@@ -1078,9 +1078,9 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
 
         .composer-section {
           flex: 0 0 auto;
-          border-top: 1px solid #ebecf1;
+          border-top: 1px solid rgba(255, 255, 255, .05);
           padding: 10px 17px 12px;
-          background: rgba(255, 255, 255, 0.6);
+          background: rgba(11, 18, 32, 0.6);
         }
 
         .quick-actions {
@@ -1095,10 +1095,10 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           flex: 1;
           min-width: 0;
           height: 34px;
-          border: 1px solid #e2e4eb;
-          background: #f8f9fd;
+          border: 1px solid rgba(255, 255, 255, .07);
+          background: #0d1526;
           border-radius: 7px;
-          color: #566176;
+          color: #94a3b8;
           font-size: 9px;
           display: flex;
           align-items: center;
@@ -1110,18 +1110,18 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
 
         .quick-action svg {
           width: 13px;
-          color: #6148c8;
+          color: #8b5cf6;
         }
 
         .message-composer {
           height: 86px;
-          border: 1px solid #dce0e8;
+          border: 1px solid rgba(255, 255, 255, .07);
           border-radius: 10px;
-          background: rgba(255, 255, 255, 0.86);
+          background: rgba(11, 18, 32, 0.86);
           padding: 12px 13px 9px;
           display: flex;
           flex-direction: column;
-          box-shadow: 0 2px 7px rgba(30, 35, 60, 0.01);
+          box-shadow: 0 2px 7px rgba(0, 0, 0, 0.3);
         }
 
         .message-composer textarea {
@@ -1131,13 +1131,13 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           border: 0;
           outline: 0;
           background: transparent;
-          color: #435067;
+          color: #f1f5f9;
           font-size: 11px;
           line-height: 1.5;
         }
 
         .message-composer textarea::placeholder {
-          color: #788397;
+          color: #5b6780;
         }
 
         .composer-bottom {
@@ -1156,7 +1156,7 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           border: 0;
           padding: 2px;
           background: transparent;
-          color: #718096;
+          color: #94a3b8;
         }
 
         .composer-tools svg {
@@ -1171,11 +1171,11 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           border: 0;
           border-radius: 6px;
           color: white;
-          background: linear-gradient(135deg, #7254dd, #5134bf);
+          background: linear-gradient(135deg, #8b5cf6, #7c3aed);
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 5px 12px rgba(87, 57, 194, 0.17);
+          box-shadow: 0 5px 12px rgba(139, 92, 246, 0.3);
         }
 
         .send-button svg {
@@ -1184,7 +1184,7 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
 
         .disclaimer {
           text-align: center;
-          color: #80899a;
+          color: #5b6780;
           font-size: 8px;
           margin-top: 9px;
         }
@@ -1200,21 +1200,21 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         }
 
         .side-card {
-          border: 1px solid #e5e6ec;
+          border: 1px solid rgba(255, 255, 255, .07);
           border-radius: 12px;
           background:
             linear-gradient(
               145deg,
-              rgba(255, 255, 255, 0.86),
-              rgba(249, 250, 253, 0.72)
+              rgba(11, 18, 32, 0.86),
+              rgba(13, 21, 38, 0.72)
             );
           padding: 17px 17px;
-          box-shadow: 0 9px 25px rgba(35, 42, 72, 0.025);
+          box-shadow: 0 9px 25px rgba(0, 0, 0, 0.3);
         }
 
         .side-card h3 {
           margin: 0 0 16px;
-          color: #343d4f;
+          color: #f1f5f9;
           font-size: 13px;
           font-weight: 700;
         }
@@ -1247,12 +1247,12 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         }
 
         .insight-label {
-          color: #657187;
+          color: #94a3b8;
           font-size: 11px;
         }
 
         .insight-value {
-          color: #344054;
+          color: #f1f5f9;
           font-size: 11px;
           font-weight: 700;
         }
@@ -1272,33 +1272,33 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
         }
 
         .topic-keyword {
-          color: #5542aa;
-          background: #f2effc;
-          border-color: #e5e0f6;
+          color: #8b5cf6;
+          background: rgba(139, 92, 246, .14);
+          border-color: rgba(139, 92, 246, .3);
         }
 
         .topic-content {
-          color: #3f609c;
-          background: #edf4ff;
-          border-color: #dce8f8;
+          color: #38bdf8;
+          background: rgba(56, 189, 248, .14);
+          border-color: rgba(56, 189, 248, .3);
         }
 
         .topic-technical {
-          color: #b37926;
-          background: #fff7eb;
-          border-color: #f5ead5;
+          color: #f59e0b;
+          background: rgba(245, 158, 11, .14);
+          border-color: rgba(245, 158, 11, .3);
         }
 
         .topic-backlink {
-          color: #477d78;
-          background: #eaf6f4;
-          border-color: #d7ece8;
+          color: #22d3ee;
+          background: rgba(34, 211, 238, .14);
+          border-color: rgba(34, 211, 238, .3);
         }
 
         .topic-rank {
-          color: #9a5780;
-          background: #faf0f6;
-          border-color: #f0e0ea;
+          color: #f43f5e;
+          background: rgba(244, 63, 94, .14);
+          border-color: rgba(244, 63, 94, .3);
         }
 
         .capability-list {
@@ -1322,22 +1322,22 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
 
         .capability-text strong {
           display: block;
-          color: #414a5d;
+          color: #f1f5f9;
           font-size: 10px;
           margin-bottom: 5px;
         }
 
         .capability-text span {
           display: block;
-          color: #758095;
+          color: #94a3b8;
           font-size: 9px;
         }
 
         .learn-more {
           margin-top: 16px;
           padding-top: 14px;
-          border-top: 1px solid #e7e8ed;
-          color: #5944ba;
+          border-top: 1px solid rgba(255, 255, 255, .05);
+          color: #8b5cf6;
           font-size: 10px;
           font-weight: 600;
           display: flex;
@@ -1376,8 +1376,8 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           border-radius: 50%;
           background: radial-gradient(
             circle,
-            rgba(118, 91, 226, 0.2),
-            rgba(118, 91, 226, 0.02) 62%,
+            rgba(139, 92, 246, 0.3),
+            rgba(139, 92, 246, 0.05) 62%,
             transparent 70%
           );
           filter: blur(1px);
@@ -1389,11 +1389,11 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           width: 57px;
           height: 48px;
           border-radius: 45% 45% 40% 40%;
-          background: linear-gradient(145deg, #ecebfb, #d7d3f1);
-          border: 3px solid #e6e4f7;
+          background: linear-gradient(145deg, #0d1526, #1a1433);
+          border: 3px solid rgba(139, 92, 246, .3);
           box-shadow:
-            inset 0 2px 4px rgba(255, 255, 255, 0.8),
-            0 5px 12px rgba(74, 61, 137, 0.15);
+            inset 0 2px 4px rgba(139, 92, 246, 0.15),
+            0 5px 12px rgba(0, 0, 0, 0.35);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1403,10 +1403,10 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           width: 40px;
           height: 27px;
           border-radius: 12px;
-          background: linear-gradient(145deg, #17294b, #071329);
+          background: linear-gradient(145deg, #0d1526, #05080f);
           box-shadow:
-            inset 0 1px 5px rgba(109, 178, 255, 0.35),
-            0 0 8px rgba(82, 107, 255, 0.17);
+            inset 0 1px 5px rgba(56, 189, 248, 0.3),
+            0 0 8px rgba(139, 92, 246, 0.25);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1417,8 +1417,8 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           width: 5px;
           height: 5px;
           border-radius: 50%;
-          background: #5ed3ff;
-          box-shadow: 0 0 7px #65d7ff;
+          background: #22d3ee;
+          box-shadow: 0 0 7px #22d3ee;
         }
 
         .robot-body {
@@ -1428,9 +1428,9 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           height: 38px;
           margin-top: -2px;
           border-radius: 18px 18px 15px 15px;
-          background: linear-gradient(145deg, #e9e8f7, #d2cfea);
-          border: 2px solid #e5e3f4;
-          box-shadow: 0 6px 10px rgba(61, 54, 117, 0.1);
+          background: linear-gradient(145deg, #0d1526, #1a1433);
+          border: 2px solid rgba(139, 92, 246, .3);
+          box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1440,10 +1440,10 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           width: 16px;
           height: 16px;
           border-radius: 50%;
-          background: linear-gradient(145deg, #8470e7, #5d49bd);
+          background: linear-gradient(145deg, #8b5cf6, #7c3aed);
           box-shadow:
-            inset 0 2px 3px rgba(255, 255, 255, 0.35),
-            0 0 6px rgba(102, 79, 214, 0.25);
+            inset 0 2px 3px rgba(255, 255, 255, 0.2),
+            0 0 6px rgba(139, 92, 246, 0.4);
         }
 
         .robot-arm {
@@ -1453,8 +1453,8 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
           width: 17px;
           height: 33px;
           border-radius: 14px;
-          background: linear-gradient(145deg, #dfdcef, #c9c5e1);
-          border: 2px solid #e7e4f3;
+          background: linear-gradient(145deg, #1a1433, #241b3d);
+          border: 2px solid rgba(139, 92, 246, .3);
         }
 
         .robot-arm-left {
@@ -1708,7 +1708,7 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
                       <span className="online-dot" />
                       <span
                         style={{
-                          color: "#69758a",
+                          color: "#94a3b8",
                           fontSize: 10,
                           fontWeight: 500,
                         }}
@@ -1737,7 +1737,7 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
                         <div>
                           <div
                             className="agent-bubble"
-                            style={m.error ? { color: "#b3413c", background: "#fff2f1", borderColor: "#f3d3d0" } : undefined}
+                            style={m.error ? { color: "#f43f5e", background: "rgba(244,63,94,.14)", borderColor: "rgba(244,63,94,.3)" } : undefined}
                           >
                             <p className="agent-bubble-intro" style={{ marginBottom: 0, whiteSpace: "pre-wrap" }}>
                               {m.content}
@@ -1754,9 +1754,9 @@ export default function SEOAIAgentPage({ params }: { params: Promise<{ platform:
                         <Robot small />
                       </div>
                       <div className="agent-bubble" style={{ display: "inline-flex", gap: 4 }}>
-                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#a496e0" }} />
-                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#a496e0" }} />
-                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#a496e0" }} />
+                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#8b5cf6" }} />
+                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#8b5cf6" }} />
+                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#8b5cf6" }} />
                       </div>
                     </div>
                   )}
