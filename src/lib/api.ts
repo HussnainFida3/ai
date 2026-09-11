@@ -387,6 +387,7 @@ export function agentClient(platformKey: PlatformKey, agentBase: string) {
     get: <T, M = unknown>(path: string, query?: RequestOptions["query"]) => call<T, M>(path, { query }),
     post: <T>(path: string, body?: unknown) => call<T>(path, { method: "POST", body }),
     patch: <T>(path: string, body?: unknown) => call<T>(path, { method: "PATCH", body }),
+    del: <T>(path: string) => call<T>(path, { method: "DELETE" }),
     stats,
     activity,
     chat: (message: string, history?: ChatTurn[]) => call<AgentChatResult>("/chat", { method: "POST", body: { message, history } }),

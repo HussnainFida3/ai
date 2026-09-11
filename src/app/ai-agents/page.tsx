@@ -15,6 +15,7 @@ import {
   ClipboardList,
   Command,
   Cpu,
+  Crown,
   Database,
   FileText,
   Layers3,
@@ -578,6 +579,26 @@ export default function HubPage() {
           transform: translateY(-2px);
           box-shadow: 0 17px 36px rgba(99, 102, 241, 0.34);
         }
+
+        /* The CEO sits above every card below it, so its entry point is gold
+           rather than the console's purple — the tier is readable at a glance. */
+        .hub-ceo-btn {
+          min-height: 42px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 9px;
+          padding: 0 16px;
+          border-radius: 12px;
+          text-decoration: none;
+          font-size: 12px;
+          font-weight: 780;
+          color: #120e04;
+          border: 0;
+          background: linear-gradient(135deg, #f7cd6b, #e9a833);
+          box-shadow: 0 10px 26px rgba(233, 168, 51, 0.24);
+        }
+        .hub-ceo-btn:hover { transform: translateY(-1px); }
 
         .hub-secondary-btn {
           color: #c3cde0;
@@ -1367,6 +1388,11 @@ export default function HubPage() {
                   <Boxes size={15} />
                   Explore agents
                 </a>
+
+                <Link href="/ceo" className="hub-ceo-btn">
+                  <Crown size={15} />
+                  CEO Agent
+                </Link>
 
                 <Link href="/" className="hub-secondary-btn">
                   <LayoutDashboard size={15} />

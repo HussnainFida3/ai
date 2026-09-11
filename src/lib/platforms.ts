@@ -65,6 +65,7 @@ const GHRFIX_AGENTS: AgentDef[] = [
   { key: "marketing", name: "Marketing Agent", tag: "Growth", desc: "Promo codes and broadcast notifications — every send is a real, audited write.", icon: "megaphone", accent: "#d946ef", base: "/ai-agents/marketing" },
   { key: "site-chat", name: "Site Chat Agent", tag: "Customer Chat", desc: "How the customer-facing assistant is performing: volume, cache rate, spend.", icon: "message", accent: "#10b981", base: "/ai-agents/site-chat" },
   { key: "devqa", name: "Developer & QA Agent", tag: "Engineering", desc: "API, database and cache readiness plus AI spend across every agent.", icon: "server", accent: "#64748b", base: "/ai-agents/devqa" },
+  { key: "leadgen", name: "Lead Gen Agent", tag: "Growth", desc: "Finds real provider businesses from public data (OpenStreetMap) and manages them as recruitment leads.", icon: "target", accent: "#a855f7", base: "/ai-agents/leadgen" },
 ];
 
 const SHADILIFE_AGENTS: AgentDef[] = [
