@@ -66,6 +66,8 @@ const GHRFIX_AGENTS: AgentDef[] = [
   { key: "site-chat", name: "Site Chat Agent", tag: "Customer Chat", desc: "How the customer-facing assistant is performing: volume, cache rate, spend.", icon: "message", accent: "#10b981", base: "/ai-agents/site-chat" },
   { key: "devqa", name: "Developer & QA Agent", tag: "Engineering", desc: "API, database and cache readiness plus AI spend across every agent.", icon: "server", accent: "#64748b", base: "/ai-agents/devqa" },
   { key: "leadgen", name: "Lead Gen Agent", tag: "Growth", desc: "Finds real provider businesses from public data (OpenStreetMap) and manages them as recruitment leads.", icon: "target", accent: "#a855f7", base: "/ai-agents/leadgen" },
+  { key: "dispatch", name: "Dispatch Agent", tag: "Operations", desc: "Matching-funnel health: acceptance rate, time-to-accept, unaccepted jobs and coverage gaps.", icon: "compass", accent: "#0ea5e9", base: "/ai-agents/dispatch" },
+  { key: "retention", name: "Retention Agent", tag: "Growth", desc: "Repeat rate, dormant customers, idle providers and win-back targets.", icon: "heart", accent: "#ec4899", base: "/ai-agents/retention" },
 ];
 
 const SHADILIFE_AGENTS: AgentDef[] = [

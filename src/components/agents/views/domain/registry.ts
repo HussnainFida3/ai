@@ -17,6 +17,8 @@ import ShadilifeChatSafetySafety from "./shadilife/chat-safety";
 import ShadilifeProfileNudges from "./shadilife/profile";
 import ShadilifeLeadgenLeads from "./shadilife/leadgen";
 import GhrfixLeadgenCrm from "./ghrfix/leadgen";
+import GhrfixDispatch from "./ghrfix/dispatch";
+import GhrfixRetention from "./ghrfix/retention";
 import GhrfixOwnerChatDirectory from "./ghrfix/owner-chat";
 import ShadilifeSeoAudit from "./shadilife/seo";
 import ShadilifeAnalyticsBreakdown from "./shadilife/analytics";
@@ -56,6 +58,8 @@ export const DOMAIN_VIEWS: Record<string, DomainView> = {
   "ghrfix:payment-wallet": GhrfixPaymentWalletTopUps,
   "ghrfix:site-chat": GhrfixSiteChatUsage,
   "ghrfix:leadgen": GhrfixLeadgenCrm,
+  "ghrfix:dispatch": GhrfixDispatch,
+  "ghrfix:retention": GhrfixRetention,
   "shadilife:devqa": ShadilifeDevQaHealth,
   "shadilife:matchmaking": ShadilifeMatchmakingMatches,
   "shadilife:verification": ShadilifeVerificationQueue,
