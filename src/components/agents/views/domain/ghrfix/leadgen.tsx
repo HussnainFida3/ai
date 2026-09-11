@@ -82,6 +82,8 @@ export default function GhrfixLeadgenCrmView({ platform, agent, api }: AgentView
 
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<{ created?: number; duplicates?: number; usable?: number } | null>(null);
+  const [sweeping, setSweeping] = useState(false);
+  const [sweepResult, setSweepResult] = useState<{ contactableCreated?: number } | null>(null);
 
   // Add-lead form
   const [showAdd, setShowAdd] = useState(false);
@@ -104,6 +106,20 @@ export default function GhrfixLeadgenCrmView({ platform, agent, api }: AgentView
       setActionError(e instanceof ApiError ? e.message : "Could not scan public sources right now.");
     } finally {
       setScanning(false);
+    }
+  }
+
+  async function sweep() {
+    setSweeping(true);
+    setActionError(null);
+    try {
+      const { data } = await api.post<{ contactableCreated?: number }>("/directory-sweep", { target: 120 });
+      setSweepResult(data ?? {});
+      reload();
+    } catch (e) {
+      setActionError(e instanceof ApiError ? e.message : "Could not sweep directories right now.");
+    } finally {
+      setSweeping(false);
     }
   }
 
@@ -199,8 +215,11 @@ export default function GhrfixLeadgenCrmView({ platform, agent, api }: AgentView
           </p>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button type="button" className="ag-btn ag-btn-solid" onClick={scan} disabled={scanning}>
-            <Svg path={Icons.compass} size={14} /> {scanning ? "Scanning public data…" : "Find more leads"}
+          <button type="button" className="ag-btn ag-btn-solid" onClick={sweep} disabled={sweeping}>
+            <Svg path={Icons.phone} size={14} /> {sweeping ? "Finding contactable…" : "Find contactable leads"}
+          </button>
+          <button type="button" className="ag-btn ag-btn-ghost" onClick={scan} disabled={scanning}>
+            <Svg path={Icons.compass} size={14} /> {scanning ? "Scanning…" : "Scan OSM (breadth)"}
           </button>
           <button type="button" className="ag-btn ag-btn-ghost" onClick={() => setShowAdd((v) => !v)}>
             <Svg path={Icons.user} size={14} /> Add lead
@@ -211,9 +230,14 @@ export default function GhrfixLeadgenCrmView({ platform, agent, api }: AgentView
 
       {leads.error && <ErrorNote error={leads.error} hint="The Lead Gen backend may still be starting." />}
       {actionError && <p style={{ margin: "0 0 14px", fontSize: 12, color: "var(--ag-red)" }}>{actionError}</p>}
+      {sweepResult && (
+        <p style={{ margin: "0 0 14px", fontSize: 12, color: "var(--ag-ink-soft)" }}>
+          Directory sweep added <strong>{sweepResult.contactableCreated ?? 0}</strong> new contactable lead(s) (real phone/email).
+        </p>
+      )}
       {scanResult && (
         <p style={{ margin: "0 0 14px", fontSize: 12, color: "var(--ag-ink-soft)" }}>
-          Last scan added <strong>{scanResult.created ?? 0}</strong> new lead(s); {scanResult.duplicates ?? 0} already existed.
+          Last OSM scan added <strong>{scanResult.created ?? 0}</strong> new lead(s); {scanResult.duplicates ?? 0} already existed.
         </p>
       )}
 
