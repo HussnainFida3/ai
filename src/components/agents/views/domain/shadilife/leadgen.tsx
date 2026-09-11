@@ -71,7 +71,14 @@ export default function ShadiLifeLeadgenLeadsView({ platform, agent, api }: Agen
   const [scanResult, setScanResult] = useState<{ scanned?: number; created?: number } | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
 
-  const allLeads = (leads.data ?? []).map((l) => (overrides[l.id] ? { ...l, status: overrides[l.id] } : l));
+  const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
+  const [showAdd, setShowAdd] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ bureauName: "", city: "", category: "", contactPhone: "", contactEmail: "", notes: "" });
+
+  const allLeads = (leads.data ?? [])
+    .filter((l) => !removedIds.has(l.id))
+    .map((l) => (overrides[l.id] ? { ...l, status: overrides[l.id] } : l));
 
   function act(id: string, action: "invite" | "dismiss") {
     setBusyId(id);
@@ -81,6 +88,42 @@ export default function ShadiLifeLeadgenLeadsView({ platform, agent, api }: Agen
       .then(() => setOverrides((prev) => ({ ...prev, [id]: action === "invite" ? "INVITED" : "DISMISSED" })))
       .catch((e: unknown) => setActionError(describeError(e, platform)))
       .finally(() => setBusyId(null));
+  }
+
+  function remove(id: string) {
+    setBusyId(id);
+    setActionError(null);
+    api
+      .del(`/leads/${encodeURIComponent(id)}`)
+      .then(() => setRemovedIds((prev) => new Set(prev).add(id)))
+      .catch((e: unknown) => setActionError(describeError(e, platform)))
+      .finally(() => setBusyId(null));
+  }
+
+  function addLead() {
+    if (!form.bureauName.trim()) {
+      setActionError("A business name is required.");
+      return;
+    }
+    setSaving(true);
+    setActionError(null);
+    api
+      .post("/leads", {
+        bureauName: form.bureauName.trim(),
+        city: form.city.trim() || undefined,
+        category: form.category.trim() || undefined,
+        contactPhone: form.contactPhone.trim() || undefined,
+        contactEmail: form.contactEmail.trim() || undefined,
+        notes: form.notes.trim() || undefined,
+        leadType: "B2B",
+      })
+      .then(() => {
+        setForm({ bureauName: "", city: "", category: "", contactPhone: "", contactEmail: "", notes: "" });
+        setShowAdd(false);
+        void leads.run();
+      })
+      .catch((e: unknown) => setActionError(describeError(e, platform)))
+      .finally(() => setSaving(false));
   }
 
   function scanAll() {
@@ -123,10 +166,42 @@ export default function ShadiLifeLeadgenLeadsView({ platform, agent, api }: Agen
             <button type="button" className="ag-btn ag-btn-solid" onClick={scanAll} disabled={scanning}>
               <Svg path={Icons.compass} size={14} /> {scanning ? "Scanning…" : "Run all sources now"}
             </button>
+            <button type="button" className="ag-btn ag-btn-ghost" onClick={() => setShowAdd((v) => !v)}>
+              <Svg path={Icons.user} size={14} /> Add lead
+            </button>
             <Link href={`/${platform.key}/${agent.key}`} className="ag-btn ag-btn-ghost">← Dashboard</Link>
           </>
         }
       />
+
+      {showAdd && (
+        <Panel title="Add a lead" sub="Manually add a bureau or business you already know about">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, padding: 4 }}>
+            {([
+              ["bureauName", "Business / bureau name *"],
+              ["city", "City"],
+              ["category", "Category"],
+              ["contactPhone", "Phone"],
+              ["contactEmail", "Email"],
+              ["notes", "Notes"],
+            ] as const).map(([k, ph]) => (
+              <input
+                key={k}
+                value={form[k]}
+                onChange={(e) => setForm({ ...form, [k]: e.target.value })}
+                placeholder={ph}
+                style={{ fontSize: 12, padding: "7px 10px", borderRadius: 8, border: "1px solid var(--ag-border)", background: "var(--ag-bg)", color: "var(--ag-ink)" }}
+              />
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 8, padding: "12px 4px 4px" }}>
+            <button type="button" className="ag-btn ag-btn-solid" onClick={addLead} disabled={saving}>
+              {saving ? "Saving…" : "Save lead"}
+            </button>
+            <button type="button" className="ag-btn ag-btn-ghost" onClick={() => setShowAdd(false)}>Cancel</button>
+          </div>
+        </Panel>
+      )}
 
       {leads.error && <ErrorPanel message={leads.error} platform={platform} what="Lead Gen data" />}
       {scanError && <p style={{ margin: "0 0 16px", fontSize: 12, color: "var(--ag-red)" }}>{scanError}</p>}
@@ -196,14 +271,15 @@ export default function ShadiLifeLeadgenLeadsView({ platform, agent, api }: Agen
                       <td><Badge tone={statusTone(l.status)}>{l.status ?? "—"}</Badge></td>
                       <td style={{ color: "var(--ag-ink-faint)", whiteSpace: "nowrap" }}>{fmtDate(l.createdAt)}</td>
                       <td style={{ whiteSpace: "nowrap" }}>
-                        {l.status === "PENDING_REVIEW" ? (
-                          <div style={{ display: "flex", gap: 6 }}>
-                            <button type="button" className="ag-btn ag-btn-ghost ag-btn-sm" onClick={() => act(l.id, "invite")} disabled={busyId === l.id}>Invite</button>
-                            <button type="button" className="ag-btn ag-btn-ghost ag-btn-sm" onClick={() => act(l.id, "dismiss")} disabled={busyId === l.id}>Dismiss</button>
-                          </div>
-                        ) : (
-                          <span style={{ fontSize: 11, color: "var(--ag-ink-faint)" }}>—</span>
-                        )}
+                        <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                          {l.status === "PENDING_REVIEW" && (
+                            <>
+                              <button type="button" className="ag-btn ag-btn-ghost ag-btn-sm" onClick={() => act(l.id, "invite")} disabled={busyId === l.id}>Invite</button>
+                              <button type="button" className="ag-btn ag-btn-ghost ag-btn-sm" onClick={() => act(l.id, "dismiss")} disabled={busyId === l.id}>Dismiss</button>
+                            </>
+                          )}
+                          <button type="button" className="ag-btn ag-btn-ghost ag-btn-sm" onClick={() => remove(l.id)} disabled={busyId === l.id} title="Remove permanently">Remove</button>
+                        </div>
                       </td>
                     </tr>
                   ))}
